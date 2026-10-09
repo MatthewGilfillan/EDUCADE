@@ -67,3 +67,9 @@ reference image is used to render it. It uses the unchanged assets/logo.png.
   preview until the original files arrive. Initials work now.
 - Current screenshots: `/workspace/educade-validation/presentation` and
   `/workspace/educade-validation/teacher-entry`.
+- An additional direct-file opening check was blocked by this cloud browser's
+  managed URL policy (`file:` is not allowed). The HTTP-based browser checks
+  above passed; direct-file behavior was not verified in this environment.
+- The hosted preview's `/teacher.html` still returned HTTP 404 after the
+  development push. Publishing this branch through the Cloudflare preview
+  project's build configuration remains outside the available credentials.
