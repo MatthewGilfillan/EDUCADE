@@ -73,3 +73,22 @@ reference image is used to render it. It uses the unchanged assets/logo.png.
 - The hosted preview's `/teacher.html` still returned HTTP 404 after the
   development push. Publishing this branch through the Cloudflare preview
   project's build configuration remains outside the available credentials.
+
+## Approved production release preparation
+
+The user requested this version go live on 9 October 2026. Production release
+helpers target the existing `nameless-unit-6af8` Worker identified in the user's
+Cloudflare screenshot, with no domain migration or additional application.
+
+- Separate production config; default development/preview config is unchanged.
+- Version upload followed by deployment of the exact Git-revision tag to 100%.
+  Domain triggers are not deployed. An upload error stops the release.
+- Seven tests passed: four demo-data checks and three release-sequence checks.
+- Production and preview packaging dry runs passed. Both browser suites passed
+  at 1440, 1024, 768, 640, 390 and 320 pixels.
+- No actual Cloudflare upload/deployment has been executed from this workspace:
+  Wrangler confirms no authentication, and no Cloudflare token/account ID is
+  present. The live site still serves the previous header at this point.
+- The release can be deployed by connecting the existing live Worker's GitHub
+  Builds to `main`, using the production commands documented in README.md.
+- Actual live-site validation remains pending the Cloudflare deployment.

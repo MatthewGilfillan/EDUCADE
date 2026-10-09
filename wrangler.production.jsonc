@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nameless-unit-6af8",
+  "compatibility_date": "2026-10-09",
+  "keep_vars": true,
+  "assets": { "directory": "./public" }
+}

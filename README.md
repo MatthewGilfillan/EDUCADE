@@ -62,7 +62,7 @@ The default Wrangler configuration on this branch targets the separate
 `educade-preview` Worker, with workers.dev enabled and no custom domain routes.
 `npm run deploy` deploys only this preview Worker when Cloudflare authentication
 is available. It does not target the existing `educade` or `nameless-unit-6af8`
-Workers. The main branch's existing configuration is unchanged.
+Workers. Production release commands use a separate configuration below.
 
 To create a hosted preview through the Cloudflare dashboard, create a separate
 Worker named `educade-preview` connected to `MatthewGilfillan/EDUCADE`:
@@ -76,6 +76,47 @@ Worker named `educade-preview` connected to `MatthewGilfillan/EDUCADE`:
 
 Do not reconnect the existing production Worker to the development branch.
 Cloudflare installs the dependencies using package-lock.json.
+
+## Production release
+
+The user approved publishing the current website version on 9 October 2026.
+The release includes the labelled fictional teacher dashboard; photo and Viking
+image files are still pending. It does not implement accounts or a signup backend.
+
+Use the **existing `nameless-unit-6af8` Worker** that already serves educade.io.
+Do not create another application or move the domain. To connect it to GitHub,
+open Cloudflare → Workers & Pages → nameless-unit-6af8 → Settings → Builds and
+connect `MatthewGilfillan/EDUCADE` using:
+
+- Production branch: `main`.
+- Root directory: `/`.
+- Build command: `npm run build:production`.
+- Deploy command: `npm run deploy:production`.
+- Preview/non-production branch builds: disabled for this live Worker.
+
+The separate `educade-preview` Worker continues to use `development` and its
+existing preview commands. Do not use the generic `npm run deploy` for production.
+
+`wrangler.production.jsonc` targets the existing live Worker. The production
+command uploads a version tagged with the committed Git revision, then deploys
+that tag to 100% of traffic. It preserves existing domain routes by using
+`versions upload` / `versions deploy` and never `triggers deploy`. Existing
+dashboard-set variables and secrets are retained. An upload failure stops the
+release before any traffic is switched.
+
+For a direct deployment from this cloud workspace, Cloudflare credentials are
+required: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Enter them securely
+in environment settings, never in chat or the repository. The token should be
+scoped to the existing Cloudflare account with Workers Scripts Edit permission.
+Cloudflare's GitHub Builds supplies its own build token when using the dashboard
+route above; a separate token in this workspace is unnecessary for that route.
+
+Before deploying, run `npm test`, both browser suites and
+`npm run build:production`. After deployment, verify the Teacher sign in link,
+`/teacher.html`, demo labels, charts and mobile menu on https://educade.io/.
+If the release fails after deployment, use the live Worker's Deployments tab to
+roll back to the previously active version. Future production updates still
+require explicit approval.
 
 For an offline preview, download the prepared preview ZIP, extract it, and open
 index.html in a browser. All artwork, menu controls, dashboards and sample
