@@ -43,6 +43,14 @@ try:
             page.screenshot(path=str(OUTPUT / f"home-{width}.png"), full_page=True)
             page.screenshot(path=str(OUTPUT / f"hero-{width}.png"))
             page.locator(".challenge-card").screenshot(path=str(OUTPUT / f"challenge-{width}.png"))
+            # SVG portraits load their source separately from HTML images.
+            page.evaluate("""async () => {
+                const source = document.querySelector('.reward-art-avatar image');
+                const portrait = new Image();
+                portrait.src = source.getAttribute('href');
+                await portrait.decode();
+            }""")
+            page.locator("#rewards").screenshot(path=str(OUTPUT / f"rewards-{width}.png"))
             page.locator("#student-tab").click()
             assert page.locator("#student-panel").is_visible()
             page.locator("#back-class").click()

@@ -113,3 +113,17 @@ confirm that both files are byte-for-byte unchanged.
 - This completes the previously requested artwork for the approved release.
   educade.io/teacher.html still returned 404 before this update was pushed;
   actual publication and live validation depend on the Cloudflare build.
+
+## Illustrated landing-page rewards
+
+- Replaced the three abstract reward symbols with gold coins, a Viking avatar
+  and a hint scroll. Coin and scroll PNGs are newly generated illustrations;
+  the avatar is framed from the unchanged, approved Viking portrait sheet.
+- Retained the three requested headings, original logo, hero and dashboard
+  previews. The rewards are visibly labelled as planned features.
+- Landing browser checks passed at 1440, 1024, 768, 640, 390 and 320 pixels,
+  including image decoding, navigation, demo entry and existing interactions.
+  Desktop, tablet and mobile rewards screenshots were visually inspected.
+- Screenshots: `/workspace/educade-validation/rewards`.
+- This design update stays on development for review; no production merge,
+  deployment or domain configuration change is included.
