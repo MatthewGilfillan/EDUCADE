@@ -146,3 +146,23 @@ confirm that both files are byte-for-byte unchanged.
   are uploaded as files. All five newly shared artworks are pending integration.
 - Screenshots: `/workspace/educade-validation/worlds`.
 - Changes stay on development; no production branch or live domain is updated.
+
+## Approved rewards and carousel production release
+
+The user explicitly approved publishing the rewards and carousel update on
+9 October 2026. This approval supersedes the development-only status recorded
+for those changes above.
+
+- Landing checks and desktop/mobile inspection passed for the carousel version
+  at all six widths, including real touch gestures and reduced-motion handling.
+- All seven automated tests passed; the teacher browser suite passed at all six
+  widths, plus supplied portrait and saved-presentation checks.
+- Production packaging passed in dry-run mode. The existing production helper
+  and Worker configuration are unchanged; domain triggers are not modified.
+- Before promotion, educade.io still served the earlier landing page without
+  the teacher entry, illustrated rewards or carousel.
+- Wrangler reports that this workspace is not authenticated to Cloudflare.
+  Publication therefore depends on the live Worker's GitHub build connection
+  or credentials supplied securely through environment settings.
+- The carousel's newly shared artwork remains pending original PNG files;
+  this approved release includes the working current title-card version.

@@ -81,9 +81,12 @@ Cloudflare installs the dependencies using package-lock.json.
 
 ## Production release
 
-The user approved publishing the current website version on 9 October 2026.
-The release includes the labelled fictional teacher dashboard and the supplied
-photo/Viking portraits. It does not implement accounts or a signup backend.
+The user approved publishing the current website version on 9 October 2026,
+including the illustrated rewards and five-world carousel. The release also
+includes the labelled fictional teacher dashboard and supplied photo/Viking
+portraits. The carousel currently uses the existing Viking art and four styled
+title panels; the five newly shared character/world artworks still need their
+original files supplied. It does not implement accounts or a signup backend.
 
 Use the **existing `nameless-unit-6af8` Worker** that already serves educade.io.
 Do not create another application or move the domain. To connect it to GitHub,
