@@ -15,3 +15,8 @@
 - Run `npm run build` after deployment configuration changes. For layout or
   interaction changes, run `tests/browser_smoke.py` and inspect desktop/mobile
   screenshots. Install dependencies before starting the preview server.
+- For teacher-dashboard changes, also run `npm test` and
+  `/workspace/educade-tools/bin/python tests/teacher_browser.py`.
+- Keep EDUCADE skill IDs separate from standards mappings. CCSS reference text
+  is checked against a published mirror; prototype alignments are partial and
+  must not be described as validated mastery or primary-source verification.

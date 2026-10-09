@@ -41,7 +41,8 @@ reference image is used to render it. It uses the unchanged assets/logo.png.
   HP/radar switches, evidence dialogs, empty evidence, tab keys and Escape.
 - Landing-page browser checks passed at the same six widths. Git comparison
   confirms the landing HTML, CSS, JavaScript, signup and artwork are unchanged.
-- CCSS mapping candidates are separate from EDUCADE IDs, with verification
-  pending because the official standards site returned a proxy 403.
+- CCSS identifiers and Grade 5 wording were checked against a published reference
+  mirror. Prototype task alignments remain candidates; no mastery claim is made.
+  Access to the California Department of Education primary publication is blocked.
 - No accounts, payments, live AI assessment or contact/student storage were added.
 - Changes are restricted to development; main and educade.io are not updated.

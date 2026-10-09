@@ -108,9 +108,12 @@ logo file or any landing-page file.
 
 `EDU.G5.*` identifiers belong to the prototype's own curriculum scaffold.
 CCSS alignments are maintained separately as mapping metadata, not as skill IDs.
-They are labeled **candidate / verification pending** because the official CCSS
-site was blocked by this environment's network policy. Do not describe them as
-verified. See `docs/CCSS-MAPPING-REVIEW.md` for sources and review requirements.
+The Grade 5 CCSS wording was checked separately against a published reference
+mirror on 9 October 2026. Prototype task alignments remain candidates: each task
+practices part of its standard and scores are not mastery claims. The accessible
+reference site identifies itself as unofficial; access to the California Department
+of Education primary publication remains blocked. See `docs/CCSS-MAPPING-REVIEW.md`
+for sources, scope and review notes.
 
 Checks:
 

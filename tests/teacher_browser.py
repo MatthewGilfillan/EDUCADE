@@ -51,7 +51,7 @@ try:
                 assert page.locator('#evidence-dialog').is_visible()
                 assert 'EDU.G5.' in page.locator('.evidence-id').inner_text()
                 assert page.locator('.attempt').count()>0
-                assert 'verification pending' in page.locator('.standard').inner_text()
+                assert 'CCSS reference text checked' in page.locator('.standard').inner_text()
                 assert page.evaluate('document.querySelector("#evidence-dialog").scrollWidth<=document.querySelector("#evidence-dialog").clientWidth')
                 if domain=='reading':page.locator('#evidence-dialog').screenshot(path=str(OUT/f'evidence-{width}.png'))
                 page.keyboard.press('Escape');assert not page.locator('#evidence-dialog').is_visible()

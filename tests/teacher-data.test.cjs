@@ -35,11 +35,12 @@ test('Evidence is internally coherent across weeks, support and challenge respon
   }
  }
 });
-test('Standards alignment is separate from skill identity and honestly marked pending',()=>{
+test('Standards references are checked separately; prototype alignments remain candidates',()=>{
  for(const [id,mapping] of Object.entries(D.mappings)){
   assert.ok(D.samples[id]);
   assert.ok(mapping.code.startsWith('CCSS.ELA-LITERACY.'));
   assert.equal(mapping.status,'candidate');
-  assert.equal(mapping.checked,null);
+  assert.equal(mapping.checked,'2026-10-09');
+  assert.equal(mapping.sourceType,'published reference mirror');
  }
 });
