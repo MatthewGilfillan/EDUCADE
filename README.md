@@ -80,3 +80,47 @@ Cloudflare installs the dependencies using package-lock.json.
 For an offline preview, download the prepared preview ZIP, extract it, and open
 index.html in a browser. All artwork, menu controls, dashboards and sample
 challenge work locally. Signup submission is unavailable in this static preview.
+
+## Interactive teacher dashboard prototype
+
+Open `/teacher.html` on the development preview, or `/teacher.html` on the local
+server started by `npm run dev`. The landing page is unchanged; the dashboard is
+an independent page.
+
+Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teacher
+
+- Class overview: six fictional learners, segmented HP bars, search and sorting.
+- Student profiles: Reading, Writing, Grammar and Vocabulary tabs.
+- Reading separates Foundations from Comprehension.
+- Curriculum structure: domain → section where relevant → skill group → individual
+  EDUCADE skill → learning evidence. Detailed groups expand independently.
+- HP bars/radar switch: charts summarize only assessed groups, at most four in this
+  representative dataset. A radar requires at least three assessed groups.
+- Unassessed skills show “No evidence yet” and are excluded from summaries.
+- Evidence: fictional responses, model examples, support mode and hint shown.
+- Progress: cumulative correct-response percentages by support type, with an
+  accessible table of exact chart values.
+
+All scores, charts, counts and evidence come from the same fictional response
+records in `public/teacher-data.js`. There are no accounts, payments, live student
+data, storage or live AI assessment. New dashboard files do not change the exact
+logo file or any landing-page file.
+
+`EDU.G5.*` identifiers belong to the prototype's own curriculum scaffold.
+CCSS alignments are maintained separately as mapping metadata, not as skill IDs.
+They are labeled **candidate / verification pending** because the official CCSS
+site was blocked by this environment's network policy. Do not describe them as
+verified. See `docs/CCSS-MAPPING-REVIEW.md` for sources and review requirements.
+
+Checks:
+
+```sh
+npm test
+/workspace/educade-tools/bin/python tests/teacher_browser.py
+/workspace/educade-tools/bin/python tests/browser_smoke.py
+npm run build
+```
+
+Set `EDUCADE_BASE_URL` to test an already-running preview. Screenshot outputs can
+be selected with `EDUCADE_SCREENSHOTS`. Publish only the development branch;
+never merge into main or update educade.io without explicit user approval.
