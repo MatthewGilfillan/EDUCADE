@@ -83,13 +83,20 @@ challenge work locally. Signup submission is unavailable in this static preview.
 
 ## Interactive teacher dashboard prototype
 
-Open `/teacher.html` on the development preview, or `/teacher.html` on the local
-server started by `npm run dev`. The landing page is unchanged; the dashboard is
-an independent page.
+Choose **Teacher sign in** in the landing-page header (or the mobile Menu). For
+now, this is a link to the sample dashboard, labelled **Demo dashboard · Fictional
+data**. It does not request credentials or implement authentication. The link's
+`data-teacher-entry` attribute provides an entry point for a future sign-in flow.
+The approved landing content and artwork remain unchanged.
+
+You can also open `public/teacher.html` directly after extracting the repository
+ZIP, or visit `/teacher.html` on the local server started by `npm run dev`.
 
 Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teacher
 
-- Class overview: six fictional learners, segmented HP bars, search and sorting.
+- Class overview: six fictional learners, a class heatmap or segmented RPG HP
+  bars, search and sorting. Choose a learner's name to open their profile; choose
+  a score cell to inspect the same skill's learning evidence.
 - Student profiles: Reading, Writing, Grammar and Vocabulary tabs.
 - Reading separates Foundations from Comprehension.
 - Curriculum structure: domain → section where relevant → skill group → individual
@@ -100,11 +107,35 @@ Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teach
 - Evidence: fictional responses, model examples, support mode and hint shown.
 - Progress: cumulative correct-response percentages by support type, with an
   accessible table of exact chart values.
+- Independent controls: portrait style, class data view and student data view.
+  Switching presentation preserves learner/domain selection, expanded skill
+  groups, selected evidence, search and sorting. Radar preference is retained
+  when Foundations temporarily falls back to bars.
+- Presentation preferences use browser `localStorage`, with a safe fallback when
+  storage is blocked. They are local to the teacher's browser profile/device,
+  not synced or associated with a signed-in account. Fictional learning records
+  are never written to browser storage.
+
+### Portrait artwork pending file attachments
+
+The supplied photo and Viking sheets are visible in the conversation, but their
+downloadable original files are not present in this workspace. Initials work
+now; Photos and Viking avatars remain visibly unavailable until the originals
+are attached as files. No substitute or regenerated portraits are included.
+
+`public/teacher-portraits.js` contains stable assignments for all six learners.
+Place the unmodified sheets at `public/assets/portraits/sample-students.png`
+(1536 × 1024) and `public/assets/portraits/viking-adventurers.png` (1312 × 1199),
+then set their `available` flags to `true` after verifying the dimensions and
+framing. SVG viewports display individual panels without modifying the originals.
+Photo assignments follow the names printed on the sheet. Viking assignments are:
+Alex top left, Maya bottom left, Leo bottom middle, Sofia top middle, Noah top
+right and Ella bottom right. Initials remain available independently of artwork.
 
 All scores, charts, counts and evidence come from the same fictional response
 records in `public/teacher-data.js`. There are no accounts, payments, live student
-data, storage or live AI assessment. New dashboard files do not change the exact
-logo file or any landing-page file.
+data, learning-record storage or live AI assessment. The exact logo file remains
+unchanged. The only landing-page addition is the labelled teacher demo entry.
 
 `EDU.G5.*` identifiers belong to the prototype's own curriculum scaffold.
 CCSS alignments are maintained separately as mapping metadata, not as skill IDs.

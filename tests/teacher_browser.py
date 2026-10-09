@@ -23,6 +23,23 @@ try:
             page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
             page.goto(base+'/teacher.html',wait_until='networkidle')
             assert page.locator('#student-rows tr').count()==6
+            assert 'Demo dashboard · Fictional data' in page.locator('.demo-banner').inner_text()
+            original_data=page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')
+            original_scores=page.locator('.score-cell').evaluate_all('(cells)=>cells.map(c=>c.getAttribute("aria-label"))')
+            page.locator('[data-class-mode=heatmap]').click()
+            assert page.locator('.heat-cell').count()==24
+            assert page.locator('.score-cell').evaluate_all('(cells)=>cells.map(c=>c.getAttribute("aria-label"))')==original_scores
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Heatmap overflow at {width}'
+            page.screenshot(path=str(OUT/f'heatmap-{width}.png'),full_page=True)
+            page.locator('[data-learner=alex].heat-cell').first.click()
+            evidence=page.locator('#evidence-content').inner_text()
+            assert '45%' in evidence
+            page.keyboard.press('Escape')
+            page.locator('[data-class-mode=bars]').click()
+            assert page.locator('.score-cell.selected-skill[data-learner=alex]').count()==1
+            page.locator('[data-class-mode=heatmap]').click()
+            page.reload(wait_until='networkidle')
+            assert page.locator('[data-class-mode=heatmap]').get_attribute('aria-pressed')=='true'
             assert page.locator('.brand img').get_attribute('src')=='assets/logo.png'
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Class overflow at {width}'
             page.screenshot(path=str(OUT/f'class-{width}.png'),full_page=True)
@@ -47,6 +64,10 @@ try:
                 page.screenshot(path=str(OUT/f'{domain}-radar-{width}.png'),full_page=True)
                 page.locator('[data-mode=bars]').click();assert page.locator('#skill-chart .hp').count()>0
                 page.locator('#skill-chart [data-open-group]').first.click()
+                open_group=page.locator('.skill-group[open]').get_attribute('id')
+                page.locator('[data-mode=radar]').click()
+                assert page.locator('#'+open_group).get_attribute('open') is not None
+                page.locator('[data-mode=bars]').click()
                 page.locator('.skill-group[open] .individual-skill').first.click()
                 assert page.locator('#evidence-dialog').is_visible()
                 assert 'EDU.G5.' in page.locator('.evidence-id').inner_text()
@@ -55,7 +76,8 @@ try:
                 assert page.evaluate('document.querySelector("#evidence-dialog").scrollWidth<=document.querySelector("#evidence-dialog").clientWidth')
                 if domain=='reading':page.locator('#evidence-dialog').screenshot(path=str(OUT/f'evidence-{width}.png'))
                 page.keyboard.press('Escape');assert not page.locator('#evidence-dialog').is_visible()
-            page.locator('#tab-reading').click();page.locator('[data-section=foundations]').click()
+            page.locator('#tab-reading').click();page.locator('[data-mode=radar]').click()
+            page.locator('[data-section=foundations]').click()
             page.wait_for_function('document.querySelector("[data-section=foundations]").getAttribute("aria-pressed")==="true"')
             assert page.locator('[data-mode=radar]').is_disabled()
             assert page.locator('.skill-group').count()==3
@@ -64,7 +86,10 @@ try:
             assert 'No evidence yet' in page.locator('#evidence-content').inner_text()
             assert page.locator('.attempt').count()==0
             page.keyboard.press('Escape')
-            page.locator('[data-section=comprehension]').click();page.locator('#tab-reading').focus();page.keyboard.press('ArrowRight')
+            page.locator('[data-section=comprehension]').click()
+            page.wait_for_selector('.radar-area')
+            page.reload(wait_until='networkidle');assert page.locator('.radar-area').is_visible()
+            page.locator('#tab-reading').focus();page.keyboard.press('ArrowRight')
             page.wait_for_function('document.querySelector("#tab-writing").getAttribute("aria-selected")==="true"')
             for learner in ['maya','leo','sofia','noah','ella','alex']:
                 page.locator('#switch-student').select_option(learner)
@@ -72,11 +97,85 @@ try:
                 expected=page.evaluate('(id)=>EDUCADE_DEMO.students.find(s=>s.id===id).name',learner)
                 assert page.locator('h1').inner_text()==expected
             page.locator('[data-back-class]').click();page.wait_for_selector('#search-students')
+            assert page.locator('[data-class-mode=heatmap]').get_attribute('aria-pressed')=='true'
             page.locator('#search-students').fill('');page.locator('#sort-students').select_option('support')
             assert 'Noah' in page.locator('#student-rows tr').first.inner_text()
+            page.locator('[data-class-mode=bars]').click()
+            assert page.locator('#sort-students').input_value()=='support'
+            assert 'Noah' in page.locator('#student-rows tr').first.inner_text()
+            page.locator('#search-students').fill('Ella')
+            page.locator('[data-class-mode=heatmap]').click()
+            assert page.locator('#search-students').input_value()=='Ella'
+            assert page.locator('#student-rows tr').count()==1
+            assert page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')==original_data
             assert not errors,errors
             assert not failed,failed
             page.close();print(f'PASS: teacher class/profile, all domains, charts, evidence, unassessed skills, search, keyboard and mobile layout at {width}px',flush=True)
+
+        # The image attachments are not downloadable in this workspace yet.
+        # Exercise the renderer and independent controls with explicit SVG fixtures,
+        # without replacing the missing supplied artwork in the application.
+        portrait_script=(ROOT/'public/teacher-portraits.js').read_text()
+        fixture_script=portrait_script.replace('available: false','available: true')+'''
+          for (const [style, sheet] of Object.entries(EDUCADE_PORTRAITS)) {
+            sheet.src='data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${sheet.width}" height="${sheet.height}"><rect width="100%" height="100%" fill="${style==='photos'?'#137cbd':'#e67a28'}"/></svg>`);
+          }
+        '''
+        for width in [1440,390]:
+            page=browser.new_page(viewport={'width':width,'height':1000})
+            page.route('**/teacher-portraits.js',lambda route:route.fulfill(content_type='text/javascript',body=fixture_script))
+            page.goto(base+'/teacher.html',wait_until='networkidle')
+            original_data=page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')
+            page.locator('#portrait-style').select_option('photos')
+            assert page.locator('#student-rows .portrait-image').count()==6
+            photo_frames=page.locator('#student-rows .portrait-image').evaluate_all('(els)=>els.map(el=>el.getAttribute("viewBox"))')
+            assert len(set(photo_frames))==6
+            page.locator('[data-class-mode=heatmap]').click()
+            page.locator('#portrait-style').select_option('vikings')
+            assert page.locator('.heat-cell').count()==24
+            viking_frames=page.locator('#student-rows .portrait-image').evaluate_all('(els)=>els.map(el=>el.getAttribute("viewBox"))')
+            assert len(set(viking_frames))==6
+            page.locator('.name-button[data-student=maya]').click();page.wait_for_selector('.category-tabs')
+            page.locator('#tab-vocabulary').click();page.wait_for_function('location.hash.includes("/vocabulary/")')
+            page.locator('[data-mode=radar]').click()
+            page.locator('#skill-chart [data-open-group]').first.click()
+            selected=page.locator('.skill-group[open] .individual-skill').first
+            skill=selected.get_attribute('data-evidence')
+            selected.click();evidence=page.locator('#evidence-content').inner_text()
+            # A presentation change does not replace/close the evidence dialog.
+            page.locator('#portrait-style').evaluate("el=>{el.value='photos';el.dispatchEvent(new Event('change',{bubbles:true}));}")
+            assert page.locator('#evidence-dialog').is_visible()
+            assert page.locator('#evidence-content').inner_text()==evidence
+            page.keyboard.press('Escape')
+            page.locator('#portrait-style').select_option('initials')
+            assert page.locator('.portrait-image').count()==0
+            assert page.locator('.profile-avatar').inner_text()=='MP'
+            assert page.locator('h1').inner_text()=='Maya Patel'
+            assert page.locator('#tab-vocabulary').get_attribute('aria-selected')=='true'
+            assert page.locator('.radar-area').is_visible()
+            assert page.locator('.skill-group[open]').count()==1
+            page.locator('[data-mode=bars]').click()
+            assert page.locator(f'.individual-skill[data-evidence="{skill}"]').get_attribute('aria-pressed')=='true'
+            page.locator('#portrait-style').select_option('vikings')
+            page.reload(wait_until='networkidle')
+            assert page.locator('#portrait-style').input_value()=='vikings'
+            assert page.locator('.profile-avatar .portrait-image').count()==1
+            assert page.locator('[data-mode=bars]').get_attribute('aria-pressed')=='true'
+            assert page.locator('h1').inner_text()=='Maya Patel'
+            assert page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')==original_data
+            page.close()
+        print('PASS: independent portrait/view preferences, six stable portrait assignments, selection/evidence preservation and reload (SVG fixtures)',flush=True)
+        for storage in ['malformed','unavailable']:
+            page=browser.new_page()
+            script="localStorage.setItem('educade.teacher.presentation.v1','invalid JSON');" if storage=='malformed' else "Object.defineProperty(window,'localStorage',{get(){throw new DOMException('Blocked','SecurityError');}});"
+            page.add_init_script(script)
+            page.goto(base+'/teacher.html',wait_until='networkidle')
+            assert page.locator('#student-rows tr').count()==6
+            page.locator('[data-class-mode=heatmap]').click()
+            assert page.locator('.heat-cell').count()==24
+            if storage=='unavailable':assert 'for this visit' in page.locator('#preference-status').inner_text()
+            page.close()
+        print('PASS: malformed or blocked browser storage does not break the dashboard',flush=True)
         browser.close()
 finally:
     server.shutdown();server.server_close()

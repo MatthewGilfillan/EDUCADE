@@ -44,3 +44,7 @@
 .item-picture.frayed{--rope-position:11.09350%}
 .item-picture.braided{--rope-position:51.50555%}
 .item-picture.cord{--rope-position:88.74802%}
+
+/* This demo entry can later point to the authentication flow. */
+.teacher-entry{display:flex;flex-direction:column;gap:2px;line-height:1.4;white-space:nowrap}.teacher-entry span{font-size:10px;font-weight:400;color:var(--muted)}
+@media(min-width:761px) and (max-width:1000px){.header nav{gap:15px;font-size:12px}.header .logo{width:150px}.header .button.small{padding:10px 16px;font-size:12px}}

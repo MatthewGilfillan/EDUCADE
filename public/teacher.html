@@ -20,13 +20,18 @@
     <a class="home-link" href="index.html">← Back to EDUCADE</a>
   </aside>
   <main id="workspace" tabindex="-1">
-    <div class="demo-banner"><span class="demo-badge">✦ DEMO DATA</span><p>Six fictional learners. Illustrative practice results. No real student records.</p></div>
+    <div class="demo-banner"><span class="demo-badge">Demo dashboard · Fictional data</span><p>Six fictional learners. Illustrative practice results. No real student records or sign-in required.</p></div>
+    <section class="presentation-controls" aria-label="Dashboard presentation">
+      <label class="field">Portrait style<select id="portrait-style"><option value="photos" disabled>Photos · awaiting image file</option><option value="vikings" disabled>Viking avatars · awaiting image file</option><option value="initials">Initials</option></select></label>
+      <p id="preference-status" class="preference-status" role="status">Presentation choices stay in this browser. No account is connected.</p>
+    </section>
     <div id="dashboard" aria-live="off"></div>
     <footer class="dashboard-footer">EDUCADE teacher dashboard prototype <span>Grade 5 · Viking Quest · Demo data</span></footer>
   </main>
   <dialog id="evidence-dialog" aria-labelledby="evidence-title"><div class="dialog-top"><span class="demo-badge">DEMO EVIDENCE</span><button id="close-evidence" type="button" class="icon-button" aria-label="Close skill evidence">✕</button></div><div id="evidence-content"></div></dialog>
   <noscript><p class="noscript">Enable JavaScript to explore this interactive dashboard.</p></noscript>
   <script src="teacher-data.js"></script>
+  <script src="teacher-portraits.js"></script>
   <script src="teacher.js"></script>
 </body>
 </html>
