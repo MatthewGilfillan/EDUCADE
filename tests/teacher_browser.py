@@ -112,29 +112,37 @@ try:
             assert not failed,failed
             page.close();print(f'PASS: teacher class/profile, all domains, charts, evidence, unassessed skills, search, keyboard and mobile layout at {width}px',flush=True)
 
-        # The image attachments are not downloadable in this workspace yet.
-        # Exercise the renderer and independent controls with explicit SVG fixtures,
-        # without replacing the missing supplied artwork in the application.
-        portrait_script=(ROOT/'public/teacher-portraits.js').read_text()
-        fixture_script=portrait_script.replace('available: false','available: true')+'''
-          for (const [style, sheet] of Object.entries(EDUCADE_PORTRAITS)) {
-            sheet.src='data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${sheet.width}" height="${sheet.height}"><rect width="100%" height="100%" fill="${style==='photos'?'#137cbd':'#e67a28'}"/></svg>`);
-          }
-        '''
-        for width in [1440,390]:
+        # Exercise the real supplied portraits, including both files decoding
+        # and rendering at their declared dimensions. No substituted artwork.
+        for width in [1440,768,390,320]:
             page=browser.new_page(viewport={'width':width,'height':1000})
-            page.route('**/teacher-portraits.js',lambda route:route.fulfill(content_type='text/javascript',body=fixture_script))
+            errors=[];failed=[]
+            page.on('pageerror',lambda error:errors.append(str(error)))
+            page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
             page.goto(base+'/teacher.html',wait_until='networkidle')
+            assert page.locator('#portrait-style').input_value()=='photos'
+            for style in ['photos','vikings','initials']:
+                assert page.locator(f'#portrait-style option[value={style}]').is_enabled()
+            assert page.evaluate('''async () => {
+                const decoded=await Promise.all(Object.values(EDUCADE_PORTRAITS).map(async sheet=>{
+                    const image=new Image();image.src=sheet.src;await image.decode();
+                    return image.naturalWidth===sheet.width && image.naturalHeight===sheet.height;
+                }));return decoded.every(Boolean);
+            }'''), 'Supplied portrait file missing, corrupted or dimension mismatch'
             original_data=page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')
             page.locator('#portrait-style').select_option('photos')
             assert page.locator('#student-rows .portrait-image').count()==6
             photo_frames=page.locator('#student-rows .portrait-image').evaluate_all('(els)=>els.map(el=>el.getAttribute("viewBox"))')
             assert len(set(photo_frames))==6
             page.locator('[data-class-mode=heatmap]').click()
+            page.screenshot(path=str(OUT/f'photos-heatmap-{width}.png'),full_page=True)
             page.locator('#portrait-style').select_option('vikings')
             assert page.locator('.heat-cell').count()==24
             viking_frames=page.locator('#student-rows .portrait-image').evaluate_all('(els)=>els.map(el=>el.getAttribute("viewBox"))')
             assert len(set(viking_frames))==6
+            page.locator('[data-class-mode=bars]').click()
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+            page.screenshot(path=str(OUT/f'vikings-bars-{width}.png'),full_page=True)
             page.locator('.name-button[data-student=maya]').click();page.wait_for_selector('.category-tabs')
             page.locator('#tab-vocabulary').click();page.wait_for_function('location.hash.includes("/vocabulary/")')
             page.locator('[data-mode=radar]').click()
@@ -163,8 +171,21 @@ try:
             assert page.locator('[data-mode=bars]').get_attribute('aria-pressed')=='true'
             assert page.locator('h1').inner_text()=='Maya Patel'
             assert page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')==original_data
+            for style in ['photos','vikings']:
+                page.locator('#portrait-style').select_option(style)
+                for learner in ['alex','maya','leo','sofia','noah','ella']:
+                    page.locator('#switch-student').select_option(learner)
+                    page.wait_for_function('(id)=>location.hash.includes("student/"+id+"/")',arg=learner)
+                    assert page.locator('.profile-avatar').get_attribute('data-avatar-student')==learner
+                    assert page.locator('.profile-avatar .portrait-image image').get_attribute('href')==('assets/portraits/sample-students.png' if style=='photos' else 'assets/portraits/viking-adventurers.png')
+                    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+                page.locator('[data-mode=radar]').click()
+                assert page.locator('.radar-area').is_visible()
+                page.screenshot(path=str(OUT/f'{style}-profile-{width}.png'),full_page=True)
+            assert not errors,errors
+            assert not failed,failed
             page.close()
-        print('PASS: independent portrait/view preferences, six stable portrait assignments, selection/evidence preservation and reload (SVG fixtures)',flush=True)
+        print('PASS: actual photo/Viking files, all six portrait assignments, independent views, preserved selection/evidence and saved preferences at 1440/768/390/320px',flush=True)
         for storage in ['malformed','unavailable']:
             page=browser.new_page()
             script="localStorage.setItem('educade.teacher.presentation.v1','invalid JSON');" if storage=='malformed' else "Object.defineProperty(window,'localStorage',{get(){throw new DOMException('Blocked','SecurityError');}});"

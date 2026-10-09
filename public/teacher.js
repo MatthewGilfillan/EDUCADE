@@ -2,7 +2,7 @@
   'use strict';
   const D=window.EDUCADE_DEMO, root=document.querySelector('#dashboard'), dialog=document.querySelector('#evidence-dialog');
   const preferenceKey='educade.teacher.presentation.v1';
-  const defaults={portrait:'initials',classView:'bars',studentView:'bars'};
+  const defaults={portrait:'photos',classView:'bars',studentView:'bars'};
   let preferences={...defaults},storageAvailable=true;
   try {
     const saved=JSON.parse(localStorage.getItem(preferenceKey));

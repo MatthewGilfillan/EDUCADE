@@ -80,8 +80,8 @@ Cloudflare installs the dependencies using package-lock.json.
 ## Production release
 
 The user approved publishing the current website version on 9 October 2026.
-The release includes the labelled fictional teacher dashboard; photo and Viking
-image files are still pending. It does not implement accounts or a signup backend.
+The release includes the labelled fictional teacher dashboard and the supplied
+photo/Viking portraits. It does not implement accounts or a signup backend.
 
 Use the **existing `nameless-unit-6af8` Worker** that already serves educade.io.
 Do not create another application or move the domain. To connect it to GitHub,
@@ -157,18 +157,17 @@ Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teach
   not synced or associated with a signed-in account. Fictional learning records
   are never written to browser storage.
 
-### Portrait artwork pending file attachments
+### Portrait styles
 
-The supplied photo and Viking sheets are visible in the conversation, but their
-downloadable original files are not present in this workspace. Initials work
-now; Photos and Viking avatars remain visibly unavailable until the originals
-are attached as files. No substitute or regenerated portraits are included.
+Choose **Photos**, **Viking avatars** or **Initials** in the Portrait style control.
+The supplied originals from Archive.zip are included unchanged. SVG viewports
+frame each portrait without modifying or regenerating the original artwork.
+New browser profiles start with Photos; an existing saved style stays selected.
 
 `public/teacher-portraits.js` contains stable assignments for all six learners.
-Place the unmodified sheets at `public/assets/portraits/sample-students.png`
+The unmodified sheets are at `public/assets/portraits/sample-students.png`
 (1536 × 1024) and `public/assets/portraits/viking-adventurers.png` (1312 × 1199),
-then set their `available` flags to `true` after verifying the dimensions and
-framing. SVG viewports display individual panels without modifying the originals.
+with verified dimensions and framing. Both styles are enabled.
 Photo assignments follow the names printed on the sheet. Viking assignments are:
 Alex top left, Maya bottom left, Leo bottom middle, Sofia top middle, Noah top
 right and Ella bottom right. Initials remain available independently of artwork.

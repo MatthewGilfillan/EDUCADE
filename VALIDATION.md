@@ -92,3 +92,24 @@ Cloudflare screenshot, with no domain migration or additional application.
 - The release can be deployed by connecting the existing live Worker's GitHub
   Builds to `main`, using the production commands documented in README.md.
 - Actual live-site validation remains pending the Cloudflare deployment.
+
+## Supplied portrait integration
+
+Both original PNG sheets from the user's Archive.zip are now included in
+`public/assets/portraits/`. SHA-256 comparisons against the extracted originals
+confirm that both files are byte-for-byte unchanged.
+
+- Photos, Viking avatars and Initials are enabled for all six fictional learners.
+- SVG viewports frame each portrait; original sheets are not edited or regenerated.
+- Photos is the default for a new browser profile. Existing saved choices remain.
+- Tests use the actual portrait files, verify image decoding/dimensions, and
+  exercise all six learners in both styles at 1440, 768, 390 and 320 pixels.
+- Portrait changes preserve the learner/domain, selected evidence, expanded
+  groups and chart choice. Reload retains the selected portrait style.
+- All seven tests and both deployment packaging dry runs passed. Dashboard and
+  landing browser suites passed at all six widths. Desktop and mobile screenshots
+  with both real portrait sets were visually inspected.
+- Screenshots: `/workspace/educade-validation/portraits`.
+- This completes the previously requested artwork for the approved release.
+  educade.io/teacher.html still returned 404 before this update was pushed;
+  actual publication and live validation depend on the Cloudflare build.
