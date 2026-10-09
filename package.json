@@ -1,0 +1,13 @@
+{
+  "name": "educade-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EDUCADE business website and approved Viking Quest previews",
+  "scripts": {
+    "dev": "wrangler dev --local",
+    "build": "wrangler deploy --dry-run --outdir .wrangler/build",
+    "deploy": "wrangler deploy"
+  },
+  "engines": { "node": ">=22" },
+  "devDependencies": { "wrangler": "4.149.0" }
+}
