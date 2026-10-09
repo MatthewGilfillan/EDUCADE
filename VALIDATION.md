@@ -127,3 +127,22 @@ confirm that both files are byte-for-byte unchanged.
 - Screenshots: `/workspace/educade-validation/rewards`.
 - This design update stays on development for review; no production merge,
   deployment or domain configuration change is included.
+
+## Potential-world carousel
+
+- Replaced the text-only world list with five manually explored slides: Viking
+  Quest, Scribe of the Nile, The Oracle’s Quest, Roads of Rome and Jade Scrolls.
+  Viking Quest is marked First world planned; the other four are Future concept.
+- Previous/next wrap around; dots select a world directly. Left/Right, Home and
+  End work while the carousel has focus. Slide changes are announced without
+  moving focus, and no automatic rotation is used.
+- Chromium touch-input checks cover swipes in both directions and normal
+  vertical page scrolling. Reduced-motion styling is checked separately.
+- Layout and interaction checks passed at 1440, 1024, 768, 640, 390 and 320 pixels.
+  Desktop, tablet and phone screenshots were inspected. Preview asset packaging
+  passed in dry-run mode.
+- Existing Viking artwork is framed from the approved hero asset without editing
+  it. Styled title panels represent the other concepts until the original PNGs
+  are uploaded as files. All five newly shared artworks are pending integration.
+- Screenshots: `/workspace/educade-validation/worlds`.
+- Changes stay on development; no production branch or live domain is updated.

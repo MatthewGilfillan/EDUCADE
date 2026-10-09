@@ -27,6 +27,8 @@ npm run build
 - `public/index.html`: landing page.
 - `public/style.css`: responsive styles and the blue-gradient headline.
 - `public/script.js`: menu, sample challenge and dashboard switching.
+- `public/world-carousel.js`: manual future-world navigation, keyboard controls
+  and touch swipes.
 - `public/signup.html` and `public/signup.js`: supplied signup interface.
 - `public/assets/`: approved artwork, logos and dashboard illustrations.
 - `wrangler.jsonc`: static asset configuration for the Cloudflare Worker `educade-preview`.
@@ -175,7 +177,8 @@ right and Ella bottom right. Initials remain available independently of artwork.
 All scores, charts, counts and evidence come from the same fictional response
 records in `public/teacher-data.js`. There are no accounts, payments, live student
 data, learning-record storage or live AI assessment. The exact logo file remains
-unchanged. The only landing-page addition is the labelled teacher demo entry.
+unchanged. The landing page also has the labelled teacher demo entry,
+illustrated planned rewards and the potential-world carousel described below.
 
 `EDU.G5.*` identifiers belong to the prototype's own curriculum scaffold.
 CCSS alignments are maintained separately as mapping metadata, not as skill IDs.
@@ -198,3 +201,25 @@ npm run build
 Set `EDUCADE_BASE_URL` to test an already-running preview. Screenshot outputs can
 be selected with `EDUCADE_SCREENSHOTS`. Publish only the development branch;
 never merge into main or update educade.io without explicit user approval.
+
+## Potential-world carousel
+
+Open the landing page and scroll to **New worlds. New reasons to learn.**
+The section also has the `#worlds` anchor. It shows Viking Quest (first world
+planned), Scribe of the Nile (Egypt), The Oracle’s Quest (Greece), Roads of Rome
+and Jade Scrolls (China). The latter four are labelled **Future concept**.
+
+Use the previous/next arrows, the five selection dots, or a horizontal touch
+swipe. Focus the carousel to use Left/Right, Home and End. It wraps at either
+end, announces the selected world to screen readers, and never auto-rotates.
+Vertical gestures remain normal page scrolling; reduced-motion settings are
+respected. These cards do not start playable games.
+
+The original Viking hero art is reused unchanged. The new world/character PNGs
+are visible in chat but have not been supplied as downloadable files yet, so
+the carousel currently uses styled title panels. In `public/index.html`, each
+`data-world` slide contains its own `.world-art` panel and caption. Once the
+original files arrive, replace that panel's title content with an image using
+the existing `.world-art img` styles (`object-fit: contain` preserves the full
+artwork); the controls and selection logic need no changes. All five new
+artworks, including the new Viking Quest image, remain pending integration.

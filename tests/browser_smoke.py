@@ -28,7 +28,7 @@ try:
             args=["--no-sandbox"],
         )
         for width in [1440, 1024, 768, 640, 390, 320]:
-            page = browser.new_page(viewport={"width": width, "height": 900})
+            page = browser.new_page(viewport={"width": width, "height": 900}, has_touch=width <= 760)
             errors, failed = [], []
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.on("response", lambda response: failed.append(response.url) if response.status >= 400 else None)
@@ -51,6 +51,64 @@ try:
                 await portrait.decode();
             }""")
             page.locator("#rewards").screenshot(path=str(OUTPUT / f"rewards-{width}.png"))
+            carousel = page.locator('.world-carousel')
+            active_world = carousel.locator('.world-slide:not([hidden])')
+            titles = ['Viking Quest', 'Scribe of the Nile', 'The Oracle’s Quest', 'Roads of Rome', 'Jade Scrolls']
+            assert active_world.count() == 1
+            assert active_world.locator('h3').inner_text() == titles[0]
+            assert 'First world planned' in active_world.inner_text()
+            # Finish the short slide fade and exclude an unrelated fixed link.
+            page.locator('#worlds').screenshot(path=str(OUTPUT / f"worlds-viking-{width}.png"), animations='disabled', style='.skip{visibility:hidden!important}')
+            for i in range(1, 6):
+                page.locator('#world-next').click()
+                assert active_world.count() == 1
+                assert active_world.locator('h3').inner_text() == titles[i % 5]
+                assert carousel.locator('[aria-pressed=true]').count() == 1
+                if i < 5:
+                    assert 'Future concept' in active_world.inner_text()
+                    page.locator('#worlds').screenshot(path=str(OUTPUT / f"worlds-{i}-{width}.png"), animations='disabled', style='.skip{visibility:hidden!important}')
+            page.locator('#world-previous').click()
+            assert active_world.locator('h3').inner_text() == titles[4]
+            carousel.get_by_role('button', name='Show The Oracle’s Quest', exact=True).click()
+            assert active_world.locator('h3').inner_text() == titles[2]
+            page.locator('#world-stage').focus()
+            page.keyboard.press('ArrowRight')
+            assert active_world.locator('h3').inner_text() == titles[3]
+            assert 'Roads of Rome' in carousel.locator('[aria-live=polite]').inner_text()
+            page.keyboard.press('ArrowLeft')
+            assert active_world.locator('h3').inner_text() == titles[2]
+            page.keyboard.press('End')
+            assert active_world.locator('h3').inner_text() == titles[4]
+            page.keyboard.press('Home')
+            assert active_world.locator('h3').inner_text() == titles[0]
+            page.emulate_media(reduced_motion='reduce')
+            page.locator('#world-next').click()
+            assert active_world.evaluate('el => getComputedStyle(el).animationName') == 'none'
+            page.locator('#world-previous').click()
+            page.emulate_media(reduced_motion='no-preference')
+            if width <= 760:
+                # Actual Chromium touch input, including a normal vertical pan.
+                client = page.context.new_cdp_session(page)
+
+                def gesture(dx, dy):
+                    art = active_world.locator('.world-art')
+                    art.scroll_into_view_if_needed()
+                    box = art.bounding_box()
+                    x = box['x'] + box['width'] / 2 - dx / 2
+                    y = box['y'] + box['height'] / 2 - dy / 2
+                    client.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': x, 'y': y}]})
+                    for step in [.25, .5, .75, 1]:
+                        client.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': x + dx * step, 'y': y + dy * step}]})
+                    client.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []})
+
+                gesture(-100, 0)
+                page.wait_for_selector('.world-slide[data-world="scribe-of-the-nile"]:not([hidden])')
+                gesture(100, 0)
+                page.wait_for_selector('.world-slide[data-world="viking-quest"]:not([hidden])')
+                gesture(0, 100)
+                assert active_world.locator('h3').inner_text() == titles[0], 'Vertical scrolling changed world'
+                client.detach()
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Carousel overflow at {width}"
             page.locator("#student-tab").click()
             assert page.locator("#student-panel").is_visible()
             page.locator("#back-class").click()
