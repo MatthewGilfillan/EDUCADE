@@ -226,3 +226,31 @@ original files arrive, replace that panel's title content with an image using
 the existing `.world-art img` styles (`object-fit: contain` preserves the full
 artwork); the controls and selection logic need no changes. All five new
 artworks, including the new Viking Quest image, remain pending integration.
+
+
+## Dashboard evidence and header update — 10 October 2026
+
+The class toolbar places **Portrait style** beside **Sort learners**. The
+header contains a class dropdown and a three-line menu with Settings, Help and
+My Account. Two fictional classes exercise the selector: Class 5A retains the
+six approved learners and portraits; Class 5B adds three fictional learners
+shown with initials when their portrait has no supplied image. My Account is
+an explanatory placeholder and does not collect credentials.
+
+The `#` column numbers the displayed rows after filtering and sorting. Skill
+headings insert an evidence column immediately to their right. Student names
+expand evidence beneath the row; **Open full profile** remains a separate
+action. One skill and one student may be expanded at the same time, and their
+state survives portrait/chart changes. Narrow screens scroll the comparison
+inside its container while the number and student columns stay visible.
+
+Radar and Progress Bars use the same individual skills: eight for Reading
+Comprehension and six each for Writing, Grammar and Vocabulary. The radar
+centre follows the photo/avatar/initials choice; points support click, Enter
+and Space to open evidence. Missing skill evidence stays unassessed, breaks the
+polygon, and is never positioned as zero. Reading Foundations still falls
+back to Progress Bars where fewer than three skills have evidence. Additional
+fictional examples have no CCSS mapping until that alignment is reviewed.
+
+`npm test` now includes DOM interaction checks via jsdom. These verify behavior
+and data consistency but do not replace Chromium layout/screenshot checks.

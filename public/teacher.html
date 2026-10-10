@@ -20,15 +20,23 @@
     <a class="home-link" href="index.html">← Back to EDUCADE</a>
   </aside>
   <main id="workspace" tabindex="-1">
-    <div class="demo-banner"><span class="demo-badge">Demo dashboard · Fictional data</span><p>Six fictional learners. Illustrative practice results. No real student records or sign-in required.</p></div>
-    <section class="presentation-controls" aria-label="Dashboard presentation">
-      <label class="field">Portrait style<select id="portrait-style"><option value="photos">Photos</option><option value="vikings">Viking avatars</option><option value="initials">Initials</option></select></label>
-      <p id="preference-status" class="preference-status" role="status">Presentation choices stay in this browser. No account is connected.</p>
-    </section>
+    <div class="presentation-controls" aria-label="Dashboard controls">
+      <label class="field class-picker">Class<select id="class-select" aria-label="Choose class"></select></label>
+      <label class="field portrait-picker">Portrait style<select id="portrait-style"><option value="photos">Photos</option><option value="vikings">Viking avatars</option><option value="initials">Initials</option></select></label>
+      <div class="dashboard-menu">
+        <button id="dashboard-menu-button" class="icon-button menu-button" type="button" aria-label="Dashboard menu" aria-expanded="false" aria-controls="dashboard-menu-options"><span aria-hidden="true"><i></i><i></i><i></i></span></button>
+        <div id="dashboard-menu-options" class="menu-options" hidden>
+          <button type="button" data-utility="settings">Settings</button>
+          <button type="button" data-utility="help">Help</button>
+          <button type="button" data-utility="account">My Account</button>
+        </div>
+      </div>
+    </div>
     <div id="dashboard" aria-live="off"></div>
     <footer class="dashboard-footer">EDUCADE teacher dashboard prototype <span>Grade 5 · Viking Quest · Demo data</span></footer>
   </main>
   <dialog id="evidence-dialog" aria-labelledby="evidence-title"><div class="dialog-top"><span class="demo-badge">DEMO EVIDENCE</span><button id="close-evidence" type="button" class="icon-button" aria-label="Close skill evidence">✕</button></div><div id="evidence-content"></div></dialog>
+  <dialog id="utility-dialog" aria-labelledby="utility-title"><div class="dialog-top"><h2 id="utility-title"></h2><button id="close-utility" type="button" class="icon-button" aria-label="Close dashboard panel">✕</button></div><div id="utility-content"></div><p id="preference-status" class="preference-status" role="status">Presentation choices stay in this browser. No account is connected.</p></dialog>
   <noscript><p class="noscript">Enable JavaScript to explore this interactive dashboard.</p></noscript>
   <script src="teacher-data.js"></script>
   <script src="teacher-portraits.js"></script>

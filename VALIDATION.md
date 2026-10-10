@@ -166,3 +166,42 @@ for those changes above.
   or credentials supplied securely through environment settings.
 - The carousel's newly shared artwork remains pending original PNG files;
   this approved release includes the working current title-card version.
+
+## Confirmed live release — 9 October 2026
+
+- The user connected the existing `nameless-unit-6af8` Worker to GitHub `main`,
+  set the production build/deploy commands, and confirmed preview-branch builds
+  are disabled on that Worker. The separate preview Worker remains available.
+- An empty commit, `c57933c`, triggered the first build; its tree is identical
+  to the approved `e3f2e6a` release. No website code changed in that trigger.
+- educade.io now serves the updated teacher entry, illustrated rewards and
+  five-world carousel. HTTPS downloads of index.html, world-carousel.js and
+  teacher.html match the repository files byte-for-byte.
+- Live Chromium checks passed at 1440 and 390 pixels: header/mobile entry,
+  decoded reward/portrait images, carousel arrows/keyboard, six demo learners,
+  heatmap, portrait switching and student-profile radar. No script errors,
+  failed HTTP responses or page-width overflow were observed in those checks.
+- Live desktop/mobile screenshots were inspected and are saved under
+  `/workspace/educade-validation/live-release`.
+- Chromium's live checks accommodated the cloud proxy certificate with
+  `ignore_https_errors`; curl HTTPS checks separately verified the downloads.
+- Future-world character artwork is still pending the original PNG files;
+  the current live carousel includes four styled title panels.
+
+
+## Dashboard evidence/header revision — 10 October 2026
+
+- Renamed chart controls to Progress Bars and removed the marked demo banner.
+- Added sideways skill evidence, downward student evidence, row numbers, fuller
+  subject radar charts with central portraits, class selection and utility menu.
+- Preserved all original Class 5A scores, supplied images, and standards mappings.
+  Extra fictional practices are explicitly unmapped until reviewed.
+- All 11 Node tests pass, including DOM interaction, keyboard activation, chart
+  parity, missing evidence, independent class rosters and saved preferences.
+- `npm run build` packages the separate `educade-preview` Worker in dry-run mode.
+- JavaScript syntax, Python test syntax, and `git diff --check` pass.
+- The requested Python executable `/workspace/educade-tools/bin/python` is absent
+  in this session. Both browser suites also fail immediately under system Python
+  because Playwright is absent; Chromium is not installed. No browser screenshots
+  were produced for this revision. Desktop/mobile visual QA remains outstanding.
+- Landing assets, production configuration and release helper are unchanged.
