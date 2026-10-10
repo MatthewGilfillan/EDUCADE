@@ -59,6 +59,19 @@ try:
             page.locator('#search-students').fill('Alex');assert page.locator('#student-rows tr[data-student]').count()==1
             page.locator('.profile-link').click();page.wait_for_selector('.category-tabs')
             assert page.locator('h1').inner_text()=='Alex Chen'
+            assert page.locator('#tab-overall').get_attribute('aria-selected')=='true'
+            assert page.locator('.radar-target[data-domain]').count()==4
+            assert 'Provisional demo band' in page.locator('.reading-level-card').inner_text()
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Overall overflow at {width}'
+            page.screenshot(path=str(OUT/f'overall-{width}.png'),full_page=True)
+            scores=page.locator('.radar-skills strong').all_text_contents()
+            for framework in ['england','australia','cambridge','ccss']:
+                page.locator('#curriculum-framework').select_option(framework)
+                assert page.locator('.radar-skills strong').all_text_contents()==scores
+            page.locator('.reading-level-detail summary').click()
+            page.locator('[data-reading-preview=stretch]').click()
+            assert 'seawater' in page.locator('#reading-preview').inner_text()
+            page.locator('.reading-level-detail summary').click()
             for domain in ['reading','writing','grammar','vocabulary']:
                 page.locator('#tab-'+domain).click()
                 page.wait_for_function('(domain)=>document.querySelector("#tab-"+domain).getAttribute("aria-selected")==="true"',arg=domain)
@@ -84,7 +97,9 @@ try:
                 page.locator('.skill-group[open] .individual-skill').first.click()
                 assert page.locator('#evidence-dialog').is_visible()
                 assert 'EDU.G5.' in page.locator('.evidence-id').inner_text()
-                assert page.locator('.attempt').count()>0
+                skill_id=page.locator('.evidence-id').inner_text()
+                attempts=page.evaluate('(id)=>EDUCADE_DEMO.skillStats(EDUCADE_DEMO.students[0],id).attempts',skill_id)
+                assert (page.locator('.attempt').count()>0)==(attempts>0)
                 assert any(text in page.locator('.standard').inner_text() for text in ['CCSS reference text checked','CCSS mapping not reviewed yet'])
                 assert page.evaluate('document.querySelector("#evidence-dialog").scrollWidth<=document.querySelector("#evidence-dialog").clientWidth')
                 if domain=='reading':page.locator('#evidence-dialog').screenshot(path=str(OUT/f'evidence-{width}.png'))
