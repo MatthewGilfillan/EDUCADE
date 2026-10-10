@@ -2,6 +2,7 @@
    EDUCADE IDs identify skills; standards mappings live separately below. */
 (() => {
   const domains = {
+    overall: {name:'Overall'},
     reading: {name:'Reading', sections:[{id:'foundations',name:'Reading Foundations'},{id:'comprehension',name:'Reading Comprehension'}]},
     writing: {name:'Writing'}, grammar:{name:'Grammar'}, vocabulary:{name:'Vocabulary'}
   };

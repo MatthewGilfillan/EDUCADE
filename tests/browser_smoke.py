@@ -147,7 +147,7 @@ try:
             assert 'No sign-in required' in page.locator('[data-teacher-entry]').inner_text()
             page.locator('[data-teacher-entry]').click()
             page.wait_for_selector('#student-rows')
-            assert 'Demo dashboard · Fictional data' in page.locator('.demo-banner').inner_text()
+            assert 'Demo data' in page.locator('.dashboard-footer').inner_text()
             assert page.locator('input[type=password],input[type=email]').count()==0
             page.goto(base + "/signup.html", wait_until="networkidle")
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Signup overflow at {width}"

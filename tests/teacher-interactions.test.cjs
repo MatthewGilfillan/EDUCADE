@@ -11,7 +11,7 @@ function dashboard(){
   w.HTMLElement.prototype.scrollIntoView=()=>{};
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
-  for(const file of ['teacher-data.js','teacher-portraits.js','teacher.js'])w.eval(fs.readFileSync(path.join(publicDir,file),'utf8'));
+  for(const file of ['teacher-data.js','teacher-portraits.js','teacher-curriculum.js','teacher.js'])w.eval(fs.readFileSync(path.join(publicDir,file),'utf8'));
   const select=(selector,value)=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.value=value;el.dispatchEvent(new w.Event('change',{bubbles:true}));};
   const click=selector=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.click();};
   return {dom,w,d:w.document,select,click,settle:()=>new Promise(resolve=>w.setTimeout(resolve,10))};
@@ -79,7 +79,7 @@ test('Missing skill evidence remains unassessed rather than becoming a zero or a
  try{
   const D=w.EDUCADE_DEMO,missing=D.profileAxes.reading[4].id;
   D.students[0].evidence=D.students[0].evidence.filter(r=>r.skillId!==missing);
-  click('.profile-link[data-student=alex]');await settle();
+  click('.profile-link[data-student=alex]');await settle();click('#tab-reading');await settle();
   assert.equal(d.querySelectorAll('.radar-target').length,8);
   assert.equal(d.querySelector('polygon.radar-area'),null);
   assert.ok(d.querySelector(`.radar-skills [data-evidence="${missing}"]`).textContent.includes('No evidence yet'));
@@ -126,5 +126,35 @@ test('Header classes are independent and the hamburger menu provides working set
   click('#dashboard-menu-button');click('[data-utility=account]');
   assert.ok(d.querySelector('#utility-content').textContent.includes('no connected teacher account'));
   assert.equal(d.querySelector('#utility-content input'),null);
+ }finally{dom.window.close();}
+});
+test('Overall and curriculum views preserve evidence and never invent missing domain scores',async()=>{
+ const {dom,w,d,select,click,settle}=dashboard();
+ try{
+  const snapshot=JSON.stringify(w.EDUCADE_DEMO.students);
+  click('.profile-link[data-student=alex]');await settle();
+  assert.equal(d.querySelector('#tab-overall').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelectorAll('.radar-target[data-domain]').length,4);
+  assert.ok(d.querySelector('.future-domain').textContent.includes('Not yet assessed'));
+  const original=[...d.querySelectorAll('.radar-skills strong')].map(e=>e.textContent);
+  for(const framework of ['england','australia','cambridge','ccss']){
+   select('#curriculum-framework',framework);
+   assert.deepEqual([...d.querySelectorAll('.radar-skills strong')].map(e=>e.textContent),original);
+   assert.equal(d.querySelector('#curriculum-framework').value,framework);
+  }
+  d.querySelector('.radar-target[data-domain=reading]').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await settle();
+  assert.equal(d.querySelector('#tab-reading').getAttribute('aria-selected'),'true');
+  select('#curriculum-framework','england');click('.radar-skills [data-evidence]');
+  assert.ok(d.querySelector('.curriculum-alignment').textContent.includes('Review needed'));
+  click('#close-evidence');select('#curriculum-framework','cambridge');click('.radar-skills [data-evidence]');
+  assert.ok(d.querySelector('.curriculum-alignment').textContent.includes('Objective review pending'));
+  click('#close-evidence');click('[data-reading-preview=stretch]');
+  assert.ok(d.querySelector('#reading-preview').textContent.includes('seawater'));
+  assert.equal(JSON.stringify(w.EDUCADE_DEMO.students),snapshot);
+  // Removing a whole domain produces an unassessed result, never a zero axis.
+  w.EDUCADE_DEMO.students[0].evidence=w.EDUCADE_DEMO.students[0].evidence.filter(r=>!r.skillId.includes('.WRITING.'));
+  click('#tab-overall');await settle();
+  assert.ok(d.querySelector('.radar-skills [data-domain=writing]').textContent.includes('No evidence yet'));
+  assert.equal(d.querySelector('polygon.radar-area'),null);
  }finally{dom.window.close();}
 });
