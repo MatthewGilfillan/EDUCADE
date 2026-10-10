@@ -187,3 +187,21 @@ for those changes above.
   `ignore_https_errors`; curl HTTPS checks separately verified the downloads.
 - Future-world character artwork is still pending the original PNG files;
   the current live carousel includes four styled title panels.
+
+
+## Dashboard evidence/header revision — 10 October 2026
+
+- Renamed chart controls to Progress Bars and removed the marked demo banner.
+- Added sideways skill evidence, downward student evidence, row numbers, fuller
+  subject radar charts with central portraits, class selection and utility menu.
+- Preserved all original Class 5A scores, supplied images, and standards mappings.
+  Extra fictional practices are explicitly unmapped until reviewed.
+- All 11 Node tests pass, including DOM interaction, keyboard activation, chart
+  parity, missing evidence, independent class rosters and saved preferences.
+- `npm run build` packages the separate `educade-preview` Worker in dry-run mode.
+- JavaScript syntax, Python test syntax, and `git diff --check` pass.
+- The requested Python executable `/workspace/educade-tools/bin/python` is absent
+  in this session. Both browser suites also fail immediately under system Python
+  because Playwright is absent; Chromium is not installed. No browser screenshots
+  were produced for this revision. Desktop/mobile visual QA remains outstanding.
+- Landing assets, production configuration and release helper are unchanged.

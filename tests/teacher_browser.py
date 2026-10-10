@@ -22,8 +22,20 @@ try:
             page.on('pageerror',lambda error:errors.append(str(error)))
             page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
             page.goto(base+'/teacher.html',wait_until='networkidle')
-            assert page.locator('#student-rows tr').count()==6
-            assert 'Demo dashboard · Fictional data' in page.locator('.demo-banner').inner_text()
+            assert page.locator('#student-rows tr[data-student]').count()==6
+            assert page.locator('.demo-banner').count()==0
+            assert page.locator('.toolbar #portrait-style').count()==1
+            assert page.locator('tr[data-student] .row-number').all_text_contents()==['1','2','3','4','5','6']
+            skill=page.evaluate('EDUCADE_DEMO.reading[0]')
+            page.locator(f'[data-expand-skill="{skill}"]').first.click()
+            assert page.locator('.skill-evidence-cell').count()==6
+            page.locator('.name-button[data-expand-student=alex]').click()
+            assert page.locator('#student-evidence-alex').is_visible()
+            assert page.locator('#student-evidence-alex article').count()==4
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Expanded class overflow at {width}'
+            page.screenshot(path=str(OUT/f'expanded-evidence-{width}.png'),full_page=True)
+            page.locator('.name-button[data-expand-student=alex]').click()
+            page.locator(f'[data-expand-skill="{skill}"]').first.click()
             original_data=page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')
             original_scores=page.locator('.score-cell').evaluate_all('(cells)=>cells.map(c=>c.getAttribute("aria-label"))')
             page.locator('[data-class-mode=heatmap]').click()
@@ -44,8 +56,8 @@ try:
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Class overflow at {width}'
             page.screenshot(path=str(OUT/f'class-{width}.png'),full_page=True)
             page.locator('#search-students').fill('no match');assert page.locator('#empty-class').is_visible()
-            page.locator('#search-students').fill('Alex');assert page.locator('#student-rows tr').count()==1
-            page.locator('.name-button').click();page.wait_for_selector('.category-tabs')
+            page.locator('#search-students').fill('Alex');assert page.locator('#student-rows tr[data-student]').count()==1
+            page.locator('.profile-link').click();page.wait_for_selector('.category-tabs')
             assert page.locator('h1').inner_text()=='Alex Chen'
             for domain in ['reading','writing','grammar','vocabulary']:
                 page.locator('#tab-'+domain).click()
@@ -60,10 +72,11 @@ try:
                 for key in ['independent','supported','hints']:
                     assert page.locator('[data-count='+key+']').inner_text()==str(counts[key])
                 page.locator('[data-mode=radar]').click();assert page.locator('.radar-area').is_visible()
-                assert page.locator('.radar-skills button').count()<=4
+                assert page.locator('.radar-skills button').count()==(8 if domain=='reading' else 6)
+                assert page.locator('.radar-portrait .avatar').count()==1
                 page.screenshot(path=str(OUT/f'{domain}-radar-{width}.png'),full_page=True)
                 page.locator('[data-mode=bars]').click();assert page.locator('#skill-chart .hp').count()>0
-                page.locator('#skill-chart [data-open-group]').first.click()
+                page.locator('.skill-group summary').first.click()
                 open_group=page.locator('.skill-group[open]').get_attribute('id')
                 page.locator('[data-mode=radar]').click()
                 assert page.locator('#'+open_group).get_attribute('open') is not None
@@ -72,7 +85,7 @@ try:
                 assert page.locator('#evidence-dialog').is_visible()
                 assert 'EDU.G5.' in page.locator('.evidence-id').inner_text()
                 assert page.locator('.attempt').count()>0
-                assert 'CCSS reference text checked' in page.locator('.standard').inner_text()
+                assert any(text in page.locator('.standard').inner_text() for text in ['CCSS reference text checked','CCSS mapping not reviewed yet'])
                 assert page.evaluate('document.querySelector("#evidence-dialog").scrollWidth<=document.querySelector("#evidence-dialog").clientWidth')
                 if domain=='reading':page.locator('#evidence-dialog').screenshot(path=str(OUT/f'evidence-{width}.png'))
                 page.keyboard.press('Escape');assert not page.locator('#evidence-dialog').is_visible()
@@ -99,14 +112,14 @@ try:
             page.locator('[data-back-class]').click();page.wait_for_selector('#search-students')
             assert page.locator('[data-class-mode=heatmap]').get_attribute('aria-pressed')=='true'
             page.locator('#search-students').fill('');page.locator('#sort-students').select_option('support')
-            assert 'Noah' in page.locator('#student-rows tr').first.inner_text()
+            assert 'Noah' in page.locator('#student-rows tr[data-student]').first.inner_text()
             page.locator('[data-class-mode=bars]').click()
             assert page.locator('#sort-students').input_value()=='support'
-            assert 'Noah' in page.locator('#student-rows tr').first.inner_text()
+            assert 'Noah' in page.locator('#student-rows tr[data-student]').first.inner_text()
             page.locator('#search-students').fill('Ella')
             page.locator('[data-class-mode=heatmap]').click()
             assert page.locator('#search-students').input_value()=='Ella'
-            assert page.locator('#student-rows tr').count()==1
+            assert page.locator('#student-rows tr[data-student]').count()==1
             assert page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')==original_data
             assert not errors,errors
             assert not failed,failed
@@ -143,10 +156,10 @@ try:
             page.locator('[data-class-mode=bars]').click()
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
             page.screenshot(path=str(OUT/f'vikings-bars-{width}.png'),full_page=True)
-            page.locator('.name-button[data-student=maya]').click();page.wait_for_selector('.category-tabs')
+            page.locator('.profile-link[data-student=maya]').click();page.wait_for_selector('.category-tabs')
             page.locator('#tab-vocabulary').click();page.wait_for_function('location.hash.includes("/vocabulary/")')
             page.locator('[data-mode=radar]').click()
-            page.locator('#skill-chart [data-open-group]').first.click()
+            page.locator('.skill-group summary').first.click()
             selected=page.locator('.skill-group[open] .individual-skill').first
             skill=selected.get_attribute('data-evidence')
             selected.click();evidence=page.locator('#evidence-content').inner_text()
@@ -157,7 +170,7 @@ try:
             page.keyboard.press('Escape')
             page.locator('#portrait-style').select_option('initials')
             assert page.locator('.portrait-image').count()==0
-            assert page.locator('.profile-avatar').inner_text()=='MP'
+            assert page.locator('.profile-heading .profile-avatar').inner_text()=='MP'
             assert page.locator('h1').inner_text()=='Maya Patel'
             assert page.locator('#tab-vocabulary').get_attribute('aria-selected')=='true'
             assert page.locator('.radar-area').is_visible()
@@ -167,7 +180,7 @@ try:
             page.locator('#portrait-style').select_option('vikings')
             page.reload(wait_until='networkidle')
             assert page.locator('#portrait-style').input_value()=='vikings'
-            assert page.locator('.profile-avatar .portrait-image').count()==1
+            assert page.locator('.profile-heading .profile-avatar .portrait-image').count()==1
             assert page.locator('[data-mode=bars]').get_attribute('aria-pressed')=='true'
             assert page.locator('h1').inner_text()=='Maya Patel'
             assert page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')==original_data
@@ -176,8 +189,8 @@ try:
                 for learner in ['alex','maya','leo','sofia','noah','ella']:
                     page.locator('#switch-student').select_option(learner)
                     page.wait_for_function('(id)=>location.hash.includes("student/"+id+"/")',arg=learner)
-                    assert page.locator('.profile-avatar').get_attribute('data-avatar-student')==learner
-                    assert page.locator('.profile-avatar .portrait-image image').get_attribute('href')==('assets/portraits/sample-students.png' if style=='photos' else 'assets/portraits/viking-adventurers.png')
+                    assert page.locator('.profile-heading .profile-avatar').get_attribute('data-avatar-student')==learner
+                    assert page.locator('.profile-heading .profile-avatar .portrait-image image').get_attribute('href')==('assets/portraits/sample-students.png' if style=='photos' else 'assets/portraits/viking-adventurers.png')
                     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
                 page.locator('[data-mode=radar]').click()
                 assert page.locator('.radar-area').is_visible()
@@ -191,7 +204,7 @@ try:
             script="localStorage.setItem('educade.teacher.presentation.v1','invalid JSON');" if storage=='malformed' else "Object.defineProperty(window,'localStorage',{get(){throw new DOMException('Blocked','SecurityError');}});"
             page.add_init_script(script)
             page.goto(base+'/teacher.html',wait_until='networkidle')
-            assert page.locator('#student-rows tr').count()==6
+            assert page.locator('#student-rows tr[data-student]').count()==6
             page.locator('[data-class-mode=heatmap]').click()
             assert page.locator('.heat-cell').count()==24
             if storage=='unavailable':assert 'for this visit' in page.locator('#preference-status').inner_text()

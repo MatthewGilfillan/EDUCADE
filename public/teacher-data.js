@@ -96,7 +96,39 @@
     assess('vocabulary','relationships',0,'L.5.5.c','Use relationships between words such as synonyms and antonyms to understand words.','Words that work together','How do strong and sturdy help you understand the rope? How is fragile different?','Strong and sturdy are similar; fragile means easily broken, the opposite quality.','All three words mean exactly the same thing.','Separate similar meanings from opposite meanings.'),
     assess('vocabulary','context',1,'L.5.6','Acquire and accurately use grade-appropriate academic and domain-specific words.','The harbour log','Use cargo accurately in a sentence about the supplies being carried on the ship.','The crew loaded cargo, including food and rope, onto the ship.','The cargo blew across the sky like a cloud.','Cargo is the goods a vehicle or ship carries.')
   ];
-  const names=[['alex','Alex Chen',[45,85,60,70]],['maya','Maya Patel',[80,70,90,65]],['leo','Leo Martin',[60,40,60,80]],['sofia','Sofia Kim',[90,75,70,55]],['noah','Noah Wilson',[30,60,50,70]],['ella','Ella Brown',[70,90,35,80]]];
+  // Additional fictional practice gives each subject a fuller profile. These
+  // examples have no standards mapping until that alignment is reviewed.
+  function practice(domain,key,n,title,prompt,answer,retry,hint){
+    const id=find(domain,key,n).id;
+    samples[id]={title,prompt,answer,retry,hint};
+    return id;
+  }
+  const extraReading=[
+    practice('reading','mainidea',0,'Ready to sail','The crew checked the ropes, packed food and repaired the sail. What main idea connects these details?','The crew prepared the ship for its voyage.','The crew had already reached a new island.','Find the purpose shared by all three actions.'),
+    practice('reading','structure',2,'A sail in trouble','The wind tore a hole in the sail, so the crew returned to shore. What caused the crew to return?','The wind damaged the sail.','The crew wanted to count the clouds.','Look for the event before the word so.'),
+    practice('reading','purpose',1,'Two views of the voyage','Liv calls the voyage exciting. Tor calls it risky because a storm is coming. How do their perspectives differ?','Liv anticipates adventure; Tor is concerned about danger.','Both think there is no reason to sail.','Compare the words exciting and risky.'),
+    practice('reading','inference',1,'Sharing the last meal','Liv shares her last loaf with a hungry traveller. Later, the traveller helps repair her boat. What theme do these events suggest?','Kindness can encourage others to help in return.','Keeping everything for yourself always brings help.','Connect Liv’s choice with what the traveller does later.')
+  ];
+  const extraWriting=[
+    practice('writing','opening',0,'Begin a guide','Write a topic sentence for a paragraph about rope checks, food supplies and sail repairs before a voyage.','A safe voyage begins with careful preparation.','My boots are brown.','Introduce the idea that connects the three details.'),
+    practice('writing','variety',0,'Vary the rhythm','Combine and vary these sentences: Liv checked the sail. Liv packed her bag. Liv boarded the ship.','After checking the sail and packing her bag, Liv boarded the ship.','Liv checked. Liv packed. Liv boarded.','Try beginning with an introductory phrase.')
+  ];
+  const extraGrammar=[
+    practice('grammar','agreement',0,'The crew’s supplies','Choose the correct verb: The crates ___ beside the ship. (is / are)','are','is','The subject crates is plural.'),
+    practice('grammar','modifiers',0,'How Liv moves','In Liv climbed carefully, which word describes how she climbed?','carefully','Liv','An adverb can describe how an action happens.')
+  ];
+  const extraVocabulary=[
+    practice('vocabulary','affixes',0,'A useful prefix','The crew must rebuild the damaged pier. What does re- tell you?','They must build it again.','They must stop building it forever.','The prefix re- often means again.'),
+    practice('vocabulary','idioms',0,'An extra pair of hands','Liv asks Tor to lend a hand with the sail. What does lend a hand mean?','Help with the task.','Give away a real hand.','Think about what Liv needs Tor to do.')
+  ];
+  const profileAxes={
+    reading:[...reading,...extraReading].map((id,i)=>({id,label:['Inference','Vocabulary in context','Figurative language','Character analysis','Main idea','Cause and effect','Comparing perspectives','Theme'][i]})),
+    writing:[...writing,...extraWriting].map((id,i)=>({id,label:['Transitions','Supporting arguments','Descriptive details','Revision','Topic sentences','Sentence variety'][i]})),
+    grammar:[...grammar,...extraGrammar].map((id,i)=>({id,label:['Conjunctions','Perfect tense','Consistent tense','Commas','Subject–verb agreement','Adjectives and adverbs'][i]})),
+    vocabulary:[...vocabulary,...extraVocabulary].map((id,i)=>({id,label:['Context clues','Greek and Latin roots','Synonyms and antonyms','Words in use','Prefixes','Idioms'][i]}))
+  };
+  const names=[['alex','Alex Chen',[45,85,60,70]],['maya','Maya Patel',[80,70,90,65]],['leo','Leo Martin',[60,40,60,80]],['sofia','Sofia Kim',[90,75,70,55]],['noah','Noah Wilson',[30,60,50,70]],['ella','Ella Brown',[70,90,35,80]],['finn','Finn Larsen',[65,75,55,80]],['amara','Amara Okafor',[85,60,75,70]],['oliver','Oliver Reed',[50,80,65,60]]];
+  const classes=[{id:'5a',name:'Class 5A',studentIds:['alex','maya','leo','sofia','noah','ella']},{id:'5b',name:'Class 5B',studentIds:['finn','amara','oliver']}];
   function records(skillId,score,studentIndex,skillIndex){
     const correctTotal=Math.round(score/5);
     const quota=[-.9,-.3,.3,.9].map(offset=>Math.max(0,Math.min(5,Math.round(correctTotal/4+offset))));
@@ -113,6 +145,7 @@
   const students=names.map(([id,name,values],index)=>{
     const scores={};reading.forEach((skill,i)=>scores[skill]=values[i]);
     [writing,grammar,vocabulary].forEach((list,d)=>list.forEach((skill,i)=>scores[skill]=Math.max(25,Math.min(95,values[(i+d)%4]+(d-1)*5))));
+    [extraReading,extraWriting,extraGrammar,extraVocabulary].forEach((list,d)=>list.forEach((skill,i)=>scores[skill]=Math.max(25,Math.min(95,values[(i+d+1)%4]+(i%2?5:-5)))));
     scores[foundation]=Math.min(95,values[1]);
     const evidence=Object.entries(scores).flatMap(([skill,score],i)=>records(skill,score,index,i));
     return {id,name,index,initials:name.split(' ').map(s=>s[0]).join(''),evidence};
@@ -123,5 +156,5 @@
   }
   function skillStats(student,id){return summarize(student.evidence.filter(r=>r.skillId===id));}
   function groupStats(student,group){return summarize(student.evidence.filter(r=>group.skills.some(s=>s.id===r.skillId)));}
-  window.EDUCADE_DEMO={domains,groups,students,samples,mappings,reading,summarize,skillStats,groupStats};
+  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,profileAxes,summarize,skillStats,groupStats};
 })();

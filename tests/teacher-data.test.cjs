@@ -20,9 +20,12 @@ test('Every curriculum skill has a unique EDUCADE ID and no invented score',()=>
 });
 test('Class comparison and profile evidence use the same six learners and reading scores',()=>{
  const expected=[[45,85,60,70],[80,70,90,65],[60,40,60,80],[90,75,70,55],[30,60,50,70],[70,90,35,80]];
- assert.equal(D.students.length,6);
- assert.equal(new Set(D.students.map(s=>s.id)).size,6);
- D.students.forEach((student,i)=>assert.deepEqual(D.reading.map(id=>D.skillStats(student,id).score),expected[i]));
+ const class5a=D.classes.find(c=>c.id==='5a').studentIds.map(id=>D.students.find(s=>s.id===id));
+ assert.equal(class5a.length,6);
+ assert.equal(new Set(D.students.map(s=>s.id)).size,D.students.length);
+ class5a.forEach((student,i)=>assert.deepEqual(D.reading.map(id=>D.skillStats(student,id).score),expected[i]));
+ assert.equal(D.classes.find(c=>c.id==='5b').studentIds.length,3);
+ assert.equal(new Set(D.classes.flatMap(c=>c.studentIds)).size,D.students.length);
 });
 test('Evidence is internally coherent across weeks, support and challenge responses',()=>{
  for(const student of D.students){
