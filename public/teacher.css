@@ -132,3 +132,20 @@
 .growth-icon{flex:none;width:38px;height:38px;color:#0775ce}.grow .growth-icon{color:#f26522}.growth-icon svg{display:block;width:100%;height:100%}
 .growth-item>div{min-width:0}.growth-label{font-size:11px;font-weight:800;letter-spacing:.07em;color:#076ac6;margin-bottom:4px}.grow .growth-label{color:#b94b13}
 .growth-item h3{font-size:14px;line-height:1.5}.growth-item p{font-size:12px;line-height:1.65;color:var(--muted);margin-top:6px}.growth-result strong{color:var(--ink)}.growth-item .text-button{padding-bottom:0}
+
+/* Reading groups organise navigation while preserving each individual skill. */
+.reading-navigation{margin-bottom:18px}.reading-navigation .reading-sections{margin-bottom:12px}
+.reading-catalogue-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.reading-catalogue-nav button{display:flex;flex-direction:column;justify-content:space-between;gap:6px;text-align:left;min-height:80px;padding:12px;border:1px solid #cbdff3;border-radius:9px;background:white;color:var(--muted);line-height:1.5}
+.reading-catalogue-nav strong{font-size:12px;color:var(--ink)}.reading-catalogue-nav span{font-size:10px}
+.reading-catalogue-nav button:hover{border-color:#1680e8;background:#f5faff}.reading-catalogue-nav button[aria-pressed=true]{border-color:#1680e8;background:#e8f3ff;box-shadow:inset 0 -3px #1680e8;color:#076ac6}.reading-catalogue-nav button[aria-pressed=true] strong{color:#076ac6}
+.reading-group-overview{padding:17px 18px;margin-bottom:20px;border:1px solid #d4e3f2;border-radius:10px;background:#f8fbff}
+.class-comparison .reading-group-overview{margin:18px 0 0}
+.reading-group-heading h2{font-size:18px}.reading-group-heading p{font-size:12px;line-height:1.6;color:var(--muted);margin-top:4px}
+.reading-group-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:15px 0 0}
+.reading-group-summary>div{min-width:0}.reading-group-summary dt{font-size:11px;font-weight:750;color:var(--muted)}.reading-group-summary dd{margin:5px 0 0;font-size:12px;line-height:1.6}.reading-group-summary dd>strong{display:block}.reading-group-summary dd>span{display:block;font-size:11px;color:var(--muted);margin-top:3px}.reading-group-summary .text-button{padding:0;line-height:1.6;text-align:left}
+.reading-summary-note{font-size:10px;color:var(--muted);line-height:1.6;margin-top:13px}
+.reading-catalogue .curriculum-groups{grid-template-columns:1fr}.reading-catalogue .individual-skills{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:12px}.reading-catalogue .individual-skill{margin-top:0}.reading-catalogue .skill-group summary{min-height:65px}
+.reading-contexts{font-size:11px;color:var(--muted);line-height:1.65;margin-top:16px}.reading-contexts summary{cursor:pointer;color:#076ac6;font-weight:700;padding:8px 0;min-height:36px}.reading-contexts>div{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:10px}.reading-contexts h3{font-size:12px;color:var(--ink)}.reading-contexts ul{padding-left:18px;margin:6px 0}
+@media(max-width:1150px){.reading-catalogue-nav{grid-template-columns:repeat(3,minmax(0,1fr))}.reading-catalogue .individual-skills{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.reading-catalogue-nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.reading-catalogue-nav button{min-height:82px;padding:10px}.reading-catalogue-nav strong{font-size:11px}.reading-group-overview{padding:14px}.reading-group-summary{grid-template-columns:1fr;gap:12px}.reading-group-heading h2{font-size:17px}.reading-catalogue .individual-skills{grid-template-columns:1fr}.reading-contexts>div{grid-template-columns:1fr}}

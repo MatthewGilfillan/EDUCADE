@@ -427,3 +427,41 @@ for those changes above.
   inspected under /workspace/educade-validation/overall-subject-evidence. The
   landing browser suite passes. Source assessment data, portraits, artwork and
   deployment configuration remain unchanged.
+
+
+## Grouped reading catalogue — 11 October 2026
+
+- Class and student Reading views share five comprehension navigation groups:
+  Meaning and evidence, Characters and events, Author’s craft, Structure and
+  features, and Comparing and evaluating. All 39 individual comprehension
+  skills are accessible; Reading Foundations retains its eight separate skills.
+  Seven literary/informational context entries are listed as text contexts,
+  rather than achievement scores or comparison columns.
+- Added seven unassessed catalogue entries for supporting evidence, setting,
+  tone, text structure/features and integrating information. Original skill IDs
+  and definitions, standards mappings, challenge text and every learner/response
+  record match the pre-change snapshot exactly. No scores or assessments were
+  generated for new entries, and no new standards alignment is claimed.
+- Coverage, strongest recorded individual skill and teaching priority use actual
+  response counts. Groups receive no combined score or achievement stage. Class
+  summaries and suggestions remain class-wide during search; suggestions scope
+  to the selected group. The summary sits below the class table to keep more
+  learners visible initially.
+- Profile charts, support counts, progress and Reading Glows & Grows scope to
+  the selected group. Unassessed skills remain in the catalogue, are omitted
+  from assessed charts, and expose an empty evidence view. Groups without any
+  evidence have no scored recommendation and a concise chart empty state. The
+  Overall profile still starts with its four-subject radar.
+- All 26 Node tests pass. Catalogue checks cover complete, unique assignment,
+  separate foundations/contexts, every skill’s accessible evidence, scoped
+  counts, no-evidence behavior, deep links, class/profile navigation and preserved
+  preferences/source data. Existing Transitions alignment and full Overall
+  subject-response checks remain in place.
+- Teacher Chromium checks pass at 1440, 1024, 768, 640, 390 and 320px, exercising
+  all five groups in class/profile views, separate foundations, no duplicated
+  bars, exact response alignment, charts, keyboard navigation and compact rows.
+  Portrait and storage-fallback checks also pass. The landing browser suite
+  passes at all six widths, including signup behavior with a mocked API.
+- Desktop class/profile and smaller-width class screenshots were inspected
+  under /workspace/educade-validation/reading-catalogue. Landing artwork,
+  portraits, authentication behavior and deployment configuration are unchanged.

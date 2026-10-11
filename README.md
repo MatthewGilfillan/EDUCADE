@@ -140,24 +140,37 @@ ZIP, or visit `/teacher.html` on the local server started by `npm run dev`.
 
 Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teacher
 
-- Class dashboard: six fictional learners, a class heatmap or segmented RPG HP
-  bars, search and sorting. Overall compares four subjects; Reading, Writing,
-  Grammar and Vocabulary tabs compare individual skills. Choose a learner's name to expand their evidence,
-  **Open full profile** for their profile, or a score cell for skill evidence.
+- Class dashboard: a class heatmap or segmented progress bars, search and sorting.
+  Overall compares four subjects; Reading, Writing, Grammar and Vocabulary tabs
+  compare individual skills. Select **Show skill evidence** to expand a learner's
+  row, their name to open the profile, or a score cell for questions and responses.
+  Header **Show evidence** controls expand one skill across the class in its
+  original column. Both expansions share one evidence block without extra bars.
 - Student profiles start on **Overall**, to the left of Reading, Writing, Grammar
   and Vocabulary. Its initial radar shows four subject scores; selecting a
   subject point or button opens its detailed skills.
-- Reading separates Foundations from Comprehension.
+- Reading separates Foundations (eight skills) from Comprehension (39 skills).
+  Class and profile views share five comprehension navigation groups:
+  **Meaning and evidence**, **Characters and events**, **Author’s craft**,
+  **Structure and features**, and **Comparing and evaluating**.
+  Coverage, strongest recorded skill and teaching priorities remain separate;
+  these navigation groups do not receive an averaged achievement stage.
+  Class summaries sit below the table to preserve the compact first-glance view.
+  Individual evidence, including unassessed skills, remains accessible in each
+  group. Literary/informational text contexts are listed separately from skills.
 - Curriculum structure: domain → section where relevant → skill group → individual
   EDUCADE skill → learning evidence. Detailed groups expand independently.
-- HP bars/radar switch: Overall has four subject axes; subject views show eight
-  Reading Comprehension skills or six Writing, Grammar or Vocabulary skills.
+- Progress bars/radar switch: Overall has four subject axes. Reading Comprehension
+  charts show the assessed skills in the selected navigation group; Writing,
+  Grammar and Vocabulary each show six skills.
   A radar requires at least three assessed axes. Overall and subject chart
   choices are remembered independently; the initial choice for both is radar.
 - Unassessed skills show “No evidence yet” and are excluded from summaries.
 - Evidence: fictional responses, model examples, support mode and hint shown.
 - Progress: cumulative correct-response percentages by support type, with an
-  accessible table of exact chart values.
+  accessible table of exact chart values. Reading profiles scope this chart and
+  support counts to the selected group. Reading Glows & Grows points to individual
+  assessed skills rather than an averaged navigation group.
 - Independent controls: portrait style, class data view and student data view.
   Switching presentation preserves learner/domain selection, expanded skill
   groups, selected evidence, search and sorting. Radar preference is retained
