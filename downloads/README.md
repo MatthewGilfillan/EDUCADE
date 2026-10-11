@@ -1,30 +1,39 @@
 # EDUCADE website download
 
-EDUCADE-website-f6ae030.zip contains the verified website from development
-revision f6ae030574fc02a3ebb86289dbb5c18c9e3a4439. It has index.html and
-teacher.html at the ZIP root, along with styles, scripts and artwork. There
-are no Wrangler or package configuration files in this ZIP.
+EDUCADE-aligned-evidence-6abb2c2.zip contains the verified website from
+source revision 6abb2c28398973332a62e2cf1ba28dd99539f01f. It contains only
+static website files: HTML, styles, scripts and artwork. There are no Wrangler
+or package configuration files in this ZIP.
 
 Download this individual file using Download raw file or View raw. Do not use
 GitHub's Code → Download ZIP button, which downloads the source repository.
 
-Unzip the website, then open index.html and choose Teacher sign in, or open
-teacher.html directly. Alternatively, upload this website ZIP to the separate
-educade-preview Cloudflare Worker.
+Extract into a new folder, then open teacher-6abb2c2.html for the dashboard.
+Opening index.html and choosing Teacher sign in opens the same revision-specific
+entry. Upload the website files to replace the previous static website.
 
-The class and student views have Overall, Reading, Writing, Grammar and
-Vocabulary tabs. Both Show skill evidence under each learner and Show evidence
-in each category heading are outlined blue buttons with plus/minus icons.
-Learner evidence expands vertically inside the table row; category evidence
-opens in the adjacent column. Expanded details have no duplicate progress bars.
-The profile also includes Glows & Grows beneath the four-week progress chart.
-Visible demo/fictional/sample wording has been removed.
+Both evidence controls expand vertically inside the original skill cells.
+Alex's Writing > Transitions cell has one 40% bar with
+8/20 correct · 5 hints directly underneath. Category expansion adds no column;
+learner expansion adds no separate cards. Opening both controls renders one
+evidence block at their intersection. Columns retain their widths and positions.
 
-The archive has 28 static website files. Its integrity and every file's bytes
-were checked against the source revision. The extracted archive passed a
-browser check for the landing teacher entry, five tabs, both expansions,
-evidence links, Overall radar, Glows & Grows and cleaned visible text.
+Overall, Reading, Writing, Grammar and Vocabulary tabs, portraits, saved views,
+profile radar, four-week progress, Glows & Grows and questions/responses remain
+functional. Visible demo/fictional/sample wording is removed.
 
-SHA256: f5e6a75bc41363a527b7831980ff24c35eced695fe6c3381a22e45530073a021
+The teacher entry and four teacher assets use version-specific filenames to
+avoid requesting older cached dashboard scripts or styles. Compatibility
+filenames are also included for existing links.
+
+The archive has 33 static files. ZIP integrity and preserved source assets were
+checked. A browser check of the extracted archive verifies the landing entry,
+fixed column alignment, exact Transitions counts, both toggle combinations,
+one bar per skill, unchanged records, charts and profile behavior. Stale
+canonical teacher.js/teacher.css responses were staged; the dashboard requested
+only its fingerprinted replacements. No failed assets or browser errors occurred.
+All 20 Node tests and both existing browser suites pass.
+
+SHA256: fd191042040dba7d5595dda92a41a4db6c71c1646af2eb426b1176b8196f0cf7
 
 Production and educade.io have not been updated by this branch.
