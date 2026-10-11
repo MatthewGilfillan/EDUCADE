@@ -328,3 +328,28 @@ for those changes above.
 - Direct file navigation is blocked by this machine's browser policy. The
   extracted ZIP is instead validated through a local HTTP server.
 - Only development/feature branches are updated. Production remains unchanged.
+
+## Column-aligned evidence and Glows & Grows — 11 October 2026
+
+- Learner evidence expands inside the existing table row, underneath each
+  category's original comparison control. Header evidence columns and expanded
+  learner details contain no repeated progress bars. Counts, hint use, latest
+  responses and question/response links are retained.
+- Tests check one table row per learner, matching header/cell boundaries,
+  increased row height, stable expansion across subject/view changes, accessible
+  controls and evidence links. Clicking response text leaves the row open.
+- Glows & Grows uses the strongest and lowest-scoring assessed subjects/groups
+  from the existing records. Alex's Overall highlights Vocabulary (68%) and
+  Writing (62%); Vocabulary highlights Idioms and adages (90%) and Prefixes and
+  suffixes (40%). Actions open the correct subject/group and learning evidence.
+  A view without evidence has no recommendation score or action. The practice
+  cue uses the existing challenge hint, followed by a fresh independent check.
+- All 19 Node tests pass. Both Chromium suites pass at their six existing
+  widths, including evidence interaction, charts, portraits, local preferences,
+  storage fallback and landing-page behavior. Signup tests use a mocked API.
+- Desktop table and profile screenshots were inspected at 1920/1440px, with
+  the existing 390px profile check also inspected. Outputs are under
+  /workspace/educade-validation/aligned-evidence-glows-grows.
+- Student records, scores, portraits, landing page and hosting configuration
+  are unchanged. This revision stays on development, with no production merge
+  or deployment.

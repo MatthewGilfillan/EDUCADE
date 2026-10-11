@@ -32,14 +32,24 @@ try:
             assert page.locator('#search-students').bounding_box()['y']<page.locator('.class-tabs').bounding_box()['y']
             expected=page.evaluate("Object.keys(EDUCADE_DEMO.domains).map(domain=>EDUCADE_DEMO.domainStats(EDUCADE_DEMO.students[0],domain).score+'%')")
             assert page.locator('tr[data-student=alex] .score-cell .hp-value').all_text_contents()==expected
+            collapsed_height=page.locator('tr[data-student=alex]').bounding_box()['height']
             page.locator('.name-button[data-expand-student=alex]').click()
+            assert page.locator('tr[data-student=alex]').bounding_box()['height']>collapsed_height+30
             page.screenshot(path=str(OUT/f'class-overall-{width}.png'),full_page=True)
             for domain in ['writing','grammar','vocabulary']:
                 page.locator('#class-tab-'+domain).click()
                 page.wait_for_function('(domain)=>document.querySelector("#class-tab-"+domain).getAttribute("aria-selected")==="true"',arg=domain)
-                assert page.locator('#student-evidence-alex').is_visible()
-                assert page.locator('#student-evidence-alex article').count()==6
-                assert page.locator('#student-evidence-alex td').get_attribute('colspan')=='8'
+                assert page.locator('tr[data-student=alex] .student-skill-evidence').first.is_visible()
+                assert page.locator('tr[data-student=alex] .student-skill-evidence').count()==6
+                assert page.locator('tr[data-student=alex] .compact-evidence .hp-track').count()==0
+                for cell in page.locator('tr[data-student=alex] .student-skill-cell').all():
+                    axis=cell.get_attribute('data-axis')
+                    header=page.locator(f'.skill-heading[data-expand-skill="{axis}"]').locator('..').bounding_box()
+                    evidence=cell.locator('.student-skill-evidence').bounding_box()
+                    score=cell.locator('.score-cell').bounding_box()
+                    assert abs(cell.bounding_box()['x']-header['x'])<1
+                    assert evidence['x']>=cell.bounding_box()['x'] and evidence['x']+evidence['width']<=header['x']+header['width']+1
+                    assert evidence['y']>=score['y']+score['height']
                 assert page.locator('.score-cell').count()==36
                 expected=page.evaluate('(domain)=>EDUCADE_DEMO.profileAxes[domain].map(axis=>EDUCADE_DEMO.skillStats(EDUCADE_DEMO.students[0],axis.id).score+"%")',domain)
                 assert page.locator('tr[data-student=alex] .score-cell .hp-value').all_text_contents()==expected
@@ -97,8 +107,11 @@ try:
             check_number_column()
             page.locator('.table-scroll').evaluate('(el)=>el.scrollLeft=0')
             page.locator('.name-button[data-expand-student=alex]').click()
-            assert page.locator('#student-evidence-alex').is_visible()
-            assert page.locator('#student-evidence-alex article').count()==4
+            assert page.locator('tr[data-student=alex] .student-skill-evidence').first.is_visible()
+            assert page.locator('tr[data-student=alex] .student-skill-evidence').count()==4
+            assert page.locator('.compact-evidence .hp-track').count()==0
+            page.locator('tr[data-student=alex] .student-skill-evidence .latest-response span').first.click()
+            assert page.locator('.name-button[data-expand-student=alex]').get_attribute('aria-expanded')=='true'
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Expanded class overflow at {width}'
             page.screenshot(path=str(OUT/f'expanded-evidence-{width}.png'),full_page=True)
             page.locator('.name-button[data-expand-student=alex]').click()
@@ -136,6 +149,10 @@ try:
             assert page.locator('#tab-overall').get_attribute('aria-selected')=='true'
             assert page.locator('[data-mode=radar]').get_attribute('aria-pressed')=='true'
             assert page.locator('.radar-target').count()==4
+            assert page.locator('.profile-next-card h2').inner_text()=='Glows & Grows'
+            assert page.locator('.glow').get_attribute('data-focus')=='vocabulary'
+            assert page.locator('.grow').get_attribute('data-focus')=='writing'
+            assert page.locator('.grow .growth-icon svg').is_visible()
             assert page.locator('.radar-skills button').all_text_contents()==page.evaluate("Object.keys(EDUCADE_DEMO.domains).map(domain=>EDUCADE_DEMO.domains[domain].name+EDUCADE_DEMO.domainStats(EDUCADE_DEMO.students[0],domain).score+'%')")
             totals=page.evaluate('EDUCADE_DEMO.summarize(EDUCADE_DEMO.students[0].evidence)')
             for key in ['independent','supported','hints']:
@@ -175,6 +192,15 @@ try:
                 check_profile_order()
                 assert page.locator('.radar-skills button').count()==(8 if domain=='reading' else 6)
                 assert page.locator('.radar-portrait .avatar').count()==1
+                if domain=='vocabulary':
+                    assert page.locator('.glow h3').inner_text()=='Idioms and adages'
+                    assert page.locator('.grow h3').inner_text()=='Prefixes and suffixes'
+                    assert '40% correct' in page.locator('.grow .growth-result').inner_text()
+                    page.locator('.grow button').click()
+                    assert page.locator('#group-affixes').get_attribute('open') is not None
+                    assert page.locator('#group-affixes .individual-skill').first.evaluate('el=>el===document.activeElement')
+                    page.locator('#group-affixes summary').click()
+                    page.evaluate('scrollTo(0,0)')
                 page.screenshot(path=str(OUT/f'{domain}-radar-{width}.png'),full_page=True)
                 page.locator('[data-mode=bars]').click();assert page.locator('#skill-chart .hp').count()>0
                 check_profile_order()
