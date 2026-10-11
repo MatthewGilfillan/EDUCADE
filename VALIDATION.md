@@ -353,3 +353,22 @@ for those changes above.
 - Student records, scores, portraits, landing page and hosting configuration
   are unchanged. This revision stays on development, with no production merge
   or deployment.
+
+## Visible evidence expansion controls — 11 October 2026
+
+- Separated the learner name from an outlined blue Show skill evidence button.
+  Category headings have an outlined Show evidence control with a plus icon.
+  Both controls visibly switch to Hide/minus when expanded and have accessible
+  names identifying the affected learner or category.
+- Existing interaction checks activate the controls by accessible name,
+  confirm their state changes and retain the evidence alignment and data
+  invariance checks. Browser checks confirm visible borders, minimum action
+  height, blue text and spacing from the full-profile link.
+- All 19 Node tests and both Chromium browser suites pass. Desktop class and
+  learner-action screenshots and the existing smaller-width header screenshot
+  were inspected under /workspace/educade-validation/visible-evidence-controls.
+- Reading, Writing, Grammar, Vocabulary, portraits, saved views, Glows & Grows
+  and existing evidence links remain functional. No landing, data or hosting
+  configuration changes. Development only; production remains unchanged.
+- The hosted preview read check returned HTTP 403 from this execution
+  environment, so its currently served build could not be verified here.

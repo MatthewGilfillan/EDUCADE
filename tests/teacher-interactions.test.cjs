@@ -25,11 +25,15 @@ test('Class evidence expands on both axes and survives display changes without c
   assert.equal(d.querySelector('.demo-banner'),null);
   assert.ok(!d.body.textContent.includes('RPG HP bars'));
   assert.equal(d.querySelectorAll('#student-rows tr[data-student]').length,6);
-  click(`[data-expand-skill="${id}"]`);
+  click('button[aria-label="Show Inference evidence across the class"]');
+  assert.equal(d.querySelector(`.skill-heading[data-expand-skill="${id}"]`).getAttribute('aria-expanded'),'true');
+  assert.ok(d.querySelector(`.skill-heading[data-expand-skill="${id}"]`).textContent.includes('Hide evidence'));
   assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
   assert.equal(d.querySelectorAll('#skill-headings th').length,7);
   assert.ok(d.querySelector('tr[data-student=alex] .compact-evidence').textContent.includes('9/20'));
-  click('.name-button[data-expand-student=alex]');
+  click('button[aria-label="Show skill evidence for Alex Chen"]');
+  assert.equal(d.querySelector('.learner-name').textContent,'Alex Chen');
+  assert.equal(d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-label'),'Hide skill evidence for Alex Chen');
   assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
   assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence').length,4);
   assert.equal(d.querySelectorAll('#student-rows>tr').length,6);

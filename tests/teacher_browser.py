@@ -33,7 +33,8 @@ try:
             expected=page.evaluate("Object.keys(EDUCADE_DEMO.domains).map(domain=>EDUCADE_DEMO.domainStats(EDUCADE_DEMO.students[0],domain).score+'%')")
             assert page.locator('tr[data-student=alex] .score-cell .hp-value').all_text_contents()==expected
             collapsed_height=page.locator('tr[data-student=alex]').bounding_box()['height']
-            page.locator('.name-button[data-expand-student=alex]').click()
+            page.get_by_role('button',name='Show skill evidence for Alex Chen',exact=True).click()
+            assert page.get_by_role('button',name='Hide skill evidence for Alex Chen',exact=True).is_visible()
             assert page.locator('tr[data-student=alex]').bounding_box()['height']>collapsed_height+30
             page.screenshot(path=str(OUT/f'class-overall-{width}.png'),full_page=True)
             for domain in ['writing','grammar','vocabulary']:
@@ -85,12 +86,17 @@ try:
             check_number_column()
             page.locator('.student-name-cell').first.screenshot(path=str(OUT/f'learner-actions-{width}.png'))
             actions=page.locator('.student-name-cell').first.evaluate('''(cell)=>{
-                const evidence=cell.querySelector('.name-button small'),profile=cell.querySelector('.profile-link'),style=getComputedStyle(evidence);
-                return {size:parseFloat(style.fontSize),colour:style.color,profileColour:getComputedStyle(profile).color,alignment:style.textAlign,gap:profile.getBoundingClientRect().top-evidence.getBoundingClientRect().bottom};
+                const evidence=cell.querySelector('.learner-evidence-toggle'),profile=cell.querySelector('.profile-link'),style=getComputedStyle(evidence);
+                return {size:parseFloat(style.fontSize),colour:style.color,profileColour:getComputedStyle(profile).color,alignment:style.textAlign,gap:profile.getBoundingClientRect().top-evidence.getBoundingClientRect().bottom,border:parseFloat(style.borderTopWidth),height:evidence.getBoundingClientRect().height};
             }''')
             assert actions['size']>=12 and actions['alignment']=='center',actions
             assert actions['colour']==actions['profileColour'],actions
             assert actions['gap']>=12,actions
+            assert actions['border']>=1 and actions['height']>=44,actions
+            assert page.locator('.skill-heading .heading-evidence-action').all_text_contents()==['+Show evidence']*4
+            for heading in page.locator('.skill-heading').all():
+                assert heading.is_visible()
+                assert heading.evaluate('el=>parseFloat(getComputedStyle(el).borderTopWidth)')>=1
             assert page.locator('#search-students').get_attribute('placeholder')=='Search students'
             assert '4 of 6 learners below 70%' in page.locator('.plan-basis').inner_text()
             assert '61% (73/120 correct responses)' in page.locator('.plan-basis').inner_text()
@@ -101,12 +107,13 @@ try:
             page.keyboard.press('Escape')
             skill=page.evaluate('EDUCADE_DEMO.reading[0]')
             page.locator(f'[data-expand-skill="{skill}"]').first.click()
+            assert page.get_by_role('button',name='Hide Inference evidence across the class',exact=True).is_visible()
             assert page.locator('.skill-evidence-cell').count()==6
             check_number_column()
             page.locator('.table-scroll').evaluate('(el)=>el.scrollLeft=200')
             check_number_column()
             page.locator('.table-scroll').evaluate('(el)=>el.scrollLeft=0')
-            page.locator('.name-button[data-expand-student=alex]').click()
+            page.get_by_role('button',name='Show skill evidence for Alex Chen',exact=True).click()
             assert page.locator('tr[data-student=alex] .student-skill-evidence').first.is_visible()
             assert page.locator('tr[data-student=alex] .student-skill-evidence').count()==4
             assert page.locator('.compact-evidence .hp-track').count()==0
