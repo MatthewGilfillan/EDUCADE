@@ -15,7 +15,7 @@
     }
   } catch { /* Malformed or unavailable storage must not stop the dashboard. */ }
   const controls=document.querySelector('.presentation-controls'),portraitPicker=document.querySelector('.portrait-picker');
-  const state={classId:'5a',student:'alex',domain:'overall',section:'comprehension',search:'',sort:'name',selectedSkill:null,expandedSkill:null,expandedStudent:null};
+  const state={classId:'5a',classDomain:'overall',pendingClassReview:null,student:'alex',domain:'overall',section:'comprehension',search:'',sort:'name',selectedSkill:null,expandedSkill:null,expandedStudent:null};
   let evidenceOpener=null;
   let nextFocus=null;
   const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -45,28 +45,35 @@
   const groupForSkill=id=>D.groups.find(g=>g.skills.some(s=>s.id===id));
   const currentGroups=()=>D.groups.filter(g=>state.domain==='overall'||(g.domain===state.domain&&(state.domain!=='reading'||g.section===state.section)));
   const scopedRecords=student=>student.evidence.filter(r=>currentGroups().some(g=>g.skills.some(s=>s.id===r.skillId)));
-  const readingScores=s=>D.reading.map(id=>D.skillStats(s,id).score);
-  const needSupport=s=>readingScores(s).some(score=>score!==null&&score<50);
+  const classHeadings=['Inference','Vocabulary in context','Figurative language','Character thoughts & motivations'];
+  function classAxes(){
+    if(state.classDomain==='overall')return Object.entries(D.domains).map(([domain,info])=>({id:domain,domain,label:info.name}));
+    if(state.classDomain==='reading')return D.reading.map((id,index)=>({id,label:classHeadings[index]}));
+    return D.profileAxes[state.classDomain];
+  }
+  const comparisonScores=student=>classAxes().map(axis=>axisStats(student,axis).score).filter(score=>score!==null);
+  const practicePriority=student=>Math.min(...comparisonScores(student));
+  function goClass(domain=state.classDomain){location.hash=`class/${domain}`;}
   function goStudent(id,domain='overall',section='comprehension'){location.hash=`student/${id}/${domain}/${section}`;}
   function renderClass(){
     document.querySelector('#nav-class').classList.add('active');document.querySelector('#nav-profile').classList.remove('active');
-    const headings=['Inference','Vocabulary in context','Figurative language','Character thoughts & motivations'];
-    root.innerHTML=`<header class="page-heading"><div><div class="eyebrow">${escape(currentClass().name.toUpperCase())} / TEACHER DASHBOARD</div><h1>Class overview</h1><p class="subtitle">Grade 5 <span aria-hidden="true">·</span> Viking Quest</p></div><div class="header-controls-slot"></div></header>
-      <section class="stats" aria-label="Class summary"><article class="stat"><div class="stat-icon" aria-hidden="true">♧</div><div><strong>${classStudents().length}</strong><p>learners</p></div></article><article class="stat"><div class="stat-icon" aria-hidden="true">▥</div><div><strong>4</strong><p>reading skills</p></div></article><article class="stat warm"><div class="stat-icon" aria-hidden="true">!</div><div><strong>${classStudents().filter(needSupport).length}</strong><p>with a skill below 50%</p></div></article></section>
-      <section class="card"><div class="card-heading"><div><h2>Reading skills at a glance</h2><p>Expand a skill across the class or a learner beneath their row.</p></div><div class="legend"><span><i class="orange"></i> More practice</span><span><i></i> Building strength</span></div></div>
-      <div class="toolbar"><label class="field search">Find a learner<input id="search-students" type="search" placeholder="Search students" value="${escape(state.search)}"></label><label class="field sort">Sort learners<select id="sort-students"><option value="name">Name A–Z</option><option value="support">Needs practice first</option></select></label><div class="portrait-controls-slot"></div></div>
-      <div class="data-view-row"><span>Data view</span><div class="chart-toggle" role="group" aria-label="Class data view"><button type="button" data-class-mode="bars" aria-pressed="${preferences.classView==='bars'}">Progress Bars</button><button type="button" data-class-mode="heatmap" aria-pressed="${preferences.classView==='heatmap'}">Class heatmap</button></div></div>
-      <p id="heatmap-key" class="heatmap-key" ${preferences.classView==='heatmap'?'':'hidden'}><span><i class="heat-low"></i>0–49%</span><span><i class="heat-mid"></i>50–69%</span><span><i class="heat-high"></i>70–100%</span> Select a cell for its skill evidence.</p>
-      <div class="table-scroll" role="region" aria-label="Class skill comparison" tabindex="0"><table class="class-table ${preferences.classView==='heatmap'?'heatmap-table':''}"><caption class="sr-only">${escape(currentClass().name)} learners and four reading skill scores. Each score is based on 20 responses.</caption><colgroup id="skill-columns"></colgroup><thead id="skill-headings"></thead><tbody id="student-rows"></tbody></table></div><p id="empty-class" class="empty-state" hidden>No learners match your search. Try another name.</p><p class="table-note">Scores: correct responses ÷ attempts. Select a skill to compare independent answers, supported answers and hint use.</p></section>
-      ${renderNextSteps()}<section class="card recent-class-evidence"><h2>Recent learning evidence</h2><p class="small-copy">Explore the questions and responses behind the student profiles.</p><div class="recent-evidence-grid">${classStudents().slice(0,3).map((s,i)=>{const id=D.reading[i],r=s.evidence.filter(r=>r.skillId===id).at(-1);return r?evidenceLink(s,r):'';}).join('')}</div></section>`;
+    const overall=state.classDomain==='overall',axes=classAxes(),scope=profileDomains[state.classDomain].name;
+    root.innerHTML=`<header class="page-heading class-dashboard-heading"><div><h1>Teacher Dashboard</h1><h2 class="class-title">${escape(currentClass().name)}</h2><p class="subtitle">Grade 5 <span aria-hidden="true">·</span> Viking Quest</p></div><div class="header-controls-slot"></div></header>
+      <section class="card class-comparison">
+      <div class="toolbar class-toolbar"><label class="field search">Find a learner<input id="search-students" type="search" placeholder="Search students" value="${escape(state.search)}"></label><label class="field sort">Sort learners<select id="sort-students"><option value="name">Name A–Z</option><option value="support">Needs practice first</option></select></label><div class="portrait-controls-slot"></div></div>
+      <div class="category-tabs class-tabs" role="tablist" aria-label="Class learning domains">${Object.entries(profileDomains).map(([key,info])=>`<button id="class-tab-${key}" type="button" role="tab" aria-controls="class-panel" aria-selected="${state.classDomain===key}" tabindex="${state.classDomain===key?'0':'-1'}" data-class-domain="${key}">${info.name}</button>`).join('')}</div>
+      <section id="class-panel" role="tabpanel" aria-labelledby="class-tab-${state.classDomain}">
+      <div class="data-view-row"><div class="legend"><span><i class="orange"></i> More practice</span><span><i></i> Building strength</span></div><div class="chart-toggle" role="group" aria-label="Class data view"><button type="button" data-class-mode="bars" aria-pressed="${preferences.classView==='bars'}">Progress Bars</button><button type="button" data-class-mode="heatmap" aria-pressed="${preferences.classView==='heatmap'}">Class heatmap</button></div></div>
+      <p id="heatmap-key" class="heatmap-key" ${preferences.classView==='heatmap'?'':'hidden'}><span><i class="heat-low"></i>0–49%</span><span><i class="heat-mid"></i>50–69%</span><span><i class="heat-high"></i>70–100%</span> ${overall?'Select a subject to explore its skills.':'Select a cell for its skill evidence.'}</p>
+      <div class="table-scroll" role="region" aria-label="${escape(scope)} class comparison" tabindex="0"><table class="class-table ${preferences.classView==='heatmap'?'heatmap-table':''}"><caption class="sr-only">${escape(currentClass().name)} learners and ${axes.length} ${overall?'subject':scope.toLowerCase()+' skill'} scores, based on recorded responses.</caption><colgroup id="skill-columns"></colgroup><thead id="skill-headings"></thead><tbody id="student-rows"></tbody></table></div><p id="empty-class" class="empty-state" hidden>No learners match your search. Try another name.</p><p class="table-note">${overall?'Subject scores: correct responses ÷ attempts. Reading includes Foundations and Comprehension. Select a subject to explore its skills.':'Scores: correct responses ÷ attempts. Select a skill to compare independent answers, supported answers and hint use.'}</p></section></section>
+      ${['overall','reading'].includes(state.classDomain)?renderNextSteps():''}<section class="card recent-class-evidence"><h2>Recent learning evidence</h2><p class="small-copy">Explore the questions and responses behind ${overall?'the student profiles':scope.toLowerCase()+' skills'}.</p><div class="recent-evidence-grid">${classStudents().slice(0,3).map((student,index)=>{const records=student.evidence.filter(record=>axes.some(axis=>axis.domain?groupForSkill(record.skillId)?.domain===axis.domain:record.skillId===axis.id));const record=overall?records.at(-1):records.filter(record=>record.skillId===axes[index%axes.length].id).at(-1);return record?evidenceLink(student,record):'<p class="empty-state">No evidence yet</p>';}).join('')}</div></section>`;
     document.querySelector('#sort-students').value=state.sort;
     renderRows();
   }
-  const classHeadings=['Inference','Vocabulary in context','Figurative language','Character thoughts & motivations'];
   function renderNextSteps(){
     const plan=D.readingPlan(classStudents()),whole=plan.wholeClass;
     const learners=members=>members.map(member=>`<button class="learner-evidence-chip" type="button" data-evidence="${member.skillId}" data-learner="${member.student.id}">${escape(member.student.name.split(' ')[0])} · ${member.stats.score}%</button>`).join('');
-    return `<section class="card support-card class-next-steps" aria-labelledby="next-steps-title"><div class="card-heading"><div><h2 id="next-steps-title">Suggested next steps</h2><p>Based on ${escape(currentClass().name)}’s four reading skills.</p></div><span class="planning-label">Teaching focus</span></div>
+    return `<section class="card support-card class-next-steps" aria-labelledby="next-steps-title"><div class="card-heading"><div><h2 id="next-steps-title">Suggested next steps</h2><p>Based on ${escape(currentClass().name)}’s four reading skills.</p></div><span class="planning-label">Reading focus</span></div>
       ${whole?`<article class="whole-class-plan" data-plan-skill="${whole.id}"><div class="eyebrow">WHOLE CLASS</div><h3>${escape(whole.name)}</h3><p class="plan-basis"><strong>${whole.belowPractice.length} of ${whole.members.length} learners below ${plan.practiceThreshold}%</strong> · Class result ${whole.stats.score}% (${whole.stats.correct}/${whole.stats.attempts} correct responses).</p><div class="lesson-steps">${[['Model',whole.model],['Practise together',whole.practice],['Check independently',whole.check]].map(([title,copy],i)=>`<div><span class="lesson-step-number" aria-hidden="true">${i+1}</span><h4>${title}</h4><p>${escape(copy)}</p></div>`).join('')}</div><button class="text-button" type="button" data-review-class-skill="${whole.id}">Review ${escape(whole.label.toLowerCase())} evidence across the class →</button></article>`:'<p class="empty-state">No shared whole-class teaching priority yet. Review individual evidence before choosing a class lesson.</p>'}
       <div class="intervention-grid"><section aria-labelledby="small-group-title"><h3 id="small-group-title">Small-group practice</h3><p class="small-copy">Target a shared skill after the class lesson.</p>${plan.smallGroups.map(group=>`<article class="group-intervention" data-group-skill="${group.id}"><h4>${escape(group.name)}</h4><div class="learner-evidence-chips">${learners(group.belowPractice.map(member=>({...member,skillId:group.id})))}</div><p>${escape(group.intervention)}</p><p class="intervention-check">Finish with a new response without a hint.</p></article>`).join('')||'<p class="small-copy">No additional shared skill below the practice threshold.</p>'}</section>
       <section aria-labelledby="individual-title"><h3 id="individual-title">Individual check-ins</h3><p class="small-copy">Start with each learner’s lowest reading skill below ${plan.individualThreshold}%.</p>${plan.individuals.map(member=>`<article class="individual-intervention" data-individual="${member.student.id}"><button class="individual-evidence-link" type="button" data-evidence="${member.skill.id}" data-learner="${member.student.id}"><strong>${escape(member.student.name)}</strong><span>${escape(member.skill.label)} · ${member.stats.score}% <span aria-hidden="true">→</span></span></button><p>${escape(member.skill.intervention)}</p><p class="intervention-evidence">Independent: ${member.independent.correct}/${member.independent.attempts} correct · Supported: ${member.supported.correct}/${member.supported.attempts} correct · ${member.stats.hints} answers with a hint.</p></article>`).join('')||'<p class="small-copy">No learner has a reading skill below the individual check-in threshold.</p>'}</section></div><p class="planning-note">Practice groups use results below ${plan.practiceThreshold}%; check-ins use each learner’s lowest skill below ${plan.individualThreshold}%. These are planning cues. Confirm the need with a fresh independent response and review the support used.</p></section>`;
@@ -76,19 +83,33 @@
     const latest=student.evidence.filter(r=>r.skillId===skillId).at(-1);
     return `<div class="compact-evidence">${hp(stats.score,sample?.title||'Skill progress')}<p class="evidence-counts"><strong>${stats.correct}/${stats.attempts}</strong> correct · ${stats.hints} hints</p><p class="evidence-support">${stats.independent} independent · ${stats.supported} supported</p>${latest?`<p class="latest-response"><strong>Week ${latest.week} · ${latest.correct?'Correct':'Try again'} · ${latest.supported?'Supported':'Independent'}</strong><span>${escape(latest.response)}</span></p>`:'<p class="no-evidence">No evidence yet</p>'}<button class="text-button" type="button" data-evidence="${skillId}" data-learner="${student.id}">View questions and responses →</button></div>`;
   }
+  function compactDomain(student,axis){
+    const stats=D.domainStats(student,axis.domain);
+    return `<div class="compact-evidence">${hp(stats.score,axis.label)}<p class="evidence-counts"><strong>${stats.correct}/${stats.attempts}</strong> correct · ${stats.hints} hints</p><p class="evidence-support">${stats.independent} independent · ${stats.supported} supported</p><p class="small-copy">${axis.domain==='reading'?'Includes Foundations and Comprehension.':'Based on assessed '+axis.label.toLowerCase()+' skills.'}</p><button class="text-button" type="button" data-student="${student.id}" data-profile-domain="${axis.domain}">Explore ${axis.label.toLowerCase()} skills →</button></div>`;
+  }
   function renderRows(){
-    const expandedIndex=D.reading.indexOf(state.expandedSkill);
-    const expanded=expandedIndex>=0;
-    document.querySelector('.class-table').classList.toggle('has-skill-evidence',expanded);
-    document.querySelector('#skill-columns').innerHTML=`<col class="row-number-column"><col class="student-name-column">${D.reading.map(id=>`<col>${state.expandedSkill===id?'<col class="skill-evidence-column">':''}`).join('')}`;
-    document.querySelector('#skill-headings').innerHTML=`<tr><th class="row-number-heading" scope="col">#</th><th class="student-heading" scope="col">Student</th>${classHeadings.map((h,i)=>`<th scope="col"><button class="skill-heading" type="button" data-expand-skill="${D.reading[i]}" aria-expanded="${state.expandedSkill===D.reading[i]}" aria-controls="student-rows">${escape(h)}<span aria-hidden="true">${state.expandedSkill===D.reading[i]?'−':'+'}</span></button></th>${state.expandedSkill===D.reading[i]?`<th class="expanded-heading" scope="col">${escape(h)} evidence<button type="button" class="collapse-evidence" data-expand-skill="${D.reading[i]}" aria-label="Collapse ${escape(h)} evidence">✕</button></th>`:''}`).join('')}</tr>`;
-    const students=classStudents().filter(s=>s.name.toLowerCase().includes(state.search.toLowerCase())).slice().sort((a,b)=>state.sort==='support'?Math.min(...readingScores(a))-Math.min(...readingScores(b))||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
+    const axes=classAxes(),expanded=axes.some(axis=>axis.id===state.expandedSkill),overall=state.classDomain==='overall';
+    const comparison=student=>axes.map(axis=>({axis,stats:axisStats(student,axis)}));
+    const compact=(student,axis)=>axis.domain?compactDomain(student,axis):compactEvidence(student,axis.id);
+    const table=document.querySelector('.class-table');
+    table.classList.toggle('has-skill-evidence',expanded);
+    table.style.setProperty('--comparison-width',`${840+Math.max(0,axes.length-4)*160+(expanded?300:0)}px`);
+    document.querySelector('#skill-columns').innerHTML=`<col class="row-number-column"><col class="student-name-column">${axes.map(axis=>`<col>${state.expandedSkill===axis.id?'<col class="skill-evidence-column">':''}`).join('')}`;
+    document.querySelector('#skill-headings').innerHTML=`<tr><th class="row-number-heading" scope="col">#</th><th class="student-heading" scope="col">Student</th>${axes.map(axis=>`<th scope="col"><button class="skill-heading" type="button" data-expand-skill="${axis.id}" aria-expanded="${state.expandedSkill===axis.id}" aria-controls="student-rows">${escape(axis.label)}<span aria-hidden="true">${state.expandedSkill===axis.id?'−':'+'}</span></button></th>${state.expandedSkill===axis.id?`<th class="expanded-heading" scope="col">${escape(axis.label)} ${overall?'summary':'evidence'}<button type="button" class="collapse-evidence" data-expand-skill="${axis.id}" aria-label="Collapse ${escape(axis.label)} ${overall?'summary':'evidence'}">✕</button></th>`:''}`).join('')}</tr>`;
+    const students=classStudents().filter(student=>student.name.toLowerCase().includes(state.search.toLowerCase())).slice().sort((a,b)=>(state.sort==='support'?practicePriority(a)-practicePriority(b):0)||a.name.localeCompare(b.name));
     document.querySelector('#student-rows').innerHTML=students.map((student,rowIndex)=>{
       const open=state.expandedStudent===student.id;
-      const cells=readingScores(student).map((score,i)=>`<td><button class="score-cell ${preferences.classView==='heatmap'?'heat-cell '+(score===null?'heat-empty':score<50?'heat-low':score<70?'heat-mid':'heat-high'):''}" type="button" data-evidence="${D.reading[i]}" data-learner="${student.id}" aria-label="${escape(student.name)}, ${escape(classHeadings[i])}: ${score===null?'No evidence yet':score+' percent'}. View evidence">${preferences.classView==='heatmap'?`<strong>${score===null?'No evidence yet':score+'%'}</strong><span>View evidence →</span>`:hp(score,classHeadings[i])}</button></td>${state.expandedSkill===D.reading[i]?`<td class="skill-evidence-cell">${compactEvidence(student,D.reading[i])}</td>`:''}`).join('');
-      return `<tr data-student="${student.id}" class="${student.id===state.student?'current-learner':''} ${open?'expanded-learner':''}"><td class="row-number">${rowIndex+1}</td><th scope="row" class="student-name-cell"><div class="learner">${avatar(student)}<div><button class="name-button" data-expand-student="${student.id}" aria-expanded="${open}" aria-controls="student-evidence-${student.id}" type="button">${escape(student.name)}<small>${open?'− Hide skill evidence':'+ Show skill evidence'}</small></button><button class="profile-link" type="button" data-student="${student.id}">Open full profile&nbsp;→</button></div></div></th>${cells}</tr><tr class="student-evidence-row" id="student-evidence-${student.id}" ${open?'':'hidden'}><td colspan="${expanded?7:6}"><section class="student-evidence-panel" aria-label="${escape(student.name)} skill evidence"><div class="inline-evidence-heading"><h3>${escape(student.name)} · Reading evidence</h3><button class="text-button" type="button" data-expand-student="${student.id}">Collapse ↑</button></div><div class="student-evidence-grid">${D.reading.map((id,i)=>`<article><h4>${escape(classHeadings[i])}</h4>${compactEvidence(student,id)}</article>`).join('')}</div></section></td></tr>`;
+      const cells=comparison(student).map(({axis,stats})=>{const score=stats.score;return `<td><button class="score-cell ${preferences.classView==='heatmap'?'heat-cell '+(score===null?'heat-empty':score<50?'heat-low':score<70?'heat-mid':'heat-high'):''}" type="button" ${axis.domain?`data-student="${student.id}" data-profile-domain="${axis.domain}"`:`data-evidence="${axis.id}"`} data-learner="${student.id}" aria-label="${escape(student.name)}, ${escape(axis.label)}: ${score===null?'No evidence yet':score+' percent'}. ${overall?'Explore subject':'View evidence'}">${preferences.classView==='heatmap'?`<strong>${score===null?'No evidence yet':score+'%'}</strong><span>${overall?'Explore subject':'View evidence'} →</span>`:hp(score,axis.label)}</button></td>${state.expandedSkill===axis.id?`<td class="skill-evidence-cell">${compact(student,axis)}</td>`:''}`;}).join('');
+      return `<tr data-student="${student.id}" class="${student.id===state.student?'current-learner':''} ${open?'expanded-learner':''}"><td class="row-number">${rowIndex+1}</td><th scope="row" class="student-name-cell"><div class="learner">${avatar(student)}<div><button class="name-button" data-expand-student="${student.id}" aria-expanded="${open}" aria-controls="student-evidence-${student.id}" type="button">${escape(student.name)}<small>${open?'− Hide skill evidence':'+ Show skill evidence'}</small></button><button class="profile-link" type="button" data-student="${student.id}">Open full profile&nbsp;→</button></div></div></th>${cells}</tr><tr class="student-evidence-row" id="student-evidence-${student.id}" ${open?'':'hidden'}><td colspan="${2+axes.length+(expanded?1:0)}"><section class="student-evidence-panel" aria-label="${escape(student.name)} ${profileDomains[state.classDomain].name.toLowerCase()} evidence"><div class="inline-evidence-heading"><h3>${escape(student.name)} · ${overall?'Subject summaries':profileDomains[state.classDomain].name+' evidence'}</h3><button class="text-button" type="button" data-expand-student="${student.id}">Collapse ↑</button></div><div class="student-evidence-grid">${axes.map(axis=>`<article><h4>${escape(axis.label)}</h4>${compact(student,axis)}</article>`).join('')}</div></section></td></tr>`;
     }).join('');
     document.querySelector('#empty-class').hidden=students.length>0;
+  }
+  function reviewClassSkill(id){
+    state.expandedSkill=id;
+    if(state.classDomain!=='reading'){state.pendingClassReview=id;goClass('reading');return;}
+    renderRows();markSelectedSkill();
+    root.querySelector(`.skill-heading[data-expand-skill="${id}"]`)?.focus({preventScroll:true});
+    document.querySelector('.table-scroll').scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
   }
   function toggleClassExpansion(kind,id){
     const key=kind==='skill'?'expandedSkill':'expandedStudent';
@@ -216,13 +237,13 @@
     const [view,id,domain,section]=location.hash.slice(1).split('/');
     if(view==='student'){
       state.student=studentById(id).id;state.classId=D.classes.find(c=>c.studentIds.includes(state.student))?.id||state.classId;state.domain=profileDomains[domain]?domain:'overall';state.section=section==='foundations'?'foundations':'comprehension';renderProfile();
-    }else renderClass();
+    }else{state.classDomain=profileDomains[id]?id:'overall';if(!classAxes().some(axis=>axis.id===state.expandedSkill))state.expandedSkill=null;renderClass();}
     root.querySelector('.header-controls-slot').append(controls);
     if(root.querySelector('.portrait-controls-slot'))root.querySelector('.portrait-controls-slot').append(portraitPicker);
     else controls.insertBefore(portraitPicker,controls.querySelector('.dashboard-menu'));
     document.querySelector('#class-select').value=state.classId;
     markSelectedSkill();
-    document.title=`${view==='student'?studentById(state.student).name+' · '+profileDomains[state.domain].name:'Class overview'} · EDUCADE demo`;
+    document.title=`${view==='student'?studentById(state.student).name+' · '+profileDomains[state.domain].name:'Teacher Dashboard · '+currentClass().name} · EDUCADE demo`;
   }
   root.addEventListener('click',event=>{
     const target=event.target.closest('button,[data-evidence],[data-domain],tr[data-student]');if(!target)return;
@@ -230,13 +251,10 @@
     if(target.dataset.expandStudent){toggleClassExpansion('student',target.dataset.expandStudent);return;}
     if(target.matches('tr[data-student]')){toggleClassExpansion('student',target.dataset.student);return;}
     if(target.dataset.evidence){showEvidence(target.dataset.learner,target.dataset.evidence,target);return;}
-    if(target.dataset.reviewClassSkill){
-      state.expandedSkill=target.dataset.reviewClassSkill;renderRows();markSelectedSkill();
-      const heading=root.querySelector(`.skill-heading[data-expand-skill="${state.expandedSkill}"]`);
-      heading?.focus({preventScroll:true});document.querySelector('.table-scroll').scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});return;
-    }
-    if(target.dataset.student){goStudent(target.dataset.student);return;}
-    if(target.hasAttribute('data-back-class')){location.hash='class';return;}
+    if(target.dataset.reviewClassSkill){reviewClassSkill(target.dataset.reviewClassSkill);return;}
+    if(target.dataset.classDomain){nextFocus=`#class-tab-${target.dataset.classDomain}`;goClass(target.dataset.classDomain);return;}
+    if(target.dataset.student){goStudent(target.dataset.student,target.dataset.profileDomain||'overall');return;}
+    if(target.hasAttribute('data-back-class')){goClass();return;}
     if(target.dataset.domain){nextFocus=`#tab-${target.dataset.domain}`;goStudent(state.student,target.dataset.domain,target.matches('[role=tab]')?state.section:'comprehension');return;}
     if(target.dataset.section){nextFocus=`[data-section="${target.dataset.section}"]`;goStudent(state.student,'reading',target.dataset.section);return;}
     if(target.dataset.mode){setStudentView(target.dataset.mode);return;}
@@ -249,10 +267,11 @@
     const point=event.target.closest('.radar-target');
     if(point&&['Enter',' '].includes(event.key)){event.preventDefault();if(point.dataset.domain){nextFocus=`#tab-${point.dataset.domain}`;goStudent(state.student,point.dataset.domain);}else showEvidence(point.dataset.learner,point.dataset.evidence,point);return;}
     const tab=event.target.closest('[role="tab"]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
-    event.preventDefault();const keys=Object.keys(profileDomains),i=keys.indexOf(state.domain),next=event.key==='Home'?0:event.key==='End'?keys.length-1:(i+(event.key==='ArrowRight'?1:-1)+keys.length)%keys.length;
-    goStudent(state.student,keys[next],state.section);requestAnimationFrame(()=>document.querySelector(`#tab-${keys[next]}`)?.focus());
+    event.preventDefault();const keys=Object.keys(profileDomains),isClass=Boolean(tab.dataset.classDomain),i=keys.indexOf(isClass?state.classDomain:state.domain),next=event.key==='Home'?0:event.key==='End'?keys.length-1:(i+(event.key==='ArrowRight'?1:-1)+keys.length)%keys.length;
+    nextFocus=`#${isClass?'class-tab-':'tab-'}${keys[next]}`;
+    if(isClass)goClass(keys[next]);else goStudent(state.student,keys[next],state.section);
   });
-  document.querySelector('#nav-class').addEventListener('click',()=>location.hash='class');
+  document.querySelector('#nav-class').addEventListener('click',()=>goClass());
   document.querySelector('#nav-profile').addEventListener('click',()=>goStudent(state.student,root.querySelector('#domain-panel')?state.domain:'overall',state.section));
   document.querySelector('#close-evidence').addEventListener('click',closeEvidence);
   dialog.addEventListener('cancel',event=>{event.preventDefault();closeEvidence();});
@@ -263,7 +282,7 @@
     if(!D.classes.some(c=>c.id===classSelect.value))return;
     state.classId=classSelect.value;state.student=classStudents()[0].id;
     state.expandedStudent=null;state.expandedSkill=null;state.selectedSkill=null;state.search='';
-    if(location.hash==='#class'||!location.hash)parseRoute();else location.hash='class';
+    if(root.querySelector('.class-table'))parseRoute();else goClass();
     document.querySelector('#class-select').focus();
   });
   const menuButton=document.querySelector('#dashboard-menu-button'),menu=document.querySelector('#dashboard-menu-options');
@@ -313,5 +332,5 @@
   portraitSelect.value=preferences.portrait;
   portraitSelect.addEventListener('change',event=>setPortrait(event.target.value));
   savePreferences();
-  addEventListener('hashchange',()=>{if(dialog.open)dialog.close();parseRoute();scrollTo(0,0);if(nextFocus){document.querySelector(nextFocus)?.focus({preventScroll:true});nextFocus=null;}});parseRoute();
+  addEventListener('hashchange',()=>{if(dialog.open)dialog.close();parseRoute();scrollTo(0,0);if(nextFocus){document.querySelector(nextFocus)?.focus({preventScroll:true});nextFocus=null;}if(state.pendingClassReview){const id=state.pendingClassReview;state.pendingClassReview=null;reviewClassSkill(id);}});parseRoute();
 })();

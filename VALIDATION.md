@@ -275,3 +275,34 @@ for those changes above.
   contains no Wrangler configuration, package manifests or development tools.
 - Development branch only. No production deployment or change to hosting
   configuration is part of this revision.
+
+
+## Class dashboard heading, search and subject tabs — 11 October 2026
+
+- Teacher Dashboard is H1, with the selected class as H2. Removed the summary
+  tiles, Reading skills at a glance heading and expansion instruction. Search
+  now appears at the top of the comparison card, before the subject tabs.
+  The sidebar class navigation is labelled Classes.
+- Overall, Reading, Writing, Grammar and Vocabulary are functional class tabs.
+  Overall compares the same four domain totals as student profiles, and its
+  cells open that learner's subject. Reading retains the four original skills;
+  each other subject uses the six skills from its profile. Scores and original
+  evidence records are unchanged. Missing evidence stays unassessed.
+- Evidence expansion and table spans adapt to four/six axes. Search, sort,
+  portraits, chart mode and the expanded learner survive tab changes. Back to
+  class restores the selected tab. Keyboard navigation includes Home/End.
+- Reading suggestions remain explicitly scoped on Overall and Reading. Their
+  review action selects Reading before expanding the relevant evidence column.
+  Recent evidence in other subject tabs comes from those subject skills.
+- All 18 Node tests pass. Both existing Chromium suites pass, including six
+  viewport sizes, all class/profile subjects, keyboard/evidence interactions,
+  portrait assignments, stored preferences and storage fallback.
+- Desktop screenshots were inspected at 1440 and 1024px under
+  /workspace/educade-validation/class-subject-tabs. The current design review
+  prioritises desktop; further phone-specific polish is deferred at the user's
+  request. Automated smaller-viewport checks had already completed.
+- Corrected a browser-test timing assumption: wait for the subject profile
+  tab to exist before checking its selection after leaving the class view.
+- Static upload ZIP is checked for archive integrity and byte equality against
+  public. It contains only website assets with no Wrangler configuration.
+- Development branch only; no production merge or deployment.

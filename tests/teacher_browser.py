@@ -23,6 +23,46 @@ try:
             page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
             page.goto(base+'/teacher.html',wait_until='networkidle')
             assert page.locator('#student-rows tr[data-student]').count()==6
+            assert page.locator('h1').inner_text()=='Teacher Dashboard'
+            assert page.locator('.class-title').inner_text()=='Class 5A'
+            assert page.locator('.stats').count()==0
+            assert 'Reading skills at a glance' not in page.locator('#dashboard').inner_text()
+            assert page.locator('.class-tabs [role=tab]').all_text_contents()==['Overall','Reading','Writing','Grammar','Vocabulary']
+            assert page.locator('#class-tab-overall').get_attribute('aria-selected')=='true'
+            assert page.locator('#search-students').bounding_box()['y']<page.locator('.class-tabs').bounding_box()['y']
+            expected=page.evaluate("Object.keys(EDUCADE_DEMO.domains).map(domain=>EDUCADE_DEMO.domainStats(EDUCADE_DEMO.students[0],domain).score+'%')")
+            assert page.locator('tr[data-student=alex] .score-cell .hp-value').all_text_contents()==expected
+            page.locator('.name-button[data-expand-student=alex]').click()
+            page.screenshot(path=str(OUT/f'class-overall-{width}.png'),full_page=True)
+            for domain in ['writing','grammar','vocabulary']:
+                page.locator('#class-tab-'+domain).click()
+                page.wait_for_function('(domain)=>document.querySelector("#class-tab-"+domain).getAttribute("aria-selected")==="true"',arg=domain)
+                assert page.locator('#student-evidence-alex').is_visible()
+                assert page.locator('#student-evidence-alex article').count()==6
+                assert page.locator('#student-evidence-alex td').get_attribute('colspan')=='8'
+                assert page.locator('.score-cell').count()==36
+                expected=page.evaluate('(domain)=>EDUCADE_DEMO.profileAxes[domain].map(axis=>EDUCADE_DEMO.skillStats(EDUCADE_DEMO.students[0],axis.id).score+"%")',domain)
+                assert page.locator('tr[data-student=alex] .score-cell .hp-value').all_text_contents()==expected
+                assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Class {domain} overflow at {width}'
+                page.locator('tr[data-student=alex] .score-cell').first.click()
+                assert page.locator('.evidence-id').inner_text()==page.evaluate('(domain)=>EDUCADE_DEMO.profileAxes[domain][0].id',domain)
+                page.keyboard.press('Escape')
+                page.locator('[data-class-mode=heatmap]').click()
+                assert page.locator('.heat-cell').count()==36
+                page.locator('[data-class-mode=bars]').click()
+                page.screenshot(path=str(OUT/f'class-{domain}-{width}.png'),full_page=True)
+            page.locator('#class-tab-vocabulary').focus();page.keyboard.press('Home')
+            page.wait_for_function('document.querySelector("#class-tab-overall").getAttribute("aria-selected")==="true"')
+            assert page.locator('#class-tab-overall').evaluate('el=>el===document.activeElement')
+            page.locator('tr[data-student=alex] .score-cell[data-profile-domain=reading]').click()
+            page.wait_for_selector('#tab-reading[aria-selected="true"]')
+            page.locator('[data-back-class]').click();page.wait_for_selector('#class-tab-overall')
+            assert page.locator('#class-tab-overall').get_attribute('aria-selected')=='true'
+            page.locator('#class-tab-reading').click()
+            page.wait_for_function('document.querySelector("#class-tab-reading").getAttribute("aria-selected")==="true"')
+            page.locator('.name-button[data-expand-student=alex]').click()
+            page.evaluate('scrollTo(0,0)')
+            page.screenshot(path=str(OUT/f'class-header-{width}.png'))
             assert page.locator('.demo-banner').count()==0
             assert page.locator('.toolbar #portrait-style').count()==1
             assert page.locator('tr[data-student] .row-number').all_text_contents()==['1','2','3','4','5','6']

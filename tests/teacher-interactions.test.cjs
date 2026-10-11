@@ -4,8 +4,8 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {JSDOM}=require('jsdom');
 const publicDir=path.join(__dirname,'../public');
-function dashboard(saved){
-  const dom=new JSDOM(fs.readFileSync(path.join(publicDir,'teacher.html'),'utf8'),{url:'https://preview.example/teacher.html',runScripts:'outside-only',pretendToBeVisual:true});
+function dashboard(saved,route='class/reading'){
+  const dom=new JSDOM(fs.readFileSync(path.join(publicDir,'teacher.html'),'utf8'),{url:'https://preview.example/teacher.html'+(route?'#'+route:''),runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window;
   if(saved)w.localStorage.setItem('educade.teacher.presentation.v1',JSON.stringify({version:1,...saved}));
   w.scrollTo=()=>{};w.matchMedia=()=>({matches:true});
@@ -207,5 +207,54 @@ test('Unassessed Overall subjects show no evidence and do not become zero scores
   click('.radar-target[data-domain=grammar]');await settle();
   assert.equal(d.querySelector('#tab-grammar').getAttribute('aria-selected'),'true');
   assert.ok(d.querySelector('#skill-chart').textContent.includes('No evidence yet'));
+ }finally{dom.window.close();}
+});
+
+test('Class dashboard starts with Overall and subject tabs preserve the learner and presentation controls',async()=>{
+ const {dom,w,d,select,click,settle}=dashboard(undefined,'');
+ try{
+  const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students);
+  assert.equal(d.querySelector('h1').textContent,'Teacher Dashboard');
+  assert.equal(d.querySelector('.class-title').textContent,'Class 5A');
+  assert.equal(d.querySelector('.stats'),null);
+  assert.ok(!d.querySelector('#dashboard').textContent.includes('Reading skills at a glance'));
+  assert.deepEqual([...d.querySelectorAll('[role=tab]')].map(tab=>tab.textContent),['Overall','Reading','Writing','Grammar','Vocabulary']);
+  assert.equal(d.querySelector('#class-tab-overall').getAttribute('aria-selected'),'true');
+  assert.deepEqual([...d.querySelectorAll('tr[data-student=alex] .score-cell .hp-value')].map(value=>value.textContent),Object.keys(D.domains).map(domain=>D.domainStats(D.students[0],domain).score+'%'));
+  click('[data-expand-skill=reading]');
+  assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
+  assert.ok(d.querySelector('tr[data-student=alex] .compact-evidence').textContent.includes('180'));
+  click('.name-button[data-expand-student=alex]');
+  assert.equal(d.querySelector('#student-evidence-alex').hidden,false);
+  for(const domain of ['writing','grammar','vocabulary']){
+   click('#class-tab-'+domain);await settle();
+   assert.equal(d.querySelector('[role=tab][aria-selected=true]').dataset.classDomain,domain);
+   assert.equal(d.querySelector('#student-evidence-alex').hidden,false);
+   assert.equal(d.querySelectorAll('#student-evidence-alex article').length,6);
+   assert.equal(d.querySelector('#student-evidence-alex td').colSpan,8);
+   const axes=D.profileAxes[domain],cells=[...d.querySelectorAll('tr[data-student=alex] .score-cell')];
+   assert.equal(cells.length,6);
+   cells.forEach((cell,index)=>assert.equal(cell.querySelector('.hp-value').textContent,D.skillStats(D.students[0],axes[index].id).score+'%'));
+   click(`[data-expand-skill="${axes[0].id}"]`);
+   assert.equal(d.querySelector('#student-evidence-alex td').colSpan,9);
+   click('tr[data-student=alex] .score-cell');
+   assert.equal(d.querySelector('.evidence-id').textContent,axes[0].id);click('#close-evidence');
+  }
+  const search=d.querySelector('#search-students');search.value='Alex';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  select('#sort-students','support');select('#portrait-style','vikings');click('[data-class-mode=heatmap]');
+  click('#class-tab-overall');await settle();
+  assert.equal(d.querySelector('#search-students').value,'Alex');
+  assert.equal(d.querySelector('#sort-students').value,'support');
+  assert.equal(d.querySelector('#portrait-style').value,'vikings');
+  assert.equal(d.querySelectorAll('.heat-cell').length,4);
+  assert.equal(d.querySelector('#student-evidence-alex').hidden,false);
+  click('tr[data-student=alex] .score-cell[data-profile-domain=grammar]');await settle();
+  assert.equal(d.querySelector('#tab-grammar').getAttribute('aria-selected'),'true');
+  click('[data-back-class]');await settle();
+  assert.equal(d.querySelector('#class-tab-overall').getAttribute('aria-selected'),'true');
+  click('[data-review-class-skill]');await settle();
+  assert.equal(d.querySelector('#class-tab-reading').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelector('.skill-heading[aria-expanded=true]').dataset.expandSkill,D.reading[2]);
+  assert.equal(JSON.stringify(D.students),original);
  }finally{dom.window.close();}
 });

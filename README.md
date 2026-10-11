@@ -140,8 +140,9 @@ ZIP, or visit `/teacher.html` on the local server started by `npm run dev`.
 
 Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teacher
 
-- Class overview: six fictional learners, a class heatmap or segmented RPG HP
-  bars, search and sorting. Choose a learner's name to expand their evidence,
+- Class dashboard: six fictional learners, a class heatmap or segmented RPG HP
+  bars, search and sorting. Overall compares four subjects; Reading, Writing,
+  Grammar and Vocabulary tabs compare individual skills. Choose a learner's name to expand their evidence,
   **Open full profile** for their profile, or a score cell for skill evidence.
 - Student profiles start on **Overall**, to the left of Reading, Writing, Grammar
   and Vocabulary. Its initial radar shows four subject scores; selecting a
@@ -305,3 +306,25 @@ only the contents of public: index.html, teacher.html and the other website
 assets at the archive root. Clear the uploader's old file selection first.
 A GitHub repository ZIP also includes Wrangler configuration and is intended
 for development, rather than this static upload flow.
+
+## Class dashboard subject tabs — 11 October 2026
+
+The class screen uses Teacher Dashboard as its main heading, with the selected
+class below it. The summary tiles and the former Reading skills at a glance
+heading are removed. Find a learner is first in the comparison card, above
+Overall, Reading, Writing, Grammar and Vocabulary tabs.
+
+Overall compares four subject scores from the same records as student profiles;
+its cells open a learner's subject profile. Reading keeps the four original
+comparison skills. Writing, Grammar and Vocabulary each show the six assessed
+skills used in their student profiles. Subject headings and learner names still
+expand summaries/evidence. Filtering, sorting, portraits, chart presentation and
+the selected learner survive subject changes. Back to class restores the selected
+class tab. Arrow keys, Home and End navigate the tabs.
+
+Reading teaching suggestions appear on Overall and Reading, explicitly labelled
+Reading focus. Their class evidence link selects Reading before expanding the
+relevant column. Other subject tabs show evidence from their own skills.
+
+Current design review focuses on desktop. Phone-specific visual polish is
+deferred at the user’s request.
