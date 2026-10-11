@@ -144,10 +144,10 @@ try:
                 assert not page.locator("#navigation").is_visible()
             if width<=760:page.locator('.menu').click()
             assert page.locator('[data-teacher-entry]').is_visible()
-            assert 'No sign-in required' in page.locator('[data-teacher-entry]').inner_text()
+            assert page.locator('[data-teacher-entry]').inner_text() == 'Teacher sign in'
             page.locator('[data-teacher-entry]').click()
             page.wait_for_selector('#student-rows')
-            assert 'Demo data' in page.locator('.dashboard-footer').inner_text()
+            assert ' '.join(page.locator('.dashboard-footer').inner_text().split()) == 'EDUCADE teacher dashboard Grade 5 · Viking Quest'
             assert page.locator('input[type=password],input[type=email]').count()==0
             page.goto(base + "/signup.html", wait_until="networkidle")
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Signup overflow at {width}"

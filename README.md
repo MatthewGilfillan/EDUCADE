@@ -130,7 +130,7 @@ challenge work locally. Signup submission is unavailable in this static preview.
 ## Interactive teacher dashboard prototype
 
 Choose **Teacher sign in** in the landing-page header (or the mobile Menu). For
-now, this opens the dashboard prototype, with **Demo data** in its footer.
+now, this opens the dashboard prototype directly.
 It does not request credentials or implement authentication. The link's
 `data-teacher-entry` attribute provides an entry point for a future sign-in flow.
 The approved landing content and artwork remain unchanged.
@@ -185,7 +185,7 @@ right and Ella bottom right. Initials remain available independently of artwork.
 All scores, charts, counts and evidence come from the same fictional response
 records in `public/teacher-data.js`. There are no accounts, payments, live student
 data, learning-record storage or live AI assessment. The exact logo file remains
-unchanged. The landing page also has the labelled teacher demo entry,
+unchanged. The landing page also has the teacher dashboard entry,
 illustrated planned rewards and the potential-world carousel described below.
 
 `EDU.G5.*` identifiers belong to the prototype's own curriculum scaffold.
@@ -282,9 +282,10 @@ check-in. Missing evidence is excluded, and no teaching need is invented when
 the records do not support one. These are practice cues, not mastery decisions
 or live AI assessment; the next step is a new independent response.
 
-Dashboard copy uses Search students and removes repeated sample/fictional
-wording at the user's request. The existing prototype and Demo data footer
-remain. The landing page, account behavior and hosting configuration are unchanged.
+Dashboard copy uses Search students. Demo, fictional and sample wording is
+removed from the dashboard, evidence, chart labels, page titles and landing-page
+entry point at the user's request. No account behavior or hosting configuration
+has changed.
 
 ## Overall profiles and clearer learner links — 11 October 2026
 
@@ -328,3 +329,14 @@ relevant column. Other subject tabs show evidence from their own skills.
 
 Current design review focuses on desktop. Phone-specific visual polish is
 deferred at the user’s request.
+
+
+## Dashboard wording cleanup — 11 October 2026
+
+The visible demo, fictional and sample labels are removed from the dashboard,
+profile summaries, learning evidence, week labels, page titles and landing-page
+teacher entry. The original landing preview images retain their artwork, with
+CSS overlays covering their old data labels. The general presentation notice
+is removed; Settings only reports a browser-storage error when saving fails.
+The same records, scores, charts, portraits and five subject tabs are retained.
+No authentication or live assessment has been added.

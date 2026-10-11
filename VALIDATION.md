@@ -306,3 +306,25 @@ for those changes above.
 - Static upload ZIP is checked for archive integrity and byte equality against
   public. It contains only website assets with no Wrangler configuration.
 - Development branch only; no production merge or deployment.
+
+
+## Dashboard wording cleanup — 11 October 2026
+
+- Removed visible demo/fictional/sample wording, including the footer, evidence
+  badge, chart labels, page titles, profile scores and landing teacher entry.
+- Removed the general presentation notice. Local preferences and their storage
+  fallback remain functional. Original landing preview images are preserved;
+  CSS overlays conceal their embedded sample-data and concept-preview labels.
+- All 18 Node tests pass. Both existing Chromium browser suites pass after the
+  copy changes, including the class/profile tabs, charts, evidence, portraits
+  and local preference behavior. The preview Worker packaging dry run passed.
+- Desktop class and Overall profile screenshots were inspected. Original data
+  and the profile layout remain unchanged.
+- Browser assertions now expect the requested cleaned teacher link and footer.
+  The jsdom route helper waits for navigation and hashchange task turns rather
+  than a fixed 10ms delay that failed under concurrent browser-test load.
+- The website-only ZIP has 28 files at its root, with checked archive integrity
+  and byte equality against public. It excludes Wrangler and package files.
+- Direct file navigation is blocked by this machine's browser policy. The
+  extracted ZIP is instead validated through a local HTTP server.
+- Only development/feature branches are updated. Production remains unchanged.

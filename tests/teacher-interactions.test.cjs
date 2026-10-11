@@ -15,7 +15,8 @@ function dashboard(saved,route='class/reading'){
   for(const file of ['teacher-data.js','teacher-portraits.js','teacher.js'])w.eval(fs.readFileSync(path.join(publicDir,file),'utf8'));
   const select=(selector,value)=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.value=value;el.dispatchEvent(new w.Event('change',{bubbles:true}));};
   const click=selector=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.dispatchEvent(new w.MouseEvent('click',{bubbles:true}));};
-  return {dom,w,d:w.document,select,click,settle:()=>new Promise(resolve=>w.setTimeout(resolve,10))};
+  // jsdom queues navigation and hashchange on separate event-loop turns.
+  return {dom,w,d:w.document,select,click,settle:()=>new Promise(resolve=>w.setTimeout(()=>w.setTimeout(resolve,0),0))};
 }
 test('Class evidence expands on both axes and survives display changes without changing records',async()=>{
  const {dom,w,d,select,click,settle}=dashboard();
@@ -135,7 +136,7 @@ test('Teaching suggestions remain class-wide during filtering and link to the co
  try{
   const D=w.EDUCADE_DEMO,figurative=D.reading[2];
   assert.equal(d.querySelector('#search-students').placeholder,'Search students');
-  assert.ok(!/\bsample\b|\bfictional\b/i.test(d.body.textContent));
+  assert.ok(!/\bsample\b|\bfictional\b|\bdemo\b/i.test(d.body.textContent));
   assert.equal(d.querySelector('.whole-class-plan').dataset.planSkill,figurative);
   assert.ok(d.querySelector('.plan-basis').textContent.includes('4 of 6'));
   assert.ok(d.querySelector('.plan-basis').textContent.includes('61% (73/120'));
@@ -147,7 +148,7 @@ test('Teaching suggestions remain class-wide during filtering and link to the co
   assert.equal(d.querySelector('#evidence-dialog').open,true);
   assert.equal(d.querySelector('.evidence-id').textContent,figurative);
   assert.ok(d.querySelector('#evidence-content').textContent.includes('Ella Brown'));
-  assert.ok(!/\bsample\b|\bfictional\b/i.test(d.querySelector('#evidence-content').textContent));
+  assert.ok(!/\bsample\b|\bfictional\b|\bdemo\b/i.test(d.querySelector('#evidence-content').textContent));
   click('#close-evidence');search.value='';search.dispatchEvent(new w.Event('input',{bubbles:true}));
   click('[data-review-class-skill]');
   assert.equal(d.querySelector('.skill-heading[aria-expanded=true]').dataset.expandSkill,figurative);
@@ -161,7 +162,7 @@ test('Teaching suggestions remain class-wide during filtering and link to the co
   click('.profile-link[data-student=finn]');await settle();
   for(const domain of ['reading','writing','grammar','vocabulary']){
    click('#tab-'+domain);await settle();
-   assert.ok(!/\bsample\b|\bfictional\b/i.test(d.querySelector('#dashboard').textContent));
+   assert.ok(!/\bsample\b|\bfictional\b|\bdemo\b/i.test(d.querySelector('#dashboard').textContent));
   }
  }finally{dom.window.close();}
 });

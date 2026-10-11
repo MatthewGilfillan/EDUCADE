@@ -24,6 +24,11 @@
 .preview-switch button[aria-selected=true]{background:#122c50;color:#fff;box-shadow:0 3px 12px #122c5022}
 .preview-frame{position:relative;overflow:hidden;border-radius:20px;border:1px solid #dbe1e9;box-shadow:0 24px 70px #122c5018;background:#fff}
 .preview-image{display:block;width:100%;height:auto}
+.preview-data-mask,.preview-footer-mask{position:absolute;pointer-events:none;background:#fffdf8}
+#class-panel .preview-data-mask{left:41.5%;top:2.7%;width:9.3%;height:3.8%;background:#fbfaf7}
+#student-panel .preview-data-mask{right:1%;top:1%;width:10.7%;height:4.5%;background:linear-gradient(90deg,#fbfaf7,#fffdf8)}
+.preview-footer-mask{right:0;bottom:0;width:17%;height:3.3%}
+
 .brand-patch{position:absolute;top:0;left:0;width:17.8%;height:10%;display:flex;align-items:center;justify-content:center;background:#fffaf4;padding:1.1%}
 .brand-patch img{width:100%;height:auto;border-radius:5px;display:block}
 .profile-hotspot{position:absolute;left:21%;top:34.5%;width:76%;height:5.3%;background:transparent;border:0;border-radius:10px}
