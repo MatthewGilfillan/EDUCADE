@@ -51,6 +51,7 @@ try:
                     assert abs(cell.bounding_box()['x']-header['x'])<1
                     assert evidence['x']>=cell.bounding_box()['x'] and evidence['x']+evidence['width']<=header['x']+header['width']+1
                     assert evidence['y']>=score['y']+score['height']
+                    assert abs(cell.locator('.evidence-counts').bounding_box()['x']-cell.locator('.hp-track').bounding_box()['x'])<1
                 assert page.locator('.score-cell').count()==36
                 expected=page.evaluate('(domain)=>EDUCADE_DEMO.profileAxes[domain].map(axis=>EDUCADE_DEMO.skillStats(EDUCADE_DEMO.students[0],axis.id).score+"%")',domain)
                 assert page.locator('tr[data-student=alex] .score-cell .hp-value').all_text_contents()==expected
@@ -58,6 +59,26 @@ try:
                 page.locator('tr[data-student=alex] .score-cell').first.click()
                 assert page.locator('.evidence-id').inner_text()==page.evaluate('(domain)=>EDUCADE_DEMO.profileAxes[domain][0].id',domain)
                 page.keyboard.press('Escape')
+                if domain=='writing':
+                    columns_before=page.locator('#skill-headings th').evaluate_all('els=>els.map(el=>({x:el.offsetLeft,width:el.offsetWidth}))')
+                    table_width=page.locator('.class-table').bounding_box()['width']
+                    page.get_by_role('button',name='Show Transitions evidence across the class',exact=True).click()
+                    assert page.locator('#skill-headings th').count()==8
+                    assert page.locator('#student-rows>tr').count()==6
+                    assert page.locator('.class-table .hp-track').count()==36
+                    assert page.locator('.student-skill-evidence:visible').count()==11
+                    assert page.locator('.compact-evidence .hp-track,.skill-evidence-cell,.student-evidence-row').count()==0
+                    assert page.locator('.class-table').bounding_box()['width']==table_width
+                    assert page.locator('#skill-headings th').evaluate_all('els=>els.map(el=>({x:el.offsetLeft,width:el.offsetWidth}))')==columns_before
+                    for cell in page.locator('.expanded-skill-cell').all():
+                        bar=cell.locator('.hp-track').bounding_box()
+                        counts=cell.locator('.evidence-counts').bounding_box()
+                        assert abs(counts['x']-bar['x'])<1 and counts['y']>bar['y']+bar['height']
+                    transitions=page.locator('tr[data-student=alex] .expanded-skill-cell')
+                    assert transitions.locator('.hp-value').inner_text()=='40%'
+                    assert transitions.locator('.evidence-counts').inner_text()=='8/20 correct · 5 hints'
+                    page.screenshot(path=str(OUT/f'transitions-both-expansions-{width}.png'),full_page=True)
+                    page.get_by_role('button',name='Hide Transitions evidence across the class',exact=True).click()
                 page.locator('[data-class-mode=heatmap]').click()
                 assert page.locator('.heat-cell').count()==36
                 page.locator('[data-class-mode=bars]').click()
@@ -108,7 +129,7 @@ try:
             skill=page.evaluate('EDUCADE_DEMO.reading[0]')
             page.locator(f'[data-expand-skill="{skill}"]').first.click()
             assert page.get_by_role('button',name='Hide Inference evidence across the class',exact=True).is_visible()
-            assert page.locator('.skill-evidence-cell').count()==6
+            assert page.locator('.expanded-skill-cell .student-skill-evidence:visible').count()==6
             check_number_column()
             page.locator('.table-scroll').evaluate('(el)=>el.scrollLeft=200')
             check_number_column()

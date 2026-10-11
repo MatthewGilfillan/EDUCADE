@@ -373,3 +373,24 @@ https://educade-preview.silent-wildflower-6cb0.workers.dev/teacher#class/vocabul
 to find Context clues and the other vocabulary comparisons. These controls
 belong to the class table. Student profiles use subject tabs and expandable
 curriculum groups to explore individual skills.
+
+## Evidence within the original columns — 11 October 2026
+
+Both category and learner expansion now place evidence inside each original
+skill cell, beneath its single comparison bar. Category expansion reveals that
+skill across the class; learner expansion reveals all skills for that learner.
+When both are open, their intersection has one evidence block. Neither action
+adds columns, duplicate bars or separate evidence cards. Closing one action
+preserves evidence still requested by the other.
+
+Alex's Writing > Transitions cell keeps its 40% bar with `8/20 correct · 5 hints`
+directly underneath. Column widths and the underlying records remain unchanged
+through expansion, filtering, subject changes and presentation changes.
+
+To prepare an upload ZIP from committed website files, run
+`python scripts/package-website.py --output /tmp/EDUCADE-website.zip`.
+The archive contains only static website files, with no Wrangler configuration
+or package files. Its teacher scripts and stylesheet use content-based filenames;
+Teacher sign in opens a revision-specific HTML file. These fresh URLs avoid
+reusing older dashboard assets cached under the original filenames. Extract
+into a new folder and open the generated `teacher-<revision>.html` entry.
