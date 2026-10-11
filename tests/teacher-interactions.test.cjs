@@ -4,16 +4,17 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {JSDOM}=require('jsdom');
 const publicDir=path.join(__dirname,'../public');
-function dashboard(){
+function dashboard(saved){
   const dom=new JSDOM(fs.readFileSync(path.join(publicDir,'teacher.html'),'utf8'),{url:'https://preview.example/teacher.html',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window;
+  if(saved)w.localStorage.setItem('educade.teacher.presentation.v1',JSON.stringify({version:1,...saved}));
   w.scrollTo=()=>{};w.matchMedia=()=>({matches:true});
   w.HTMLElement.prototype.scrollIntoView=()=>{};
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
   for(const file of ['teacher-data.js','teacher-portraits.js','teacher.js'])w.eval(fs.readFileSync(path.join(publicDir,file),'utf8'));
   const select=(selector,value)=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.value=value;el.dispatchEvent(new w.Event('change',{bubbles:true}));};
-  const click=selector=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.click();};
+  const click=selector=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.dispatchEvent(new w.MouseEvent('click',{bubbles:true}));};
   return {dom,w,d:w.document,select,click,settle:()=>new Promise(resolve=>w.setTimeout(resolve,10))};
 }
 test('Class evidence expands on both axes and survives display changes without changing records',async()=>{
@@ -80,6 +81,7 @@ test('Missing skill evidence remains unassessed rather than becoming a zero or a
   const D=w.EDUCADE_DEMO,missing=D.profileAxes.reading[4].id;
   D.students[0].evidence=D.students[0].evidence.filter(r=>r.skillId!==missing);
   click('.profile-link[data-student=alex]');await settle();
+  click('#tab-reading');await settle();
   assert.equal(d.querySelectorAll('.radar-target').length,8);
   assert.equal(d.querySelector('polygon.radar-area'),null);
   assert.ok(d.querySelector(`.radar-skills [data-evidence="${missing}"]`).textContent.includes('No evidence yet'));
@@ -161,5 +163,49 @@ test('Teaching suggestions remain class-wide during filtering and link to the co
    click('#tab-'+domain);await settle();
    assert.ok(!/\bsample\b|\bfictional\b/i.test(d.querySelector('#dashboard').textContent));
   }
+ }finally{dom.window.close();}
+});
+
+test('Profiles open on Overall radar, use the original subject evidence and keep separate saved chart choices',async()=>{
+ const {dom,w,d,select,click,settle}=dashboard({studentView:'bars',portrait:'vikings'});
+ try{
+  const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students);
+  click('.profile-link[data-student=alex]');await settle();
+  assert.deepEqual([...d.querySelectorAll('[role=tab]')].map(tab=>tab.textContent),['Overall','Reading','Writing','Grammar','Vocabulary']);
+  assert.equal(d.querySelector('[role=tab][aria-selected=true]').id,'tab-overall');
+  assert.equal(d.querySelector('[data-mode=radar]').getAttribute('aria-pressed'),'true');
+  const scores=[...d.querySelectorAll('.radar-skills button')].map(button=>[button.dataset.domain,button.querySelector('strong').textContent]);
+  assert.equal(scores.length,4);
+  for(const [domain,score] of scores)assert.equal(score,D.domainStats(D.students[0],domain).score+'%');
+  for(const key of ['independent','supported','hints'])assert.equal(d.querySelector(`[data-count=${key}]`).textContent,String(D.summarize(D.students[0].evidence)[key]));
+  d.querySelector('.radar-target[data-domain=reading]').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await settle();
+  assert.equal(d.querySelector('[role=tab][aria-selected=true]').id,'tab-reading');
+  assert.equal(d.querySelector('[data-mode=bars]').getAttribute('aria-pressed'),'true');
+  click('#tab-overall');await settle();
+  assert.equal(d.querySelector('[data-mode=radar]').getAttribute('aria-pressed'),'true');
+  click('[data-mode=bars]');
+  assert.deepEqual([...d.querySelectorAll('#skill-chart .skill-row')].map(button=>[button.dataset.domain,button.querySelector('.hp-value').textContent]),scores);
+  select('#portrait-style','initials');select('#switch-student','maya');await settle();
+  assert.equal(d.querySelector('#tab-overall').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelector('[data-mode=bars]').getAttribute('aria-pressed'),'true');
+  const saved=JSON.parse(w.localStorage.getItem('educade.teacher.presentation.v1'));
+  assert.equal(saved.overallView,'bars');assert.equal(saved.studentView,'bars');
+  click('[data-mode=radar]');click('.radar-skills [data-domain=writing]');await settle();
+  assert.equal(d.querySelector('#tab-writing').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelector('h1').textContent,'Maya Patel');
+  assert.equal(JSON.stringify(D.students),original);
+ }finally{dom.window.close();}
+});
+test('Unassessed Overall subjects show no evidence and do not become zero scores',async()=>{
+ const {dom,w,d,click,settle}=dashboard();
+ try{
+  const D=w.EDUCADE_DEMO,grammarIds=new Set(D.groups.filter(g=>g.domain==='grammar').flatMap(g=>g.skills.map(s=>s.id)));
+  D.students[0].evidence=D.students[0].evidence.filter(record=>!grammarIds.has(record.skillId));
+  click('.profile-link[data-student=alex]');await settle();
+  assert.equal(d.querySelector('polygon.radar-area'),null);
+  assert.ok(d.querySelector('.radar-skills [data-domain=grammar]').textContent.includes('No evidence yet'));
+  click('.radar-target[data-domain=grammar]');await settle();
+  assert.equal(d.querySelector('#tab-grammar').getAttribute('aria-selected'),'true');
+  assert.ok(d.querySelector('#skill-chart').textContent.includes('No evidence yet'));
  }finally{dom.window.close();}
 });

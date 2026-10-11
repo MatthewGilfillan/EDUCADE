@@ -238,3 +238,40 @@ for those changes above.
   unwritable default tool directories without changing integrity verification.
 - Changes are on development only. Landing page files, hosting configuration,
   production branch and live domain are outside this revision.
+
+
+## Overall profile and dashboard layout — 11 October 2026
+
+- Added Overall before Reading. Opening a full profile starts there with a
+  four-axis radar for Reading, Writing, Grammar and Vocabulary. Selecting a
+  subject point, bar or subject card opens its detailed skills; existing
+  explicit subject routes continue to work.
+- Domain scores use the same response records as skill evidence, weighted by
+  attempts. Reading includes Foundations and Comprehension. Overall support
+  totals and the four-week trend use all four subjects without duplicate counts.
+  Unassessed domains show No evidence yet and do not create a zero or polygon.
+- Overall and subject chart preferences are saved separately. Existing saved
+  subject bars do not replace the initial Overall radar. Portrait changes,
+  learner switches and reloads preserve the selected presentation.
+- Progress over four weeks appears above What to explore next in the right
+  column on desktop, with the same sequence on mobile. Cards no longer stretch
+  to fill the full height of their neighbour.
+- Show skill evidence is 12px, blue and centred beneath the learner's name.
+  Open full profile has a separate 12px margin above it and a larger touch area;
+  its arrow stays with the last word when the mobile cell wraps.
+- All 17 Node tests pass, covering score consistency, uneven response counts,
+  missing domains, default routing, subject navigation and saved chart choices.
+- The teacher Chromium suite passes at 1440, 1024, 768, 640, 390 and 320px.
+  It measures widget order, class action colour/size/spacing, domain scores
+  and support counts and checks point clicks, keyboard activation, charts,
+  evidence, portraits, local preferences and unavailable storage.
+- Landing Chromium checks pass at the same six widths, including navigation,
+  artwork, carousel and signup frontend handling with a mocked API. No script
+  errors, failed assets or page overflow were reported. Desktop/mobile profile
+  and learner-cell screenshots were inspected under
+  /workspace/educade-validation/profile-overall.
+- The static upload ZIP contains only public website files at its root. Archive
+  integrity and every file's bytes are checked against the tested source; it
+  contains no Wrangler configuration, package manifests or development tools.
+- Development branch only. No production deployment or change to hosting
+  configuration is part of this revision.

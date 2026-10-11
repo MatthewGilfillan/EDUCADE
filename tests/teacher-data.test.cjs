@@ -84,3 +84,17 @@ test('Planning excludes missing evidence and does not recommend reteaching an al
  const strong=D.readingPlan(learners.map(s=>({...s,evidence:s.evidence.map(r=>({...r,correct:true}))})));
  assert.equal(strong.wholeClass,null);assert.equal(strong.smallGroups.length,0);assert.equal(strong.individuals.length,0);
 });
+
+test('Overall subject scores count responses once, include both reading sections and exclude unassessed skills',()=>{
+ for(const student of D.students){
+  const totals=Object.keys(D.domains).map(domain=>D.domainStats(student,domain));
+  assert.equal(totals.reduce((total,stats)=>total+stats.attempts,0),student.evidence.length);
+  assert.equal(totals.reduce((total,stats)=>total+stats.correct,0),student.evidence.filter(record=>record.correct).length);
+  const readingIds=new Set(D.groups.filter(group=>group.domain==='reading').flatMap(group=>group.skills.map(skill=>skill.id)));
+  assert.deepEqual(D.domainStats(student,'reading'),D.summarize(student.evidence.filter(record=>readingIds.has(record.skillId))));
+ }
+ const comprehension=D.reading[0],foundation=D.groups.find(group=>group.section==='foundations').skills[0].id;
+ const uneven={evidence:[{skillId:comprehension,correct:true,supported:false,hint:false},...Array.from({length:9},()=>({skillId:foundation,correct:false,supported:true,hint:false}))]};
+ assert.equal(D.domainStats(uneven,'reading').score,10);
+ assert.equal(D.domainStats(uneven,'writing').score,null);
+});

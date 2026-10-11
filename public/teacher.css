@@ -71,5 +71,17 @@
 .intervention-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;margin-top:26px}.intervention-grid h3{font-size:17px;line-height:1.5}.group-intervention,.individual-intervention{padding:17px 0;border-bottom:1px solid #e8e4dd}.group-intervention:last-child,.individual-intervention:last-child{border-bottom:0;padding-bottom:0}.group-intervention h4{font-size:13px;line-height:1.6}.learner-evidence-chips{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0}.learner-evidence-chip{border:1px solid #b7d6ef;background:#edf6ff;color:#0a5799;padding:8px 11px;min-height:40px;border-radius:8px;font-size:11px;font-weight:750}.learner-evidence-chip:hover{background:#dfefff}.group-intervention .intervention-check{font-size:11px;margin-top:8px;color:#405b7c}
 .individual-evidence-link{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:0 0 8px;min-height:40px;border:0;background:transparent;text-align:left;line-height:1.6}.individual-evidence-link strong{font-size:13px}.individual-evidence-link>span{font-size:11px;color:#076ac6}.individual-evidence-link:hover strong{color:#076ac6}.individual-intervention .intervention-evidence{font-size:10px;line-height:1.8;margin-top:8px}.planning-note{border-top:1px solid #ecdcca;padding-top:16px;margin-top:23px;font-size:11px;color:var(--muted);line-height:1.8}
 .recent-evidence-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.recent-evidence-grid .evidence-link{align-items:flex-start;min-width:0}.recent-evidence-grid .evidence-link>div{min-width:0}.recent-evidence-grid .avatar{width:31px;height:31px}
+.profile-grid{align-items:start}.profile-insights{display:grid;gap:20px;min-width:0;align-content:start}.profile-insights>.card{min-width:0}
+@media(max-width:640px){.profile-insights{display:contents}}
 @media(max-width:1100px){.lesson-steps{gap:16px}.intervention-grid{gap:22px}.recent-evidence-grid{grid-template-columns:1fr}.individual-evidence-link{align-items:flex-start;flex-direction:column;gap:3px}}
 @media(max-width:640px){.whole-class-plan{padding:16px}.whole-class-plan h3{font-size:19px}.lesson-steps,.intervention-grid{grid-template-columns:1fr;gap:18px}.lesson-steps>div{position:relative;padding-left:38px}.lesson-step-number{position:absolute;left:0;top:0;margin:0}.plan-basis{font-size:11px}.intervention-grid{margin-top:22px}.individual-evidence-link{flex-direction:row;gap:10px;flex-wrap:wrap}.planning-label{font-size:10px}.whole-class-plan>.text-button{font-size:11px}.class-next-steps .card-heading{align-items:flex-start}}
+
+/* The Overall tab keeps all five domains usable on narrow screens. */
+.domain-overview{margin-top:0}.domain-overview .hp{margin-top:14px}
+@media(max-width:360px){.category-tabs button{font-size:10px;padding:12px 6px}}
+
+/* Give the two learner actions separate space within the name cell. */
+.student-name-cell .learner>div{flex:1;min-width:0}
+.student-name-cell .name-button{width:100%;text-align:left}
+.student-name-cell .name-button small{display:block;text-align:center;color:#076ac6;font-size:12px;font-weight:650;line-height:1.45;margin-top:8px;padding:6px 0}
+.student-name-cell .profile-link{margin-top:12px;padding:8px 0;font-size:12px;line-height:1.45;min-height:40px}

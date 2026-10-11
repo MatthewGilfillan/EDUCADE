@@ -2,18 +2,20 @@
   'use strict';
   const D=window.EDUCADE_DEMO, root=document.querySelector('#dashboard'), dialog=document.querySelector('#evidence-dialog');
   const preferenceKey='educade.teacher.presentation.v1';
-  const defaults={portrait:'photos',classView:'bars',studentView:'radar'};
+  const profileDomains={overall:{name:'Overall'},...D.domains};
+  const defaults={portrait:'photos',classView:'bars',studentView:'radar',overallView:'radar'};
+  const chartPreference=()=>state.domain==='overall'?'overallView':'studentView';
   let preferences={...defaults},storageAvailable=true;
   try {
     const saved=JSON.parse(localStorage.getItem(preferenceKey));
     if(saved?.version===1){
-      for(const [key,choices] of Object.entries({portrait:['photos','vikings','initials'],classView:['heatmap','bars'],studentView:['radar','bars']})){
+      for(const [key,choices] of Object.entries({portrait:['photos','vikings','initials'],classView:['heatmap','bars'],studentView:['radar','bars'],overallView:['radar','bars']})){
         if(choices.includes(saved[key]))preferences[key]=saved[key];
       }
     }
   } catch { /* Malformed or unavailable storage must not stop the dashboard. */ }
   const controls=document.querySelector('.presentation-controls'),portraitPicker=document.querySelector('.portrait-picker');
-  const state={classId:'5a',student:'alex',domain:'reading',section:'comprehension',search:'',sort:'name',selectedSkill:null,expandedSkill:null,expandedStudent:null};
+  const state={classId:'5a',student:'alex',domain:'overall',section:'comprehension',search:'',sort:'name',selectedSkill:null,expandedSkill:null,expandedStudent:null};
   let evidenceOpener=null;
   let nextFocus=null;
   const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -41,11 +43,11 @@
   const hp=(score,label)=>score===null?'<span class="no-evidence">No evidence yet</span>':`<div class="hp" role="img" aria-label="${escape(label)}: ${score} percent"><div class="hp-track"><span class="hp-fill ${score<50?'low':score<70?'mid':''}" style="--value:${score}%"></span></div><span class="hp-value">${score}%</span></div>`;
   const groupSkills=id=>D.groups.find(g=>g.id===id);
   const groupForSkill=id=>D.groups.find(g=>g.skills.some(s=>s.id===id));
-  const currentGroups=()=>D.groups.filter(g=>g.domain===state.domain&&(state.domain!=='reading'||g.section===state.section));
+  const currentGroups=()=>D.groups.filter(g=>state.domain==='overall'||(g.domain===state.domain&&(state.domain!=='reading'||g.section===state.section)));
   const scopedRecords=student=>student.evidence.filter(r=>currentGroups().some(g=>g.skills.some(s=>s.id===r.skillId)));
   const readingScores=s=>D.reading.map(id=>D.skillStats(s,id).score);
   const needSupport=s=>readingScores(s).some(score=>score!==null&&score<50);
-  function goStudent(id,domain='reading',section='comprehension'){location.hash=`student/${id}/${domain}/${section}`;}
+  function goStudent(id,domain='overall',section='comprehension'){location.hash=`student/${id}/${domain}/${section}`;}
   function renderClass(){
     document.querySelector('#nav-class').classList.add('active');document.querySelector('#nav-profile').classList.remove('active');
     const headings=['Inference','Vocabulary in context','Figurative language','Character thoughts & motivations'];
@@ -84,7 +86,7 @@
     document.querySelector('#student-rows').innerHTML=students.map((student,rowIndex)=>{
       const open=state.expandedStudent===student.id;
       const cells=readingScores(student).map((score,i)=>`<td><button class="score-cell ${preferences.classView==='heatmap'?'heat-cell '+(score===null?'heat-empty':score<50?'heat-low':score<70?'heat-mid':'heat-high'):''}" type="button" data-evidence="${D.reading[i]}" data-learner="${student.id}" aria-label="${escape(student.name)}, ${escape(classHeadings[i])}: ${score===null?'No evidence yet':score+' percent'}. View evidence">${preferences.classView==='heatmap'?`<strong>${score===null?'No evidence yet':score+'%'}</strong><span>View evidence →</span>`:hp(score,classHeadings[i])}</button></td>${state.expandedSkill===D.reading[i]?`<td class="skill-evidence-cell">${compactEvidence(student,D.reading[i])}</td>`:''}`).join('');
-      return `<tr data-student="${student.id}" class="${student.id===state.student?'current-learner':''} ${open?'expanded-learner':''}"><td class="row-number">${rowIndex+1}</td><th scope="row" class="student-name-cell"><div class="learner">${avatar(student)}<div><button class="name-button" data-expand-student="${student.id}" aria-expanded="${open}" aria-controls="student-evidence-${student.id}" type="button">${escape(student.name)}<small>${open?'− Hide skill evidence':'+ Show skill evidence'}</small></button><button class="profile-link" type="button" data-student="${student.id}">Open full profile →</button></div></div></th>${cells}</tr><tr class="student-evidence-row" id="student-evidence-${student.id}" ${open?'':'hidden'}><td colspan="${expanded?7:6}"><section class="student-evidence-panel" aria-label="${escape(student.name)} skill evidence"><div class="inline-evidence-heading"><h3>${escape(student.name)} · Reading evidence</h3><button class="text-button" type="button" data-expand-student="${student.id}">Collapse ↑</button></div><div class="student-evidence-grid">${D.reading.map((id,i)=>`<article><h4>${escape(classHeadings[i])}</h4>${compactEvidence(student,id)}</article>`).join('')}</div></section></td></tr>`;
+      return `<tr data-student="${student.id}" class="${student.id===state.student?'current-learner':''} ${open?'expanded-learner':''}"><td class="row-number">${rowIndex+1}</td><th scope="row" class="student-name-cell"><div class="learner">${avatar(student)}<div><button class="name-button" data-expand-student="${student.id}" aria-expanded="${open}" aria-controls="student-evidence-${student.id}" type="button">${escape(student.name)}<small>${open?'− Hide skill evidence':'+ Show skill evidence'}</small></button><button class="profile-link" type="button" data-student="${student.id}">Open full profile&nbsp;→</button></div></div></th>${cells}</tr><tr class="student-evidence-row" id="student-evidence-${student.id}" ${open?'':'hidden'}><td colspan="${expanded?7:6}"><section class="student-evidence-panel" aria-label="${escape(student.name)} skill evidence"><div class="inline-evidence-heading"><h3>${escape(student.name)} · Reading evidence</h3><button class="text-button" type="button" data-expand-student="${student.id}">Collapse ↑</button></div><div class="student-evidence-grid">${D.reading.map((id,i)=>`<article><h4>${escape(classHeadings[i])}</h4>${compactEvidence(student,id)}</article>`).join('')}</div></section></td></tr>`;
     }).join('');
     document.querySelector('#empty-class').hidden=students.length>0;
   }
@@ -100,19 +102,22 @@
     return `<button class="evidence-link" type="button" data-evidence="${escape(record.skillId)}" data-learner="${student.id}">${avatar(student)}<div><strong>${escape(student.name)} · ${escape(D.samples[record.skillId].title)}</strong><p>${record.supported?'Supported answer':'Independent answer'}${record.hint?' · Hint used':''} · Demo Week ${record.week}</p></div><span class="arrow" aria-hidden="true">→</span></button>`;
   }
   function profileSkills(groups){
+    if(state.domain==='overall')return Object.entries(D.domains).map(([domain,info])=>({id:domain,domain,label:info.name}));
     const ids=new Set(groups.flatMap(group=>group.skills.map(skill=>skill.id)));
     return (D.profileAxes[state.domain]||[]).filter(axis=>ids.has(axis.id));
   }
+  const axisStats=(student,axis)=>axis.domain?D.domainStats(student,axis.domain):D.skillStats(student,axis.id);
+  const axisAction=(student,axis)=>axis.domain?`data-domain="${axis.domain}"`:`data-evidence="${axis.id}" data-learner="${student.id}"`;
   function canShowRadar(student,groups){
-    return profileSkills(groups).filter(axis=>D.skillStats(student,axis.id).score!==null).length>=3;
+    return profileSkills(groups).filter(axis=>axisStats(student,axis).score!==null).length>=3;
   }
   function summaryChart(student,groups){
     const axes=profileSkills(groups);
-    if(preferences.studentView==='radar'&&canShowRadar(student,groups)){
+    if(preferences[chartPreference()]==='radar'&&canShowRadar(student,groups)){
       const count=axes.length,cx=280,cy=210,radius=138;
       const point=(i,r)=>[cx+Math.sin(i*2*Math.PI/count)*r,cy-Math.cos(i*2*Math.PI/count)*r];
       const polygon=r=>axes.map((axis,i)=>point(i,r).join(',')).join(' ');
-      const scores=axes.map(axis=>D.skillStats(student,axis.id).score);
+      const scores=axes.map(axis=>axisStats(student,axis).score);
       const labelLines=label=>{
         const words=label.split(' '),lines=[''];
         words.forEach(word=>{const i=lines.length-1;if((lines[i]+' '+word).trim().length>20&&lines[i])lines.push(word);else lines[i]=(lines[i]+' '+word).trim();});
@@ -123,14 +128,14 @@
         const next=(i+1)%count;if(score===null||scores[next]===null)return '';
         return `<line class="radar-area" x1="${point(i,radius*score/100)[0]}" y1="${point(i,radius*score/100)[1]}" x2="${point(next,radius*scores[next]/100)[0]}" y2="${point(next,radius*scores[next]/100)[1]}"/>`;
       }).join('');
-      return `<div class="radar-stage"><svg class="radar" viewBox="0 0 560 430" role="group" aria-label="${escape(D.domains[state.domain].name)} skill profile. Select a labelled skill point or the buttons below for evidence."><title>${escape(student.name)} · ${escape(D.domains[state.domain].name)} skill progress</title>${[.25,.5,.75,1].map(n=>`<polygon class="radar-grid" points="${polygon(radius*n)}"/>`).join('')}${axes.map((axis,i)=>{const end=point(i,radius);return `<line class="radar-axis" x1="${cx}" y1="${cy}" x2="${end[0]}" y2="${end[1]}"/>`;}).join('')}${areas}${axes.map((axis,i)=>{
+      return `<div class="radar-stage"><svg class="radar" viewBox="0 0 560 430" role="group" aria-label="${escape(profileDomains[state.domain].name)} profile. ${state.domain==='overall'?'Select a subject to explore its skills.':'Select a labelled skill point or the buttons below for evidence.'}"><title>${escape(student.name)} · ${escape(profileDomains[state.domain].name)} progress</title>${[.25,.5,.75,1].map(n=>`<polygon class="radar-grid" points="${polygon(radius*n)}"/>`).join('')}${axes.map((axis,i)=>{const end=point(i,radius);return `<line class="radar-axis" x1="${cx}" y1="${cy}" x2="${end[0]}" y2="${end[1]}"/>`;}).join('')}${areas}${axes.map((axis,i)=>{
         const score=scores[i],dot=point(i,radius*(score??100)/100),label=point(i,radius+42),lines=labelLines(axis.label);
-        return `<g class="radar-target" role="button" tabindex="0" data-evidence="${axis.id}" data-learner="${student.id}" aria-label="${escape(axis.label)}: ${score===null?'No evidence yet':score+' percent'}. View evidence"><circle class="radar-hit" cx="${dot[0]}" cy="${dot[1]}" r="17"/><circle class="radar-point ${score===null?'unassessed-point':''}" cx="${dot[0]}" cy="${dot[1]}" r="5"/><text class="radar-label" x="${label[0]}" y="${label[1]}" text-anchor="middle">${lines.map((line,n)=>`<tspan x="${label[0]}" dy="${n?14:-(lines.length-1)*7}">${escape(line)}</tspan>`).join('')}</text></g>`;
-      }).join('')}<text class="radar-scale" x="${cx+8}" y="${cy-radius-7}">100%</text><text class="radar-scale" x="${cx+8}" y="${cy-radius*.5-5}">50%</text></svg><div class="radar-portrait">${avatar(student,true)}</div></div><div class="radar-skills">${axes.map(axis=>{const stats=D.skillStats(student,axis.id);return `<button type="button" data-evidence="${axis.id}" data-learner="${student.id}"><span>${escape(axis.label)}</span><strong>${stats.score===null?'No evidence yet':stats.score+'%'}</strong></button>`;}).join('')}</div>`;
+        return `<g class="radar-target" role="button" tabindex="0" ${axisAction(student,axis)} aria-label="${escape(axis.label)}: ${score===null?'No evidence yet':score+' percent'}. ${axis.domain?'Explore subject':'View evidence'}"><circle class="radar-hit" cx="${dot[0]}" cy="${dot[1]}" r="17"/><circle class="radar-point ${score===null?'unassessed-point':''}" cx="${dot[0]}" cy="${dot[1]}" r="5"/><text class="radar-label" x="${label[0]}" y="${label[1]}" text-anchor="middle">${lines.map((line,n)=>`<tspan x="${label[0]}" dy="${n?14:-(lines.length-1)*7}">${escape(line)}</tspan>`).join('')}</text></g>`;
+      }).join('')}<text class="radar-scale" x="${cx+8}" y="${cy-radius-7}">100%</text><text class="radar-scale" x="${cx+8}" y="${cy-radius*.5-5}">50%</text></svg><div class="radar-portrait">${avatar(student,true)}</div></div><div class="radar-skills">${axes.map(axis=>{const stats=axisStats(student,axis);return `<button type="button" ${axisAction(student,axis)}><span>${escape(axis.label)}</span><strong>${stats.score===null?'No evidence yet':stats.score+'%'}</strong></button>`;}).join('')}</div>`;
     }
-    // Progress Bars use the exact same individual skills and records as Radar.
+    // Progress Bars use the same axes and response records as Radar.
     const skills=axes.length?axes:groups.flatMap(group=>group.skills.map(skill=>({id:skill.id,label:skill.name})));
-    return skills.map(axis=>{const stats=D.skillStats(student,axis.id);return `<button class="skill-row" data-evidence="${axis.id}" data-learner="${student.id}" type="button"><div class="skill-meta"><strong>${escape(axis.label)}</strong><small>${stats.attempts?stats.attempts+' responses':'No evidence yet'}</small></div>${hp(stats.score,axis.label)}</button>`;}).join('');
+    return skills.map(axis=>{const stats=axisStats(student,axis);return `<button class="skill-row" ${axisAction(student,axis)} type="button"><div class="skill-meta"><strong>${escape(axis.label)}</strong><small>${stats.attempts?stats.attempts+' responses':'No evidence yet'}</small></div>${hp(stats.score,axis.label)}</button>`;}).join('');
   }
   function progressChart(records){
     const values=Array.from({length:4},(_,i)=>{
@@ -146,19 +151,26 @@
   function curriculum(student,groups){
     return `<section class="card curriculum-card"><div class="card-heading"><div><h2>Explore the skill groups</h2><p>Expand a group, then choose an individual skill to view its learning evidence.</p></div><span class="curriculum-count">${groups.flatMap(g=>g.skills).filter(s=>D.skillStats(student,s.id).attempts).length} of ${groups.flatMap(g=>g.skills).length} skills assessed</span></div><div class="curriculum-groups">${groups.map(g=>{const stats=D.groupStats(student,g),measured=g.skills.filter(s=>D.skillStats(student,s.id).attempts).length;return `<details class="skill-group" id="group-${g.key}"><summary><span><strong>${escape(g.name)}</strong><small>${measured}/${g.skills.length} individual skills assessed</small></span><span class="group-score ${stats.score===null?'unassessed':''}">${stats.score===null?'No evidence yet':stats.score+'%'}</span></summary><div class="individual-skills">${g.skills.map(s=>{const stat=D.skillStats(student,s.id);return `<button type="button" class="individual-skill" data-evidence="${s.id}" data-learner="${student.id}"><strong>${escape(s.name)}</strong><span class="skill-id">${s.id}</span>${hp(stat.score,s.name)}<span class="individual-action">${stat.attempts?stat.attempts+' responses · View evidence →':'No responses · View skill →'}</span></button>`;}).join('')}</div></details>`;}).join('')}</div><p class="score-note">Coverage scaffold informed by your supplied Grade 5 lists; not a complete or validated curriculum. Unassessed skills are excluded from scores and charts.</p></section>`;
   }
+  function domainOverview(student){
+    return `<section class="card curriculum-card"><div class="card-heading"><div><h2>Explore the subjects</h2><p>Choose a subject, then expand a skill group to explore individual skills and learning evidence.</p></div></div><div class="curriculum-groups">${Object.entries(D.domains).map(([domain,info])=>{const stats=D.domainStats(student,domain),skills=D.groups.filter(group=>group.domain===domain).flatMap(group=>group.skills);return `<button class="individual-skill domain-overview" type="button" data-domain="${domain}"><strong>${info.name}</strong><p class="small-copy">${domain==='reading'?'Reading Foundations and Reading Comprehension':info.name+' skill groups'}</p>${hp(stats.score,info.name)}<span class="individual-action">${skills.filter(skill=>D.skillStats(student,skill.id).attempts).length}/${skills.length} skills assessed · Explore subject →</span></button>`;}).join('')}</div><p class="score-note">Subject scores use correct responses ÷ attempts across assessed skills. Reading includes Foundations and Comprehension. Unassessed skills are excluded.</p></section>`;
+  }
   function renderProfile(){
     const student=studentById(state.student),groups=currentGroups(),records=scopedRecords(student),stats=D.summarize(records);
     const assessedGroups=groups.filter(g=>D.groupStats(student,g).attempts>0),canRadar=canShowRadar(student,groups);
     document.querySelector('#nav-profile').classList.add('active');document.querySelector('#nav-class').classList.remove('active');
     const weakest=assessedGroups.slice().sort((a,b)=>D.groupStats(student,a).score-D.groupStats(student,b).score)[0];
-    const label=state.domain==='reading'?(state.section==='foundations'?'Reading Foundations':'Reading Comprehension'):D.domains[state.domain].name;
+    const weakestDomain=Object.keys(D.domains).filter(domain=>D.domainStats(student,domain).attempts).sort((a,b)=>D.domainStats(student,a).score-D.domainStats(student,b).score)[0];
+    const overall=state.domain==='overall',view=preferences[chartPreference()];
+    const label=state.domain==='reading'?(state.section==='foundations'?'Reading Foundations':'Reading Comprehension'):profileDomains[state.domain].name;
     root.innerHTML=`<header class="page-heading profile-heading"><div class="profile-id">${avatar(student,true)}<div><div class="eyebrow">${escape(currentClass().name.toUpperCase())} / STUDENT PROFILE</div><h1>${escape(student.name)}</h1><p class="subtitle">Grade 5 · Viking Quest</p></div></div><div class="profile-actions"><div class="header-controls-slot"></div><div class="profile-navigation"><label class="field">Switch learner<select id="switch-student">${classStudents().map(s=>`<option value="${s.id}" ${s.id===student.id?'selected':''}>${s.name}</option>`).join('')}</select></label><button class="button" type="button" data-back-class>← Back to class</button></div></div></header>
-      <div class="category-tabs" role="tablist" aria-label="Learning domains">${Object.entries(D.domains).map(([key,d])=>`<button id="tab-${key}" type="button" role="tab" aria-controls="domain-panel" aria-selected="${state.domain===key}" tabindex="${state.domain===key?'0':'-1'}" data-domain="${key}">${d.name}</button>`).join('')}</div>
+      <div class="category-tabs" role="tablist" aria-label="Learning domains">${Object.entries(profileDomains).map(([key,d])=>`<button id="tab-${key}" type="button" role="tab" aria-controls="domain-panel" aria-selected="${state.domain===key}" tabindex="${state.domain===key?'0':'-1'}" data-domain="${key}">${d.name}</button>`).join('')}</div>
       <section id="domain-panel" role="tabpanel" aria-labelledby="tab-${state.domain}">${state.domain==='reading'?`<div class="reading-sections" role="group" aria-label="Reading curriculum sections">${D.domains.reading.sections.map(s=>`<button type="button" data-section="${s.id}" aria-pressed="${state.section===s.id}">${s.name}</button>`).join('')}</div>`:''}
-      <div class="profile-grid"><section class="card"><div class="card-heading"><div><h2>${label} profile</h2><p>Individual skills · Select a skill to see its evidence</p></div><div class="chart-toggle" role="group" aria-label="Student data view"><button type="button" data-mode="bars" aria-pressed="${preferences.studentView==='bars'||!canRadar}">Progress Bars</button><button type="button" data-mode="radar" aria-pressed="${preferences.studentView==='radar'&&canRadar}" ${!canRadar?'disabled title="A radar chart needs at least three assessed skills"':''}>Radar chart</button></div></div><div class="profile-summary"><span>Overall demo score</span><strong>${stats.score===null?'No evidence yet':stats.score+'%'}</strong></div><div id="skill-chart">${summaryChart(student,groups)}</div><p class="skill-action">Select a skill point or progress bar to view its evidence.</p><p class="score-note">${!canRadar?'A radar chart needs at least three assessed skills. Showing progress bars here; your saved chart choice stays the same. ':''}Scores reflect correct responses across the assessed skills.</p></section>
-      <section class="card support-card"><h2>What to explore next</h2><div class="support-item"><span class="symbol" aria-hidden="true">◎</span><div><h3>${weakest?'Take a closer look at '+escape(weakest.name.toLowerCase())+'.':'Collect evidence before making a judgement.'}</h3><p>${weakest?`This group has a ${D.groupStats(student,weakest).score}% demo score. Open its challenges to understand the responses and support used.`:'No responses have been recorded for these demo skills.'}</p>${weakest?`<button class="text-button" type="button" data-open-group="${weakest.id}">Explore the skill group →</button>`:''}</div></div><div class="support-totals"><div class="support-total"><strong data-count="independent">${stats.independent}</strong><p>independent<br>answers</p></div><div class="support-total"><strong data-count="supported">${stats.supported}</strong><p>supported<br>answers</p></div><div class="support-total"><strong data-count="hints">${stats.hints}</strong><p>answers with<br>a hint</p></div></div><div class="support-meter" style="--independent:${stats.attempts?stats.independent/stats.attempts*100:0}%" aria-hidden="true"><span></span></div><p class="support-note">${stats.attempts} responses in this section. Hint use is part of supported answers, not an additional answer count.</p></section>
-      <section class="card progress-card"><div class="card-heading"><div><h2>Progress over four weeks</h2><p>Cumulative accuracy (%) for ${label.toLowerCase()}.</p></div></div><div class="legend"><span><i></i> Independent</span><span><i class="orange"></i> Supported</span></div>${progressChart(records)}<p class="score-note">Correct responses ÷ responses in each support type. An illustrative demo trend, not a prediction.</p></section>
-      <section class="card"><h2>Latest learning evidence</h2><p class="small-copy">Choose a response to inspect the skill and challenge.</p>${assessedGroups.slice(0,3).map(g=>{const id=g.skills.find(s=>D.skillStats(student,s.id).attempts).id;const record=student.evidence.filter(r=>r.skillId===id).at(-1);return evidenceLink(student,record);}).join('')||'<p class="empty-state">No evidence yet</p>'}</section></div>${curriculum(student,groups)}</section>`;
+      <div class="profile-grid"><section class="card"><div class="card-heading"><div><h2>${label} profile</h2><p>${overall?'Four subjects · Select a subject to explore its skills':'Individual skills · Select a skill to see its evidence'}</p></div><div class="chart-toggle" role="group" aria-label="Student data view"><button type="button" data-mode="bars" aria-pressed="${view==='bars'||!canRadar}">Progress Bars</button><button type="button" data-mode="radar" aria-pressed="${view==='radar'&&canRadar}" ${!canRadar?`disabled title="A radar chart needs at least three assessed ${overall?'subjects':'skills'}"`:''}>Radar chart</button></div></div><div class="profile-summary"><span>Overall demo score</span><strong>${stats.score===null?'No evidence yet':stats.score+'%'}</strong></div><div id="skill-chart">${summaryChart(student,groups)}</div><p class="skill-action">${overall?'Select a subject point or progress bar to explore its skills.':'Select a skill point or progress bar to view its evidence.'}</p><p class="score-note">${!canRadar?`A radar chart needs at least three assessed ${overall?'subjects':'skills'}. Showing progress bars here; your saved chart choice stays the same. `:''}${overall?'Subject scores use correct responses ÷ attempts. Reading includes Foundations and Comprehension. Unassessed skills are excluded.':'Scores reflect correct responses across the assessed skills.'}</p></section>
+      <div class="profile-insights">
+      <section class="card progress-card"><div class="card-heading"><div><h2>Progress over four weeks</h2><p>Cumulative accuracy (%) ${overall?'across all four subjects':'for '+label.toLowerCase()}.</p></div></div><div class="legend"><span><i></i> Independent</span><span><i class="orange"></i> Supported</span></div>${progressChart(records)}<p class="score-note">Correct responses ÷ responses in each support type. An illustrative demo trend, not a prediction.</p></section>
+      <section class="card support-card profile-next-card"><h2>What to explore next</h2><div class="support-item"><span class="symbol" aria-hidden="true">◎</span><div>${overall?`<h3>${weakestDomain?'Take a closer look at '+D.domains[weakestDomain].name.toLowerCase()+'.':'Collect evidence before making a judgement.'}</h3><p>${weakestDomain?`This subject has a ${D.domainStats(student,weakestDomain).score}% demo score. Explore its skills and review the responses and support used.`:'No evidence yet for these subjects.'}</p>${weakestDomain?`<button class="text-button" type="button" data-domain="${weakestDomain}">Explore the subject →</button>`:''}`:`<h3>${weakest?'Take a closer look at '+escape(weakest.name.toLowerCase())+'.':'Collect evidence before making a judgement.'}</h3><p>${weakest?`This group has a ${D.groupStats(student,weakest).score}% demo score. Open its challenges to understand the responses and support used.`:'No responses have been recorded for these demo skills.'}</p>${weakest?`<button class="text-button" type="button" data-open-group="${weakest.id}">Explore the skill group →</button>`:''}`}</div></div><div class="support-totals"><div class="support-total"><strong data-count="independent">${stats.independent}</strong><p>independent<br>answers</p></div><div class="support-total"><strong data-count="supported">${stats.supported}</strong><p>supported<br>answers</p></div><div class="support-total"><strong data-count="hints">${stats.hints}</strong><p>answers with<br>a hint</p></div></div><div class="support-meter" style="--independent:${stats.attempts?stats.independent/stats.attempts*100:0}%" aria-hidden="true"><span></span></div><p class="support-note">${stats.attempts} responses in this section. Hint use is part of supported answers, not an additional answer count.</p></section>
+      </div>
+      <section class="card"><h2>Latest learning evidence</h2><p class="small-copy">Choose a response to inspect the skill and challenge.</p>${assessedGroups.slice(0,3).map(g=>{const id=g.skills.find(s=>D.skillStats(student,s.id).attempts).id;const record=student.evidence.filter(r=>r.skillId===id).at(-1);return evidenceLink(student,record);}).join('')||'<p class="empty-state">No evidence yet</p>'}</section></div>${overall?domainOverview(student):curriculum(student,groups)}</section>`;
   }
   function showEvidence(studentId,skillId,opener){
     const student=studentById(studentId),group=groupForSkill(skillId);if(!group)return;
@@ -186,7 +198,7 @@
   }
   function setStudentView(mode){
     if(!['bars','radar'].includes(mode))return;
-    preferences.studentView=mode;savePreferences();
+    preferences[chartPreference()]=mode;savePreferences();
     const groups=currentGroups(),canRadar=canShowRadar(studentById(state.student),groups);
     document.querySelector('#skill-chart').innerHTML=summaryChart(studentById(state.student),groups);
     markSelectedSkill();
@@ -203,17 +215,17 @@
   function parseRoute(){
     const [view,id,domain,section]=location.hash.slice(1).split('/');
     if(view==='student'){
-      state.student=studentById(id).id;state.classId=D.classes.find(c=>c.studentIds.includes(state.student))?.id||state.classId;state.domain=D.domains[domain]?domain:'reading';state.section=section==='foundations'?'foundations':'comprehension';renderProfile();
+      state.student=studentById(id).id;state.classId=D.classes.find(c=>c.studentIds.includes(state.student))?.id||state.classId;state.domain=profileDomains[domain]?domain:'overall';state.section=section==='foundations'?'foundations':'comprehension';renderProfile();
     }else renderClass();
     root.querySelector('.header-controls-slot').append(controls);
     if(root.querySelector('.portrait-controls-slot'))root.querySelector('.portrait-controls-slot').append(portraitPicker);
     else controls.insertBefore(portraitPicker,controls.querySelector('.dashboard-menu'));
     document.querySelector('#class-select').value=state.classId;
     markSelectedSkill();
-    document.title=`${view==='student'?studentById(state.student).name+' · '+D.domains[state.domain].name:'Class overview'} · EDUCADE demo`;
+    document.title=`${view==='student'?studentById(state.student).name+' · '+profileDomains[state.domain].name:'Class overview'} · EDUCADE demo`;
   }
   root.addEventListener('click',event=>{
-    const target=event.target.closest('button,[data-evidence],tr[data-student]');if(!target)return;
+    const target=event.target.closest('button,[data-evidence],[data-domain],tr[data-student]');if(!target)return;
     if(target.dataset.expandSkill){toggleClassExpansion('skill',target.dataset.expandSkill);return;}
     if(target.dataset.expandStudent){toggleClassExpansion('student',target.dataset.expandStudent);return;}
     if(target.matches('tr[data-student]')){toggleClassExpansion('student',target.dataset.student);return;}
@@ -225,7 +237,7 @@
     }
     if(target.dataset.student){goStudent(target.dataset.student);return;}
     if(target.hasAttribute('data-back-class')){location.hash='class';return;}
-    if(target.dataset.domain){nextFocus=`#tab-${target.dataset.domain}`;goStudent(state.student,target.dataset.domain,state.section);return;}
+    if(target.dataset.domain){nextFocus=`#tab-${target.dataset.domain}`;goStudent(state.student,target.dataset.domain,target.matches('[role=tab]')?state.section:'comprehension');return;}
     if(target.dataset.section){nextFocus=`[data-section="${target.dataset.section}"]`;goStudent(state.student,'reading',target.dataset.section);return;}
     if(target.dataset.mode){setStudentView(target.dataset.mode);return;}
     if(target.dataset.classMode){setClassView(target.dataset.classMode);return;}
@@ -235,13 +247,13 @@
   root.addEventListener('change',event=>{if(event.target.id==='sort-students'){state.sort=event.target.value;renderRows();markSelectedSkill();}if(event.target.id==='switch-student'){nextFocus='#switch-student';goStudent(event.target.value,state.domain,state.section);}});
   root.addEventListener('keydown',event=>{
     const point=event.target.closest('.radar-target');
-    if(point&&['Enter',' '].includes(event.key)){event.preventDefault();showEvidence(point.dataset.learner,point.dataset.evidence,point);return;}
+    if(point&&['Enter',' '].includes(event.key)){event.preventDefault();if(point.dataset.domain){nextFocus=`#tab-${point.dataset.domain}`;goStudent(state.student,point.dataset.domain);}else showEvidence(point.dataset.learner,point.dataset.evidence,point);return;}
     const tab=event.target.closest('[role="tab"]');if(!tab||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
-    event.preventDefault();const keys=Object.keys(D.domains),i=keys.indexOf(state.domain),next=event.key==='Home'?0:event.key==='End'?keys.length-1:(i+(event.key==='ArrowRight'?1:-1)+keys.length)%keys.length;
+    event.preventDefault();const keys=Object.keys(profileDomains),i=keys.indexOf(state.domain),next=event.key==='Home'?0:event.key==='End'?keys.length-1:(i+(event.key==='ArrowRight'?1:-1)+keys.length)%keys.length;
     goStudent(state.student,keys[next],state.section);requestAnimationFrame(()=>document.querySelector(`#tab-${keys[next]}`)?.focus());
   });
   document.querySelector('#nav-class').addEventListener('click',()=>location.hash='class');
-  document.querySelector('#nav-profile').addEventListener('click',()=>goStudent(state.student,state.domain,state.section));
+  document.querySelector('#nav-profile').addEventListener('click',()=>goStudent(state.student,root.querySelector('#domain-panel')?state.domain:'overall',state.section));
   document.querySelector('#close-evidence').addEventListener('click',closeEvidence);
   dialog.addEventListener('cancel',event=>{event.preventDefault();closeEvidence();});
   dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeEvidence();}});
@@ -277,7 +289,7 @@
     document.querySelector('#utility-title').textContent={settings:'Settings',help:'Dashboard help',account:'My Account'}[panel];
     const content=document.querySelector('#utility-content');
     if(panel==='settings'){
-      content.innerHTML=`<p class="small-copy">Choose how you see the learning. These preferences are saved in this browser.</p><div class="settings-fields"><label class="field">Portrait style<select data-setting="portrait"><option value="photos">Photos</option><option value="vikings">Viking avatars</option><option value="initials">Initials</option></select></label><label class="field">Class chart<select data-setting="classView"><option value="bars">Progress Bars</option><option value="heatmap">Class heatmap</option></select></label><label class="field">Student chart<select data-setting="studentView"><option value="radar">Radar chart</option><option value="bars">Progress Bars</option></select></label></div>`;
+      content.innerHTML=`<p class="small-copy">Choose how you see the learning. These preferences are saved in this browser.</p><div class="settings-fields"><label class="field">Portrait style<select data-setting="portrait"><option value="photos">Photos</option><option value="vikings">Viking avatars</option><option value="initials">Initials</option></select></label><label class="field">Class chart<select data-setting="classView"><option value="bars">Progress Bars</option><option value="heatmap">Class heatmap</option></select></label><label class="field">Overall chart<select data-setting="overallView"><option value="radar">Radar chart</option><option value="bars">Progress Bars</option></select></label><label class="field">Subject charts<select data-setting="studentView"><option value="radar">Radar chart</option><option value="bars">Progress Bars</option></select></label></div>`;
       content.querySelectorAll('[data-setting]').forEach(select=>select.value=preferences[select.dataset.setting]);
     }else if(panel==='help'){
       content.innerHTML='<div class="help-copy"><h3>Explore a skill across the class</h3><p>Select a skill heading to open an evidence column beside it.</p><h3>Explore one learner</h3><p>Select their name to expand evidence beneath their row. Open full profile shows their subject charts.</p><h3>Look behind a percentage</h3><p>Select a progress bar, heatmap cell or radar point to read the question, response and support used.</p><h3>Switch your view</h3><p>Use the class and portrait menus above. Photos, game avatars and initials change presentation without changing results.</p></div>';
@@ -292,7 +304,7 @@
     const setting=event.target.dataset.setting,value=event.target.value;
     if(setting==='portrait'){setPortrait(value);document.querySelector('#portrait-style').value=value;}
     if(setting==='classView'){preferences.classView=value;savePreferences();if(root.querySelector('.class-table'))setClassView(value);}
-    if(setting==='studentView'){preferences.studentView=value;savePreferences();if(root.querySelector('#skill-chart'))setStudentView(value);}
+    if(['studentView','overallView'].includes(setting)){preferences[setting]=value;savePreferences();if(root.querySelector('#skill-chart')&&setting===chartPreference())setStudentView(value);}
   });
   const portraitSelect=document.querySelector('#portrait-style');
   for(const [style,sheet] of Object.entries(window.EDUCADE_PORTRAITS||{})){

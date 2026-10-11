@@ -155,6 +155,10 @@
     return {attempts,correct,score:attempts?Math.round(correct/attempts*100):null,independent:evidence.filter(r=>!r.supported).length,supported:evidence.filter(r=>r.supported).length,hints:evidence.filter(r=>r.hint).length};
   }
   function skillStats(student,id){return summarize(student.evidence.filter(r=>r.skillId===id));}
+  function domainStats(student,domain){
+    const ids=new Set(groups.filter(group=>group.domain===domain).flatMap(group=>group.skills.map(skill=>skill.id)));
+    return summarize(student.evidence.filter(record=>ids.has(record.skillId)));
+  }
   function groupStats(student,group){return summarize(student.evidence.filter(r=>group.skills.some(s=>s.id===r.skillId)));}
   const readingLessons=[
     {label:'Inference',model:'Read “The rising tide”. Underline “The water climbed past the lowest step” and explain why Eirik moves the crates.',practice:'Have learners connect a quoted clue to an inference using “I infer … because the text says …”.',check:'Use a new short passage. Ask for an inference and a quoted clue before offering a hint.',intervention:'Underline one useful clue together, then connect it to the inference with “because”.'},
@@ -185,5 +189,5 @@
     }).sort((a,b)=>a.stats.score-b.stats.score||a.student.name.localeCompare(b.student.name));
     return {wholeClass,smallGroups,individuals,practiceThreshold,individualThreshold};
   }
-  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,profileAxes,summarize,skillStats,groupStats,readingPlan};
+  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,profileAxes,summarize,skillStats,domainStats,groupStats,readingPlan};
 })();

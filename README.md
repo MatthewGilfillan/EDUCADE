@@ -130,8 +130,8 @@ challenge work locally. Signup submission is unavailable in this static preview.
 ## Interactive teacher dashboard prototype
 
 Choose **Teacher sign in** in the landing-page header (or the mobile Menu). For
-now, this is a link to the sample dashboard, labelled **Demo dashboard · Fictional
-data**. It does not request credentials or implement authentication. The link's
+now, this opens the dashboard prototype, with **Demo data** in its footer.
+It does not request credentials or implement authentication. The link's
 `data-teacher-entry` attribute provides an entry point for a future sign-in flow.
 The approved landing content and artwork remain unchanged.
 
@@ -141,14 +141,18 @@ ZIP, or visit `/teacher.html` on the local server started by `npm run dev`.
 Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teacher
 
 - Class overview: six fictional learners, a class heatmap or segmented RPG HP
-  bars, search and sorting. Choose a learner's name to open their profile; choose
-  a score cell to inspect the same skill's learning evidence.
-- Student profiles: Reading, Writing, Grammar and Vocabulary tabs.
+  bars, search and sorting. Choose a learner's name to expand their evidence,
+  **Open full profile** for their profile, or a score cell for skill evidence.
+- Student profiles start on **Overall**, to the left of Reading, Writing, Grammar
+  and Vocabulary. Its initial radar shows four subject scores; selecting a
+  subject point or button opens its detailed skills.
 - Reading separates Foundations from Comprehension.
 - Curriculum structure: domain → section where relevant → skill group → individual
   EDUCADE skill → learning evidence. Detailed groups expand independently.
-- HP bars/radar switch: charts summarize only assessed groups, at most four in this
-  representative dataset. A radar requires at least three assessed groups.
+- HP bars/radar switch: Overall has four subject axes; subject views show eight
+  Reading Comprehension skills or six Writing, Grammar or Vocabulary skills.
+  A radar requires at least three assessed axes. Overall and subject chart
+  choices are remembered independently; the initial choice for both is radar.
 - Unassessed skills show “No evidence yet” and are excluded from summaries.
 - Evidence: fictional responses, model examples, support mode and hint shown.
 - Progress: cumulative correct-response percentages by support type, with an
@@ -280,3 +284,24 @@ or live AI assessment; the next step is a new independent response.
 Dashboard copy uses Search students and removes repeated sample/fictional
 wording at the user's request. The existing prototype and Demo data footer
 remain. The landing page, account behavior and hosting configuration are unchanged.
+
+## Overall profiles and clearer learner links — 11 October 2026
+
+**Open full profile** starts on Overall. Subject scores count correct responses
+against all attempts within the domain; Reading includes Foundations and
+Comprehension. Overall support totals and the four-week trend use those same
+records across all four subjects. Unassessed domains show No evidence yet.
+Subject radar points, progress bars and cards open the relevant domain, where
+skill groups and individual evidence remain expandable. Existing subject links
+still work. Portraits and chart choices remain local browser preferences.
+
+Progress over four weeks appears above What to explore next in the right
+column on desktop and in the same sequence on mobile. The class name cell
+centres a larger blue Show skill evidence action beneath the learner's name,
+with a separate Open full profile action farther down.
+
+For the Cloudflare static uploader, use the prepared upload ZIP containing
+only the contents of public: index.html, teacher.html and the other website
+assets at the archive root. Clear the uploader's old file selection first.
+A GitHub repository ZIP also includes Wrangler configuration and is intended
+for development, rather than this static upload flow.

@@ -33,6 +33,14 @@ try:
                 assert abs(dimensions['row']-expected)<1,dimensions
                 assert abs(dimensions['studentLeft']-dimensions['numberRight'])<1,dimensions
             check_number_column()
+            page.locator('.student-name-cell').first.screenshot(path=str(OUT/f'learner-actions-{width}.png'))
+            actions=page.locator('.student-name-cell').first.evaluate('''(cell)=>{
+                const evidence=cell.querySelector('.name-button small'),profile=cell.querySelector('.profile-link'),style=getComputedStyle(evidence);
+                return {size:parseFloat(style.fontSize),colour:style.color,profileColour:getComputedStyle(profile).color,alignment:style.textAlign,gap:profile.getBoundingClientRect().top-evidence.getBoundingClientRect().bottom};
+            }''')
+            assert actions['size']>=12 and actions['alignment']=='center',actions
+            assert actions['colour']==actions['profileColour'],actions
+            assert actions['gap']>=12,actions
             assert page.locator('#search-students').get_attribute('placeholder')=='Search students'
             assert '4 of 6 learners below 70%' in page.locator('.plan-basis').inner_text()
             assert '61% (73/120 correct responses)' in page.locator('.plan-basis').inner_text()
@@ -78,6 +86,38 @@ try:
             page.locator('#search-students').fill('Alex');assert page.locator('#student-rows tr[data-student]').count()==1
             page.locator('.profile-link').click();page.wait_for_selector('.category-tabs')
             assert page.locator('h1').inner_text()=='Alex Chen'
+            def check_profile_order():
+                domain=page.locator('[role=tab][aria-selected=true]').get_attribute('data-domain')
+                progress=page.locator('.profile-grid .progress-card').bounding_box()
+                next_steps=page.locator('.profile-next-card').bounding_box()
+                assert progress['y']+progress['height']<=next_steps['y'],f'Progress must be above next steps: {domain}, {width}px'
+                assert abs(progress['x']-next_steps['x'])<1,f'Profile widgets must share a column: {domain}, {width}px'
+            assert page.locator('[role=tab]').all_text_contents()==['Overall','Reading','Writing','Grammar','Vocabulary']
+            assert page.locator('#tab-overall').get_attribute('aria-selected')=='true'
+            assert page.locator('[data-mode=radar]').get_attribute('aria-pressed')=='true'
+            assert page.locator('.radar-target').count()==4
+            assert page.locator('.radar-skills button').all_text_contents()==page.evaluate("Object.keys(EDUCADE_DEMO.domains).map(domain=>EDUCADE_DEMO.domains[domain].name+EDUCADE_DEMO.domainStats(EDUCADE_DEMO.students[0],domain).score+'%')")
+            totals=page.evaluate('EDUCADE_DEMO.summarize(EDUCADE_DEMO.students[0].evidence)')
+            for key in ['independent','supported','hints']:
+                assert page.locator('[data-count='+key+']').inner_text()==str(totals[key])
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Overall overflow at {width}'
+            check_profile_order()
+            page.locator('.profile-grid').screenshot(path=str(OUT/f'overall-radar-{width}.png'))
+            page.evaluate('scrollTo(0,0)')
+            page.screenshot(path=str(OUT/f'overall-header-{width}.png'))
+            page.locator('.radar-target[data-domain=writing] .radar-point').click()
+            page.wait_for_function('document.querySelector("#tab-writing").getAttribute("aria-selected")==="true"')
+            page.locator('#tab-overall').click();page.wait_for_selector('.radar-target[data-domain=reading]')
+            page.locator('.radar-target[data-domain=reading]').focus();page.keyboard.press('Enter')
+            page.wait_for_function('document.querySelector("#tab-reading").getAttribute("aria-selected")==="true"')
+            page.locator('#tab-overall').click();page.wait_for_selector('.radar-target[data-domain=reading]')
+            page.locator('[data-mode=bars]').click()
+            assert page.locator('#skill-chart .skill-row').count()==4
+            check_profile_order()
+            page.reload(wait_until='networkidle')
+            assert page.locator('#tab-overall').get_attribute('aria-selected')=='true'
+            assert page.locator('[data-mode=bars]').get_attribute('aria-pressed')=='true'
+            page.locator('[data-mode=radar]').click()
             for domain in ['reading','writing','grammar','vocabulary']:
                 page.locator('#tab-'+domain).click()
                 page.wait_for_function('(domain)=>document.querySelector("#tab-"+domain).getAttribute("aria-selected")==="true"',arg=domain)
@@ -90,11 +130,16 @@ try:
                 }''')
                 for key in ['independent','supported','hints']:
                     assert page.locator('[data-count='+key+']').inner_text()==str(counts[key])
+                check_profile_order()
                 page.locator('[data-mode=radar]').click();assert page.locator('.radar-area').is_visible()
+                check_profile_order()
                 assert page.locator('.radar-skills button').count()==(8 if domain=='reading' else 6)
                 assert page.locator('.radar-portrait .avatar').count()==1
                 page.screenshot(path=str(OUT/f'{domain}-radar-{width}.png'),full_page=True)
                 page.locator('[data-mode=bars]').click();assert page.locator('#skill-chart .hp').count()>0
+                check_profile_order()
+                if domain=='reading' and width in [1440,390]:
+                    page.locator('.profile-grid').screenshot(path=str(OUT/f'profile-bars-{width}.png'))
                 page.locator('.skill-group').filter(has=page.locator('.group-score:not(.unassessed)')).first.locator('summary').click()
                 open_group=page.locator('.skill-group[open]').get_attribute('id')
                 page.locator('[data-mode=radar]').click()
