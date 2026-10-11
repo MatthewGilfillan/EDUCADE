@@ -394,3 +394,20 @@ or package files. Its teacher scripts and stylesheet use content-based filenames
 Teacher sign in opens a revision-specific HTML file. These fresh URLs avoid
 reusing older dashboard assets cached under the original filenames. Extract
 into a new folder and open the generated `teacher-<revision>.html` entry.
+
+## Compact class rows and Overall subject evidence — 11 October 2026
+
+The student name is now the profile button, with `(Click to view profile)` beside
+it. The separate Open full profile action is removed. Show skill evidence stays
+on one line beneath the name. The student column is wider and collapsed desktop
+rows are approximately 94px high, expanding only when evidence is requested.
+
+In Overall, Explore reading skills opens the selected learner's reading evidence
+inside the existing Reading cell. Writing, Grammar and Vocabulary use the same
+inline behavior. Each assessed skill lists its counts and expands to every
+recorded response, with the question, example response, week, outcome, support
+and actual hint shown. Reading includes both Foundations and Comprehension;
+unassessed skills are excluded from the evidence collection. No extra progress
+bars or columns are added. Subject collections and open skills survive view,
+portrait, sort and search changes, as well as returning from a profile. The name
+button and original subject score controls retain their profile navigation.

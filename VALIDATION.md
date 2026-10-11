@@ -396,3 +396,34 @@ for those changes above.
 - Screenshots are under /workspace/educade-validation/single-cell-evidence.
   No assessment records, portraits, landing artwork or hosting configuration
   changes; development and download branches only.
+
+## Compact rows and inline Overall evidence — 11 October 2026
+
+- The name and its Click to view profile cue form one accessible profile button.
+  The separate full-profile action is removed; the outlined learner evidence
+  button stays on one line. Desktop student columns are 280px wide, and the
+  measured collapsed row height at 1920px is 94px. Expanded rows retain evidence
+  beneath their original subject/skill controls, with no duplicate bars.
+- Overall subject links now toggle a collection in the same learner/subject
+  cell. Reading includes Foundations and Comprehension. Assessed skills expose
+  all recorded responses, questions, example answers, dates, outcomes, support
+  and hints. Alex's collection includes all nine assessed reading skills and
+  all 180 responses; other subjects each retain their 120 responses.
+- The regression check compares every rendered response ID with the source
+  records and checks response/support/hint content, all four subject links,
+  Alex/Maya isolation, unchanged data and empty-domain behavior. Open collections
+  and skills persist through portrait/chart changes, filtering, sorting, subject
+  tabs and profile round trips. All 21 Node tests pass.
+- Browser checks exercise keyboard disclosure and profile navigation, complete
+  response histories, stable skill columns/table width, one-line controls and
+  collapsed desktop rows under 100px. Sticky headers' changing scroll offsets
+  are excluded from the fixed skill-column position comparison; all header
+  widths and the number/student alignment remain checked.
+- The teacher browser suite passes at all six existing widths, including
+  portrait assignments, independent charts, persisted preferences and malformed
+  or blocked storage. Scroll padding keeps category controls clear of pinned
+  identity cells on narrow screens.
+- Desktop compact table/cell and complete reading collection screenshots were
+  inspected under /workspace/educade-validation/overall-subject-evidence. The
+  landing browser suite passes. Source assessment data, portraits, artwork and
+  deployment configuration remain unchanged.

@@ -37,6 +37,42 @@ try:
             assert page.get_by_role('button',name='Hide skill evidence for Alex Chen',exact=True).is_visible()
             assert page.locator('tr[data-student=alex]').bounding_box()['height']>collapsed_height+30
             page.screenshot(path=str(OUT/f'class-overall-{width}.png'),full_page=True)
+            columns_before=page.locator('#skill-headings th').evaluate_all('els=>els.map((el,i)=>[i<2?null:el.offsetLeft,el.offsetWidth])')
+            table_width=page.locator('.class-table').bounding_box()['width']
+            page.get_by_role('button',name='Show all reading evidence for Alex Chen',exact=True).click()
+            assert page.locator('#class-tab-overall').get_attribute('aria-selected')=='true'
+            assert page.locator('h1').inner_text()=='Teacher Dashboard'
+            assert '#student/' not in page.url
+            subject=page.locator('#subject-evidence-alex-reading')
+            assert subject.is_visible()
+            assert subject.locator('.subject-evidence-section>h3').all_text_contents()==['Reading Foundations','Reading Comprehension']
+            assert subject.locator('.subject-evidence-skill').count()==9
+            response_ids=subject.locator('.subject-response').evaluate_all('els=>els.map(el=>el.dataset.responseId).sort()')
+            expected_ids=page.evaluate('EDUCADE_DEMO.students[0].evidence.filter(record=>EDUCADE_DEMO.groups.some(group=>group.domain==="reading"&&group.skills.some(skill=>skill.id===record.skillId))).map(record=>record.id).sort()')
+            assert response_ids==expected_ids and len(response_ids)==180
+            assert subject.locator('.hp-track').count()==0
+            assert page.locator('#skill-headings th').evaluate_all('els=>els.map((el,i)=>[i<2?null:el.offsetLeft,el.offsetWidth])')==columns_before
+            assert page.locator('.class-table').bounding_box()['width']==table_width
+            summary=subject.locator('.subject-evidence-skill>summary').first
+            summary.focus();page.keyboard.press('Enter')
+            assert subject.locator('.subject-evidence-skill').first.get_attribute('open') is not None
+            history=subject.locator('.subject-response-history').first
+            assert history.locator('.subject-response').count()==20
+            assert history.locator('.subject-response h5').first.inner_text()=='Week 4 · Attempt 20'
+            assert history.locator('.subject-response h5').last.inner_text()=='Week 1 · Attempt 1'
+            history.locator('.subject-response').last.scroll_into_view_if_needed()
+            assert history.evaluate('el=>el.scrollTop>0')
+            page.locator('[data-class-mode=heatmap]').click()
+            assert subject.locator('.subject-evidence-skill').first.get_attribute('open') is not None
+            assert subject.locator('.subject-response').count()==180
+            page.locator('[data-class-mode=bars]').click()
+            assert subject.locator('.subject-evidence-skill').first.get_attribute('open') is not None
+            assert page.locator('.class-table .hp-track').count()==24
+            assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+            if width in [1440,390]:
+                page.locator('tr[data-student=alex]').screenshot(path=str(OUT/f'overall-reading-evidence-{width}.png'))
+            page.get_by_role('button',name='Hide all reading evidence for Alex Chen',exact=True).click()
+            assert subject.is_hidden()
             for domain in ['writing','grammar','vocabulary']:
                 page.locator('#class-tab-'+domain).click()
                 page.wait_for_function('(domain)=>document.querySelector("#class-tab-"+domain).getAttribute("aria-selected")==="true"',arg=domain)
@@ -60,7 +96,7 @@ try:
                 assert page.locator('.evidence-id').inner_text()==page.evaluate('(domain)=>EDUCADE_DEMO.profileAxes[domain][0].id',domain)
                 page.keyboard.press('Escape')
                 if domain=='writing':
-                    columns_before=page.locator('#skill-headings th').evaluate_all('els=>els.map(el=>({x:el.offsetLeft,width:el.offsetWidth}))')
+                    columns_before=page.locator('#skill-headings th').evaluate_all('els=>els.map((el,i)=>({x:i<2?null:el.offsetLeft,width:el.offsetWidth}))')
                     table_width=page.locator('.class-table').bounding_box()['width']
                     page.get_by_role('button',name='Show Transitions evidence across the class',exact=True).click()
                     assert page.locator('#skill-headings th').count()==8
@@ -69,7 +105,7 @@ try:
                     assert page.locator('.student-skill-evidence:visible').count()==11
                     assert page.locator('.compact-evidence .hp-track,.skill-evidence-cell,.student-evidence-row').count()==0
                     assert page.locator('.class-table').bounding_box()['width']==table_width
-                    assert page.locator('#skill-headings th').evaluate_all('els=>els.map(el=>({x:el.offsetLeft,width:el.offsetWidth}))')==columns_before
+                    assert page.locator('#skill-headings th').evaluate_all('els=>els.map((el,i)=>({x:i<2?null:el.offsetLeft,width:el.offsetWidth}))')==columns_before
                     for cell in page.locator('.expanded-skill-cell').all():
                         bar=cell.locator('.hp-track').bounding_box()
                         counts=cell.locator('.evidence-counts').bounding_box()
@@ -108,12 +144,17 @@ try:
             page.locator('.student-name-cell').first.screenshot(path=str(OUT/f'learner-actions-{width}.png'))
             actions=page.locator('.student-name-cell').first.evaluate('''(cell)=>{
                 const evidence=cell.querySelector('.learner-evidence-toggle'),profile=cell.querySelector('.profile-link'),style=getComputedStyle(evidence);
-                return {size:parseFloat(style.fontSize),colour:style.color,profileColour:getComputedStyle(profile).color,alignment:style.textAlign,gap:profile.getBoundingClientRect().top-evidence.getBoundingClientRect().bottom,border:parseFloat(style.borderTopWidth),height:evidence.getBoundingClientRect().height};
+                const range=document.createRange();range.selectNodeContents(evidence.lastElementChild);
+                return {size:parseFloat(style.fontSize),colour:style.color,profileColour:getComputedStyle(profile).color,alignment:style.textAlign,gap:evidence.getBoundingClientRect().top-profile.getBoundingClientRect().bottom,border:parseFloat(style.borderTopWidth),height:evidence.getBoundingClientRect().height,lines:range.getClientRects().length,rowHeight:cell.parentElement.getBoundingClientRect().height,name:profile.querySelector('.learner-name').textContent,cue:profile.querySelector('.profile-cue').textContent};
             }''')
             assert actions['size']>=12 and actions['alignment']=='center',actions
             assert actions['colour']==actions['profileColour'],actions
-            assert actions['gap']>=12,actions
-            assert actions['border']>=1 and actions['height']>=44,actions
+            assert actions['gap']>=4,actions
+            assert actions['border']>=1 and actions['height']>=36 and actions['lines']==1,actions
+            assert actions['name']=='Alex Chen' and actions['cue']=='(Click to view profile)',actions
+            assert 'Open full profile' not in page.locator('.class-table').inner_text()
+            if width>=768:
+                assert actions['rowHeight']<=100,actions
             assert page.locator('.skill-heading .heading-evidence-action').all_text_contents()==['+Show evidence']*4
             for heading in page.locator('.skill-heading').all():
                 assert heading.is_visible()
@@ -165,7 +206,7 @@ try:
             page.screenshot(path=str(OUT/f'class-{width}.png'),full_page=True)
             page.locator('#search-students').fill('no match');assert page.locator('#empty-class').is_visible()
             page.locator('#search-students').fill('Alex');assert page.locator('#student-rows tr[data-student]').count()==1
-            page.locator('.profile-link').click();page.wait_for_selector('.category-tabs')
+            page.locator('.profile-link').focus();page.keyboard.press('Enter');page.wait_for_selector('.category-tabs')
             assert page.locator('h1').inner_text()=='Alex Chen'
             def check_profile_order():
                 domain=page.locator('[role=tab][aria-selected=true]').get_attribute('data-domain')

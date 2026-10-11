@@ -53,7 +53,7 @@
 /* Numbering stays beside student names as skill columns scroll. */
 .toolbar{flex-wrap:wrap}.portrait-controls-slot{flex:none}.portrait-controls-slot .portrait-picker{width:150px}
 .class-table{min-width:840px}
-.class-table{--row-number-width:32px;--student-name-width:190px}
+.class-table{--row-number-width:32px;--student-name-width:280px}
 .class-table .row-number-column{width:var(--row-number-width)}.class-table .student-name-column{width:var(--student-name-width)}
 .class-table th.row-number-heading,.class-table td.row-number{width:var(--row-number-width);text-align:center;font-size:12px;padding-left:3px;padding-right:3px}
 .class-table .row-number{position:sticky;left:0;z-index:2;background:white;vertical-align:middle;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700;box-shadow:1px 0 0 var(--line)}
@@ -76,12 +76,18 @@
 .domain-overview{margin-top:0}.domain-overview .hp{margin-top:14px}
 @media(max-width:360px){.category-tabs button{font-size:10px;padding:12px 6px}}
 
-/* Give the two learner actions separate space within the name cell. */
+/* Compact learner identity and evidence action keep collapsed rows easy to scan. */
 .student-name-cell .learner>div{flex:1;min-width:0}
 .student-name-cell .learner-name{display:block;font-size:13px;line-height:1.5;font-weight:750}.current-learner .learner-name{color:#076ac6}
-.student-name-cell .learner-evidence-toggle{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;min-height:44px;margin-top:10px;padding:8px 6px;border:1px solid #9ec7ee;border-radius:8px;background:#f5faff;color:#076ac6;font-size:12px;font-weight:650;line-height:1.45;text-align:center}
+.student-name-cell .learner-evidence-toggle{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;min-height:36px;margin-top:5px;padding:6px;border:1px solid #9ec7ee;border-radius:8px;background:#f5faff;color:#076ac6;font-size:12px;font-weight:650;line-height:1.45;text-align:center;white-space:nowrap}
 .student-name-cell .learner-evidence-toggle:hover{border-color:#1680e8;background:#e5f1ff}.student-name-cell .learner-evidence-toggle[aria-expanded=true]{background:#e5f1ff;border-color:#1680e8}
-.student-name-cell .profile-link{margin-top:12px;padding:8px 0;font-size:12px;line-height:1.45;min-height:40px}
+.student-name-cell .learner-profile{display:flex;align-items:center;gap:5px;width:100%;margin:0;padding:2px 0;min-height:28px;line-height:1.45;text-align:left;white-space:nowrap}
+.learner-profile .profile-cue{font-size:10px;font-weight:400;color:var(--muted)}
+.learner-profile:hover .learner-name{text-decoration:underline}
+.class-table{display:table}.class-table tbody{display:table-row-group}
+.class-table tbody tr>td,.class-table tbody tr>.student-name-cell{padding-top:12px;padding-bottom:12px}
+@media(max-width:640px){.class-table{--student-name-width:160px}.student-name-cell .learner{display:grid;grid-template-columns:38px minmax(0,1fr);gap:5px 9px}.student-name-cell .learner>div{display:contents}.student-name-cell .learner-profile{grid-column:2;grid-row:1;flex-wrap:wrap;gap:0 5px;white-space:normal}.student-name-cell .learner-evidence-toggle{grid-column:1/-1;margin-top:0}}
+@media(max-width:640px){.table-scroll{scroll-padding-left:188px}}
 
 /* Class dashboard: title, learner controls, then subject comparisons. */
 .class-dashboard-heading .class-title{font-size:23px;font-weight:750;line-height:1.4;margin-top:9px;letter-spacing:-.015em}
@@ -99,6 +105,25 @@
 .student-skill-evidence .evidence-counts{margin-top:0}
 .student-skill-evidence .compact-evidence .text-button{font-size:11px;line-height:1.5;padding-bottom:0}
 @media(max-width:640px){.student-skill-evidence{margin-left:1px;margin-right:1px}}
+
+/* Overall subject evidence opens inside the student's existing subject cell. */
+.subject-evidence{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.subject-evidence-intro{font-size:11px;color:var(--muted);margin-bottom:14px}
+.subject-evidence-section+.subject-evidence-section{margin-top:18px}
+.subject-evidence-section h3{font-size:13px;line-height:1.5;margin-bottom:10px;color:var(--ink)}
+.subject-evidence-group+.subject-evidence-group{margin-top:12px}
+.subject-evidence-group h4{font-size:11px;color:var(--muted);margin-bottom:6px}
+.subject-evidence-skill{border:1px solid #cbdff3;border-radius:8px;background:#fff;margin-top:6px;overflow:hidden}
+.subject-evidence-skill>summary{cursor:pointer;padding:10px 9px;min-height:44px;color:#076ac6;font-size:11px}
+.subject-evidence-skill>summary strong{font-weight:750}.subject-evidence-skill>summary span{display:block;margin-top:5px;color:var(--muted);font-size:10px}
+.subject-evidence-skill[open]>summary{background:#edf6ff;border-bottom:1px solid var(--line)}
+.subject-evidence-skill>.evidence-support{padding:8px 9px 0}
+.subject-question{padding:10px 9px;font-size:11px;line-height:1.65}.subject-question p{margin-top:6px}
+.subject-response-history{max-height:440px;overflow-y:auto;overscroll-behavior:contain;padding:0 9px;scrollbar-gutter:stable;border-top:1px solid var(--line)}
+.subject-response{padding:12px 0;font-size:11px;line-height:1.65}.subject-response+.subject-response{border-top:1px solid var(--line)}
+.subject-response h5{font-size:11px;color:var(--ink)}.subject-response p{margin-top:5px}.subject-response-meta{font-size:10px;color:var(--muted)}
+.subject-hint{background:#fff5e8;padding:7px;border-radius:5px}
+.subject-evidence-skill>summary:focus-visible,.subject-response-history:focus-visible{outline:2px solid #0775ce;outline-offset:-2px}
 
 /* Evidence-based strengths and a focused practice target. */
 .glows-grows{display:grid;gap:16px;margin-top:20px}
