@@ -465,3 +465,33 @@ for those changes above.
 - Desktop class/profile and smaller-width class screenshots were inspected
   under /workspace/educade-validation/reading-catalogue. Landing artwork,
   portraits, authentication behavior and deployment configuration are unchanged.
+
+## Eight-skill Reading overview and floating navigation — 11 October 2026
+
+- Default class and student Reading Comprehension views use the same eight
+  existing skill IDs, labels, scores and order: Inference, Vocabulary in context,
+  Figurative language, Character analysis, Main idea, Cause and effect,
+  Comparing perspectives and Theme. All five catalogue groups and 39 individual
+  comprehension skills remain accessible; Foundations stays separate.
+- Readable class columns scroll horizontally. A 64px semitransparent arrow
+  floats at the right edge of the visible table rows, jumps to the last columns,
+  and switches left to return. It follows the visible table area during page
+  scrolling, hides when there is no overflow, and respects reduced motion.
+  Student names and numbers remain pinned; a more specific sticky selector fixes
+  the previously overridden student-name offset during horizontal scrolling.
+- Learner and category expansion still share evidence in the original skill
+  cells, with one progress bar per skill and response counts directly beneath it.
+  Missing results keep their overview axis with No evidence yet, rather than a
+  zero score. Selected catalogue groups retain charts of assessed skills and
+  separate coverage summaries without a combined achievement stage.
+- All 27 Node tests pass, covering eight-skill class/radar parity, scores,
+  missing evidence, scoped records and preserved source data. Browser checks
+  pass at 1440, 1024, 768, 640, 390 and 320px, including native end/return clicks,
+  pinned names, viewport-following navigation, Theme counts and both evidence
+  controls. Narrow-width follow-up checks account for native header focus panning
+  and wait for the page-scroll event before measuring the floating arrow. Portrait
+  and storage-fallback checks pass. The landing suite passes at all six widths.
+- Desktop class/profile and smaller-width table screenshots were inspected under
+  /workspace/educade-validation/eight-reading-scroll. Learner records, challenge
+  text, standards mappings, portraits, landing assets, authentication behavior
+  and deployment configuration are unchanged.
