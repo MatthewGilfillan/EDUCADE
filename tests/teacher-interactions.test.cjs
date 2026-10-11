@@ -95,6 +95,72 @@ test('Transitions evidence stays beneath its single score when row and category 
   assert.equal(JSON.stringify(D.students),original);
  }finally{dom.window.close();}
 });
+test('Overall Explore skills expands every subject response inline for the selected learner',async()=>{
+ const {dom,w,d,click,select,settle}=dashboard(undefined,'class/overall');
+ try{
+  const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students),alex=D.students.find(student=>student.id==='alex');
+  click('button[aria-label="Show skill evidence for Alex Chen"]');
+  for(const domain of Object.keys(D.domains)){
+   const selector=`[data-expand-subject="${domain}"][data-learner=alex]`;
+   click(selector);await settle();
+   assert.equal(w.location.hash,'#class/overall');
+   assert.equal(d.querySelector('h1').textContent,'Teacher Dashboard');
+   assert.equal(d.querySelector('#class-tab-overall').getAttribute('aria-selected'),'true');
+   const panel=d.getElementById(`subject-evidence-alex-${domain}`);
+   assert.equal(panel.hidden,false);
+   assert.equal(d.querySelector(selector).getAttribute('aria-expanded'),'true');
+   assert.equal(d.querySelector(selector).getAttribute('aria-controls'),panel.id);
+   const expected=alex.evidence.filter(record=>D.groups.find(group=>group.skills.some(skill=>skill.id===record.skillId)).domain===domain);
+   const responses=[...panel.querySelectorAll('.subject-response')];
+   assert.equal(responses.length,D.domainStats(alex,domain).attempts);
+   assert.deepEqual(responses.map(response=>response.dataset.responseId).sort(),Array.from(expected,record=>record.id).sort());
+   for(const record of expected){
+    const response=responses.find(element=>element.dataset.responseId===record.id);
+    assert.ok(response.textContent.includes(record.response));
+    assert.ok(response.querySelector('.subject-response-meta').textContent.includes(record.supported?'Supported':'Independent'));
+    assert.equal(Boolean(response.querySelector('.subject-hint')),record.hint);
+   }
+   const assessed=D.groups.filter(group=>group.domain===domain).flatMap(group=>group.skills).filter(skill=>D.skillStats(alex,skill.id).attempts);
+   assert.equal(panel.querySelectorAll('.subject-evidence-skill').length,assessed.length);
+   assert.equal(panel.querySelector('.hp-track'),null);
+   assert.equal(d.querySelectorAll('.class-table .hp-track').length,24);
+   assert.equal(d.querySelectorAll('#skill-headings th').length,6);
+   assert.equal(d.querySelector('tr[data-student=alex]').children.length,6);
+  }
+  assert.deepEqual([...d.querySelectorAll('#subject-evidence-alex-reading .subject-evidence-section>h3')].map(h=>h.textContent),['Reading Foundations','Reading Comprehension']);
+  const skill=d.querySelector('#subject-evidence-alex-reading .subject-evidence-skill');skill.open=true;
+  const key=skill.dataset.subjectSkill;
+  select('#portrait-style','vikings');click('[data-class-mode=heatmap]');
+  assert.equal(d.querySelector(`[data-subject-skill="${key}"]`).open,true);
+  assert.equal(d.querySelectorAll('.subject-evidence:not([hidden])').length,4);
+  select('#sort-students','support');
+  const search=d.querySelector('#search-students');search.value='no match';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  search.value='Alex';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  assert.equal(d.querySelector(`[data-subject-skill="${key}"]`).open,true);
+  click('[data-class-mode=bars]');
+  click('#class-tab-reading');await settle();click('#class-tab-overall');await settle();
+  assert.equal(d.querySelector(`[data-subject-skill="${key}"]`).open,true);
+  click('[data-expand-subject=reading][data-learner=alex]');
+  assert.equal(d.getElementById('subject-evidence-alex-reading').hidden,true);
+  click('[data-expand-subject=reading][data-learner=alex]');
+  assert.equal(d.querySelector(`[data-subject-skill="${key}"]`).open,true);
+  click('.profile-link[data-student=alex]');await settle();
+  assert.equal(d.querySelector('h1').textContent,'Alex Chen');
+  click('[data-back-class]');await settle();
+  assert.equal(d.querySelector(`[data-subject-skill="${key}"]`).open,true);
+  const currentSearch=d.querySelector('#search-students');currentSearch.value='';currentSearch.dispatchEvent(new w.Event('input',{bubbles:true}));
+  click('button[aria-label="Show skill evidence for Maya Patel"]');
+  click('[data-expand-subject=reading][data-learner=maya]');
+  const maya=D.students.find(student=>student.id==='maya'),mayaPanel=d.getElementById('subject-evidence-maya-reading');
+  const mayaIds=maya.evidence.filter(record=>D.groups.some(group=>group.domain==='reading'&&group.skills.some(skill=>skill.id===record.skillId))).map(record=>record.id);
+  assert.deepEqual([...mayaPanel.querySelectorAll('.subject-response')].map(response=>response.dataset.responseId).sort(),Array.from(mayaIds).sort());
+  assert.equal(d.getElementById('subject-evidence-alex-reading'),null);
+  assert.equal(d.querySelector('tr[data-student=maya] .profile-cue').textContent,'(Click to view profile)');
+  assert.equal(d.querySelector('tr[data-student=maya] .profile-link').getAttribute('aria-label'),'View Maya Patel’s profile');
+  assert.ok(!d.querySelector('.class-table').textContent.includes('Open full profile'));
+  assert.equal(JSON.stringify(D.students),original);
+ }finally{dom.window.close();}
+});
 test('Full subject radars share scores with progress bars and their central portrait follows the selected style',async()=>{
  const {dom,w,d,select,click,settle}=dashboard();
  try{
@@ -255,6 +321,13 @@ test('Unassessed Overall subjects show no evidence and do not become zero scores
   assert.ok(d.querySelector('#skill-chart').textContent.includes('No evidence yet'));
   assert.deepEqual([...d.querySelectorAll('.growth-item h3')].map(h=>h.textContent),['No evidence yet','No evidence yet']);
   assert.equal(d.querySelectorAll('.growth-result,.growth-item button').length,0);
+  w.location.hash='class/overall';await settle();
+  click('button[aria-label="Show skill evidence for Alex Chen"]');
+  click('[data-expand-subject=grammar][data-learner=alex]');
+  const panel=d.getElementById('subject-evidence-alex-grammar');
+  assert.equal(panel.hidden,false);
+  assert.ok(panel.textContent.includes('No evidence yet'));
+  assert.equal(panel.querySelectorAll('.subject-evidence-skill,.subject-response').length,0);
  }finally{dom.window.close();}
 });
 
