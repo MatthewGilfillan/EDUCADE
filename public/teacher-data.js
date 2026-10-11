@@ -29,6 +29,13 @@
   group('reading','comprehension','poetry','Poetry elements','Identify rhyme patterns|Identify elements of poetry');
   group('reading','comprehension','literary','Literary texts','Read fantasy|Read realistic fiction|Read historical fiction|Read poetry and drama');
   group('reading','comprehension','informational','Informational texts','Read about people and places|Read about science and nature|Read about history and technology');
+  // Extend the catalogue without renaming existing IDs or generating responses.
+  group('reading','comprehension','evidence','Supporting evidence','Select textual evidence to support an explanation|Explain how evidence supports a conclusion');
+  group('reading','comprehension','integrating','Integrating information','Integrate information from visual and written sources');
+  for(const [key,label] of [['story','Explain how setting shapes events'],['tone','Explain tone using word choice'],['structure','Identify and explain a text’s structure'],['features','Explain how text features support understanding']]){
+    const entry=groups.find(g=>g.domain==='reading'&&g.key===key);
+    entry.skills.push({id:`${entry.id}.${String(entry.skills.length+1).padStart(2,'0')}`,name:label});
+  }
   group('writing',null,'organization','Organizing writing','Link information with transitions|Sequence sentences|Organize information by topic|Remove unrelated details');
   group('writing',null,'opening','Introductions and conclusions','Write a topic sentence|Write a concluding sentence');
   group('writing',null,'summary','Summarizing','Summarize a story');
@@ -63,6 +70,18 @@
   group('vocabulary',null,'context','Context clues','Infer a word’s meaning using context|Use domain-specific vocabulary|Use academic vocabulary');
   group('vocabulary',null,'reference','Reference skills','Use dictionary entries|Use guide words|Use a thesaurus|Alphabetize words');
   const find=(domain,key,n=0)=>groups.find(g=>g.domain===domain&&g.key===key).skills[n];
+  const readingCategory=(key,name,description,selection)=>({id:`EDU.G5.READING.CATALOGUE.${key.toUpperCase()}`,key,name,description,domain:'reading',section:'comprehension',skills:selection.flatMap(([topic,indices])=>indices.map(n=>find('reading',topic,n)))});
+  // Navigation groups reference each reading skill once. Genre/context entries
+  // are kept separately; they do not become assessment scores or skill columns.
+  const readingCatalogue=[
+    readingCategory('meaning','Meaning and evidence','Find the central meaning, draw inferences and support explanations with text evidence.',[['mainidea',[0,1]],['inference',[0,1]],['evidence',[0,1]]]),
+    readingCategory('characters','Characters and events','Explore characters, setting, plot and the connections between events.',[['character',[0,1]],['story',[1,2,3]],['structure',[2]]]),
+    readingCategory('craft','Author’s craft','Explore purpose, point of view, tone, sensory details and language in context.',[['purpose',[0,1]],['story',[0]],['tone',[0,1]],['sensory',[0,1]],['figurative',[0,1,2]],['wordmeaning',[0,1]]]),
+    readingCategory('structure','Structure and features','Explore how organisation, text features, visuals and poetry shape understanding.',[['structure',[0,1,3,4]],['features',[0,1]],['visual',[0,1]],['poetry',[0,1]]]),
+    readingCategory('comparing','Comparing and evaluating','Compare texts and themes, evaluate arguments and integrate information.',[['mainidea',[2]],['inference',[2]],['purpose',[2,3]],['integrating',[0]]])
+  ];
+  const readingContexts=groups.filter(g=>g.domain==='reading'&&['literary','informational'].includes(g.key));
+  const readingSkills=()=>[...groups.filter(g=>g.domain==='reading'&&g.section==='foundations').flatMap(g=>g.skills),...readingCatalogue.flatMap(g=>g.skills)];
   const samples={};
   const mappings={};
   function assess(domain,key,n,code,standard,title,prompt,answer,retry,hint){
@@ -168,16 +187,18 @@
   ];
   // Transparent planning rules over existing evidence, with no generated assessment.
   // Missing scores are excluded. Thresholds guide practice; they do not claim mastery.
-  function readingPlan(learners){
+  function readingPlan(learners,skillIds=reading){
     const practiceThreshold=70,individualThreshold=50;
-    const priorities=reading.map((id,index)=>{
+    const priorities=skillIds.map(id=>{
       const skill=groups.flatMap(g=>g.skills).find(s=>s.id===id);
+      if(!skill)return null;
+      const lesson=readingLessons[reading.indexOf(id)]||{label:skill.name,model:`Model ${skill.name.toLowerCase()} using a short text.`,practice:samples[id]?.hint||'Guide a response together and ask learners to explain their reasoning.',check:'Use a fresh text to check the same skill before offering an answer-directed hint.',intervention:samples[id]?.hint||'Model one component, guide a response, then check the skill on a fresh text.'};
       const members=learners.map(student=>{
         const evidence=student.evidence.filter(r=>r.skillId===id);
         return {student,stats:summarize(evidence),independent:summarize(evidence.filter(r=>!r.supported)),supported:summarize(evidence.filter(r=>r.supported))};
       }).filter(member=>member.stats.attempts>0);
-      return {id,name:skill.name,...readingLessons[index],members,belowPractice:members.filter(member=>member.stats.score<practiceThreshold),stats:summarize(members.flatMap(member=>member.student.evidence.filter(r=>r.skillId===id)))};
-    }).filter(priority=>priority.members.length>0).sort((a,b)=>b.belowPractice.length-a.belowPractice.length||a.stats.correct/a.stats.attempts-b.stats.correct/b.stats.attempts);
+      return {id,name:skill.name,...lesson,members,belowPractice:members.filter(member=>member.stats.score<practiceThreshold),stats:summarize(members.flatMap(member=>member.student.evidence.filter(r=>r.skillId===id)))};
+    }).filter(priority=>priority?.members.length>0).sort((a,b)=>b.belowPractice.length-a.belowPractice.length||a.stats.correct/a.stats.attempts-b.stats.correct/b.stats.attempts);
     const wholeClass=priorities.find(p=>p.members.length>=2&&p.belowPractice.length>=Math.ceil(p.members.length/2))||null;
     const smallGroups=priorities.filter(p=>p.id!==wholeClass?.id&&p.belowPractice.length>=2).slice(0,2);
     const individuals=learners.flatMap(student=>{
@@ -189,5 +210,5 @@
     }).sort((a,b)=>a.stats.score-b.stats.score||a.student.name.localeCompare(b.student.name));
     return {wholeClass,smallGroups,individuals,practiceThreshold,individualThreshold};
   }
-  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,profileAxes,summarize,skillStats,domainStats,groupStats,readingPlan};
+  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,readingCatalogue,readingContexts,readingSkills,profileAxes,summarize,skillStats,domainStats,groupStats,readingPlan};
 })();

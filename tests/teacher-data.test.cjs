@@ -18,6 +18,33 @@ test('Every curriculum skill has a unique EDUCADE ID and no invented score',()=>
  }
  assert.ok(skills.some(s=>D.students.every(student=>D.skillStats(student,s.id).score===null)));
 });
+test('The five reading navigation groups cover each comprehension skill once and keep foundations and text contexts separate',()=>{
+ assert.deepEqual(D.readingCatalogue.map(group=>group.name),['Meaning and evidence','Characters and events','Author’s craft','Structure and features','Comparing and evaluating']);
+ const catalogue=D.readingCatalogue.flatMap(group=>group.skills),ids=catalogue.map(skill=>skill.id);
+ const contexts=D.readingContexts.flatMap(group=>group.skills).map(skill=>skill.id);
+ const comprehension=D.groups.filter(group=>group.domain==='reading'&&group.section==='comprehension'&&!D.readingContexts.includes(group)).flatMap(group=>group.skills);
+ assert.equal(catalogue.length,39);assert.equal(new Set(ids).size,39);
+ assert.deepEqual(ids.slice().sort(),comprehension.map(skill=>skill.id).sort());
+ assert.ok(!contexts.some(id=>ids.includes(id)));
+ assert.equal(D.readingSkills().length,47);
+ assert.equal(D.readingSkills().filter(skill=>skill.id.includes('.FOUNDATIONS.')).length,8);
+ for(const group of D.readingCatalogue)assert.ok(group.skills.every(skill=>D.groups.some(original=>original.skills.includes(skill))));
+ for(const id of ['EDU.G5.READING.COMPREHENSION.EVIDENCE.01','EDU.G5.READING.COMPREHENSION.STORY.04','EDU.G5.READING.COMPREHENSION.INTEGRATING.01']){
+  assert.ok(ids.includes(id));assert.equal(D.mappings[id],undefined);
+  assert.ok(D.students.every(student=>D.skillStats(student,id).score===null));
+ }
+});
+test('Reading plans stay within the selected catalogue group and exclude unassessed skills',()=>{
+ const learners=D.students.slice(0,6),before=JSON.stringify(learners);
+ for(const group of D.readingCatalogue){
+  const ids=group.skills.map(skill=>skill.id),plan=D.readingPlan(learners,ids);
+  const priorities=[plan.wholeClass,...plan.smallGroups,...plan.individuals.map(member=>member.skill)].filter(Boolean);
+  assert.ok(priorities.every(priority=>ids.includes(priority.id)));
+  assert.ok(priorities.every(priority=>learners.some(student=>D.skillStats(student,priority.id).attempts)));
+  if(['structure','comparing'].includes(group.key)){assert.equal(plan.wholeClass,null);assert.equal(priorities.length,0);}
+ }
+ assert.equal(JSON.stringify(learners),before);
+});
 test('Class comparison and profile evidence use the same six learners and reading scores',()=>{
  const expected=[[45,85,60,70],[80,70,90,65],[60,40,60,80],[90,75,70,55],[30,60,50,70],[70,90,35,80]];
  const class5a=D.classes.find(c=>c.id==='5a').studentIds.map(id=>D.students.find(s=>s.id===id));

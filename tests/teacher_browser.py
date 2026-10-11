@@ -128,6 +128,27 @@ try:
             assert page.locator('#class-tab-overall').get_attribute('aria-selected')=='true'
             page.locator('#class-tab-reading').click()
             page.wait_for_function('document.querySelector("#class-tab-reading").getAttribute("aria-selected")==="true"')
+            catalogue=page.evaluate('EDUCADE_DEMO.readingCatalogue.map(group=>({key:group.key,ids:group.skills.map(skill=>skill.id)}))')
+            assert page.locator('[data-class-reading-group]').count()==5
+            for group in catalogue:
+                page.locator('[data-class-reading-group='+group['key']+']').click()
+                page.wait_for_selector('[data-class-reading-group='+group['key']+'][aria-pressed=true]')
+                assert page.locator('.skill-heading').evaluate_all('els=>els.map(el=>el.dataset.expandSkill)')==group['ids']
+                assert page.locator('#skill-headings th').count()==len(group['ids'])+2
+                assert page.locator('tr[data-student=alex] .student-skill-evidence:visible').count()==len(group['ids'])
+                assert page.locator('.compact-evidence .hp-track').count()==0
+                if group['key'] in ['structure','comparing']:
+                    assert page.locator('.class-table .hp-track').count()==0
+                    assert 'No evidence yet' in page.locator('.reading-group-summary').inner_text()
+                assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Catalogue {group["key"]} overflow at {width}'
+            page.locator('[data-class-section=foundations]').click()
+            page.wait_for_selector('[data-class-section=foundations][aria-pressed=true]')
+            assert page.locator('[data-class-reading-group]').count()==0
+            assert page.locator('.skill-heading').count()==8
+            page.locator('[data-class-section=comprehension]').click()
+            page.wait_for_selector('[data-class-reading-group=comparing][aria-pressed=true]')
+            page.locator('[data-class-reading-group=meaning]').click()
+            page.wait_for_selector('[data-class-reading-group=meaning][aria-pressed=true]')
             page.locator('.name-button[data-expand-student=alex]').click()
             page.evaluate('scrollTo(0,0)')
             page.screenshot(path=str(OUT/f'class-header-{width}.png'))
@@ -155,17 +176,17 @@ try:
             assert 'Open full profile' not in page.locator('.class-table').inner_text()
             if width>=768:
                 assert actions['rowHeight']<=100,actions
-            assert page.locator('.skill-heading .heading-evidence-action').all_text_contents()==['+Show evidence']*4
+            assert page.locator('.skill-heading .heading-evidence-action').all_text_contents()==['+Show evidence']*6
             for heading in page.locator('.skill-heading').all():
                 assert heading.is_visible()
                 assert heading.evaluate('el=>parseFloat(getComputedStyle(el).borderTopWidth)')>=1
             assert page.locator('#search-students').get_attribute('placeholder')=='Search students'
-            assert '4 of 6 learners below 70%' in page.locator('.plan-basis').inner_text()
-            assert '61% (73/120 correct responses)' in page.locator('.plan-basis').inner_text()
+            assert '3 of 6 learners below 70%' in page.locator('.plan-basis').inner_text()
+            assert '63% (75/120 correct responses)' in page.locator('.plan-basis').inner_text()
             page.locator('.class-next-steps').screenshot(path=str(OUT/f'next-steps-{width}.png'))
-            page.locator('.individual-intervention[data-individual=ella] button').click()
-            assert 'Ella Brown' in page.locator('#evidence-content').inner_text()
-            assert '35%' in page.locator('#evidence-content').inner_text()
+            page.locator('.individual-intervention[data-individual=alex] button').click()
+            assert 'Alex Chen' in page.locator('#evidence-content').inner_text()
+            assert '45%' in page.locator('#evidence-content').inner_text()
             page.keyboard.press('Escape')
             skill=page.evaluate('EDUCADE_DEMO.reading[0]')
             page.locator(f'[data-expand-skill="{skill}"]').first.click()
@@ -177,7 +198,7 @@ try:
             page.locator('.table-scroll').evaluate('(el)=>el.scrollLeft=0')
             page.get_by_role('button',name='Show skill evidence for Alex Chen',exact=True).click()
             assert page.locator('tr[data-student=alex] .student-skill-evidence').first.is_visible()
-            assert page.locator('tr[data-student=alex] .student-skill-evidence').count()==4
+            assert page.locator('tr[data-student=alex] .student-skill-evidence').count()==6
             assert page.locator('.compact-evidence .hp-track').count()==0
             page.locator('tr[data-student=alex] .student-skill-evidence .latest-response span').first.click()
             assert page.locator('.name-button[data-expand-student=alex]').get_attribute('aria-expanded')=='true'
@@ -188,11 +209,11 @@ try:
             original_data=page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')
             original_scores=page.locator('.score-cell').evaluate_all('(cells)=>cells.map(c=>c.getAttribute("aria-label"))')
             page.locator('[data-class-mode=heatmap]').click()
-            assert page.locator('.heat-cell').count()==24
+            assert page.locator('.heat-cell').count()==36
             assert page.locator('.score-cell').evaluate_all('(cells)=>cells.map(c=>c.getAttribute("aria-label"))')==original_scores
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Heatmap overflow at {width}'
             page.screenshot(path=str(OUT/f'heatmap-{width}.png'),full_page=True)
-            page.locator('[data-learner=alex].heat-cell').first.click()
+            page.locator(f'[data-learner=alex].heat-cell[data-evidence="{skill}"]').click()
             evidence=page.locator('#evidence-content').inner_text()
             assert '45%' in evidence
             page.keyboard.press('Escape')
@@ -250,7 +271,7 @@ try:
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{domain} overflow at {width}'
                 counts=page.evaluate('''() => {
                     const D=EDUCADE_DEMO, domain=document.querySelector('[role=tab][aria-selected=true]').dataset.domain;
-                    const groups=D.groups.filter(g=>g.domain===domain && (domain!=='reading'||g.section==='comprehension'));
+                    const groups=domain==='reading'?[D.readingCatalogue.find(group=>group.key==='meaning')]:D.groups.filter(g=>g.domain===domain);
                     const records=D.students[0].evidence.filter(r=>groups.some(g=>g.skills.some(s=>s.id===r.skillId)));
                     return D.summarize(records);
                 }''')
@@ -259,7 +280,7 @@ try:
                 check_profile_order()
                 page.locator('[data-mode=radar]').click();assert page.locator('.radar-area').is_visible()
                 check_profile_order()
-                assert page.locator('.radar-skills button').count()==(8 if domain=='reading' else 6)
+                assert page.locator('.radar-skills button').count()==(3 if domain=='reading' else 6)
                 assert page.locator('.radar-portrait .avatar').count()==1
                 if domain=='vocabulary':
                     assert page.locator('.glow h3').inner_text()=='Idioms and adages'
@@ -275,7 +296,10 @@ try:
                 check_profile_order()
                 if domain=='reading' and width in [1440,390]:
                     page.locator('.profile-grid').screenshot(path=str(OUT/f'profile-bars-{width}.png'))
-                page.locator('.skill-group').filter(has=page.locator('.group-score:not(.unassessed)')).first.locator('summary').click()
+                if domain!='reading':
+                    page.locator('.skill-group').filter(has=page.locator('.group-score:not(.unassessed)')).first.locator('summary').click()
+                else:
+                    assert page.locator('.reading-catalogue .group-score').count()==0
                 open_group=page.locator('.skill-group[open]').get_attribute('id')
                 page.locator('[data-mode=radar]').click()
                 assert page.locator('#'+open_group).get_attribute('open') is not None
@@ -288,7 +312,30 @@ try:
                 assert page.evaluate('document.querySelector("#evidence-dialog").scrollWidth<=document.querySelector("#evidence-dialog").clientWidth')
                 if domain=='reading':page.locator('#evidence-dialog').screenshot(path=str(OUT/f'evidence-{width}.png'))
                 page.keyboard.press('Escape');assert not page.locator('#evidence-dialog').is_visible()
-            page.locator('#tab-reading').click();page.locator('[data-mode=radar]').click()
+            page.locator('#tab-reading').click()
+            page.wait_for_selector('[data-reading-group=meaning][aria-pressed=true]')
+            for group in catalogue:
+                page.locator('[data-reading-group='+group['key']+']').click()
+                page.wait_for_selector('[data-reading-group='+group['key']+'][aria-pressed=true]')
+                assert page.locator('.reading-catalogue .individual-skill').evaluate_all('els=>els.map(el=>el.dataset.evidence)')==group['ids']
+                assert page.locator('.reading-catalogue .group-score').count()==0
+                assert page.locator('.profile-summary>span').inner_text()=='Assessment coverage'
+                if group['key'] in ['structure','comparing']:
+                    assert page.locator('[data-mode=radar]').is_disabled()
+                    assert page.locator('.growth-item button').count()==0
+                    assert page.locator('#skill-chart .hp-track').count()==0
+                    page.locator('.reading-catalogue .individual-skill').first.click()
+                    assert page.locator('.attempt').count()==0
+                    page.keyboard.press('Escape')
+                else:
+                    expected_focus=page.evaluate('(ids)=>ids.filter(id=>EDUCADE_DEMO.skillStats(EDUCADE_DEMO.students[0],id).attempts)',group['ids'])
+                    assert page.locator('#skill-chart .skill-row').evaluate_all('els=>els.map(el=>el.dataset.evidence)')==expected_focus
+                assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Profile catalogue {group["key"]} overflow at {width}'
+                if width in [1440,390] and group['key'] in ['meaning','structure']:
+                    page.screenshot(path=str(OUT/f'catalogue-{group["key"]}-{width}.png'),full_page=True)
+            page.locator('[data-reading-group=meaning]').click()
+            page.wait_for_selector('[data-reading-group=meaning][aria-pressed=true]')
+            page.locator('[data-mode=radar]').click()
             page.locator('[data-section=foundations]').click()
             page.wait_for_function('document.querySelector("[data-section=foundations]").getAttribute("aria-pressed")==="true"')
             assert page.locator('[data-mode=radar]').is_disabled()
