@@ -128,8 +128,61 @@ try:
             assert page.locator('#class-tab-overall').get_attribute('aria-selected')=='true'
             page.locator('#class-tab-reading').click()
             page.wait_for_function('document.querySelector("#class-tab-reading").getAttribute("aria-selected")==="true"')
+            assert page.locator('[data-class-reading-group=overview]').get_attribute('aria-pressed')=='true'
+            expected_reading=page.evaluate('EDUCADE_DEMO.profileAxes.reading')
+            assert page.locator('.skill-heading').evaluate_all('els=>els.map(el=>el.dataset.expandSkill)')==[axis['id'] for axis in expected_reading]
+            assert page.locator('.skill-heading-label').all_text_contents()==[axis['label'] for axis in expected_reading]
+            assert page.locator('tr[data-student=alex] .hp-value').all_text_contents()==['45%','85%','60%','70%','80%','65%','65%','50%']
+            assert '8 reading skills' in page.locator('.comparison-scroll-guide').inner_text()
+            page.locator('.table-scroll').evaluate('el=>el.scrollIntoView({block:"start"})')
+            jump=page.locator('.skill-scroll-jump')
+            page.wait_for_function('!document.querySelector(".skill-scroll-jump").hidden')
+            assert jump.inner_text()=='→' and jump.get_attribute('aria-label')=='Show remaining reading skills'
+            assert jump.bounding_box()['width']>=56
+            assert page.locator('.table-scroll').evaluate('el=>el.scrollWidth>el.clientWidth')
+            # Capture the semitransparent initial state, before hover makes it opaque.
+            if width in [1440,390]:
+                page.mouse.move(0,0);page.screenshot(path=str(OUT/f'eight-reading-scroll-start-{width}.png'))
+            pinned_x=page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']
+            jump.click()
+            page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
+            assert jump.inner_text()=='←' and jump.get_attribute('aria-label')=='Show first reading skills'
+            assert abs(page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']-pinned_x)<1
+            assert page.locator('#skill-headings th').count()==10
+            theme_id=expected_reading[-1]['id']
+            page.get_by_role('button',name='Show Theme evidence across the class',exact=True).click()
+            assert page.locator('.student-skill-evidence:visible').count()==13
+            theme=page.locator(f'tr[data-student=alex] [data-axis="{theme_id}"]')
+            assert theme.locator('.hp-track').count()==1 and theme.locator('.compact-evidence').count()==1
+            assert theme.locator('.hp-value').inner_text()=='50%'
+            assert '10/20 correct' in theme.locator('.evidence-counts').inner_text()
+            counts=theme.locator('.evidence-counts').bounding_box();bar=theme.locator('.hp-track').bounding_box()
+            assert abs(counts['x']-bar['x'])<1 and counts['y']>bar['y']+bar['height']
+            if width in [1440,390]:
+                page.screenshot(path=str(OUT/f'eight-reading-scroll-end-{width}.png'))
+            # Native focus can pan a wide header on narrow viewports; finish
+            # that pan before testing the arrow's return from the last columns.
+            if jump.inner_text()=='→':
+                jump.click()
+                page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
+            assert jump.inner_text()=='←'
+            jump.click();page.wait_for_function('document.querySelector(".table-scroll").scrollLeft<1')
+            assert jump.inner_text()=='→'
+            page.locator('tr[data-student=ella]').evaluate('el=>el.scrollIntoView({block:"start"})')
+            page.wait_for_function('()=>{const arrow=document.querySelector(".skill-scroll-jump"),box=arrow.getBoundingClientRect();return !arrow.hidden&&box.top>=0&&box.bottom<=innerHeight;}')
+            arrow_box=jump.bounding_box()
+            assert arrow_box['y']>=0 and arrow_box['y']+arrow_box['height']<=1000
+            assert page.locator('.table-scroll').bounding_box()['y']<0
+            jump.click()
+            page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
+            assert jump.inner_text()=='←'
+            jump.click();page.wait_for_function('document.querySelector(".table-scroll").scrollLeft<1')
+            page.get_by_role('button',name='Hide Theme evidence across the class',exact=True).click()
+            page.locator('[data-class-mode=heatmap]').click()
+            assert page.locator('.heat-cell').count()==48
+            page.locator('[data-class-mode=bars]').click()
             catalogue=page.evaluate('EDUCADE_DEMO.readingCatalogue.map(group=>({key:group.key,ids:group.skills.map(skill=>skill.id)}))')
-            assert page.locator('[data-class-reading-group]').count()==5
+            assert page.locator('[data-class-reading-group]').count()==6
             for group in catalogue:
                 page.locator('[data-class-reading-group='+group['key']+']').click()
                 page.wait_for_selector('[data-class-reading-group='+group['key']+'][aria-pressed=true]')
@@ -271,7 +324,7 @@ try:
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{domain} overflow at {width}'
                 counts=page.evaluate('''() => {
                     const D=EDUCADE_DEMO, domain=document.querySelector('[role=tab][aria-selected=true]').dataset.domain;
-                    const groups=domain==='reading'?[D.readingCatalogue.find(group=>group.key==='meaning')]:D.groups.filter(g=>g.domain===domain);
+                    const groups=domain==='reading'?[{skills:D.profileAxes.reading}]:D.groups.filter(g=>g.domain===domain);
                     const records=D.students[0].evidence.filter(r=>groups.some(g=>g.skills.some(s=>s.id===r.skillId)));
                     return D.summarize(records);
                 }''')
@@ -280,7 +333,7 @@ try:
                 check_profile_order()
                 page.locator('[data-mode=radar]').click();assert page.locator('.radar-area').is_visible()
                 check_profile_order()
-                assert page.locator('.radar-skills button').count()==(3 if domain=='reading' else 6)
+                assert page.locator('.radar-skills button').count()==(8 if domain=='reading' else 6)
                 assert page.locator('.radar-portrait .avatar').count()==1
                 if domain=='vocabulary':
                     assert page.locator('.glow h3').inner_text()=='Idioms and adages'
@@ -313,7 +366,7 @@ try:
                 if domain=='reading':page.locator('#evidence-dialog').screenshot(path=str(OUT/f'evidence-{width}.png'))
                 page.keyboard.press('Escape');assert not page.locator('#evidence-dialog').is_visible()
             page.locator('#tab-reading').click()
-            page.wait_for_selector('[data-reading-group=meaning][aria-pressed=true]')
+            page.wait_for_selector('[data-reading-group=overview][aria-pressed=true]')
             for group in catalogue:
                 page.locator('[data-reading-group='+group['key']+']').click()
                 page.wait_for_selector('[data-reading-group='+group['key']+'][aria-pressed=true]')

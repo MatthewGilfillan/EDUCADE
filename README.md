@@ -150,7 +150,12 @@ Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teach
   and Vocabulary. Its initial radar shows four subject scores; selecting a
   subject point or button opens its detailed skills.
 - Reading separates Foundations (eight skills) from Comprehension (39 skills).
-  Class and profile views share five comprehension navigation groups:
+  Class and profile Reading Comprehension views start on **Reading overview**,
+  with the same eight focus skills, labels, order and scores as the student radar.
+  The class table keeps readable column widths and scrolls horizontally. A large
+  semitransparent arrow floats beside the visible rows: it jumps to the last
+  columns, then points left to return. Student names and row numbers stay pinned.
+  Class and profile views also share five comprehension navigation groups:
   **Meaning and evidence**, **Characters and events**, **Author’s craft**,
   **Structure and features**, and **Comparing and evaluating**.
   Coverage, strongest recorded skill and teaching priorities remain separate;
@@ -161,7 +166,8 @@ Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teach
 - Curriculum structure: domain → section where relevant → skill group → individual
   EDUCADE skill → learning evidence. Detailed groups expand independently.
 - Progress bars/radar switch: Overall has four subject axes. Reading Comprehension
-  charts show the assessed skills in the selected navigation group; Writing,
+  charts initially show eight focus skills; catalogue views show the assessed
+  skills in the selected navigation group. Writing,
   Grammar and Vocabulary each show six skills.
   A radar requires at least three assessed axes. Overall and subject chart
   choices are remembered independently; the initial choice for both is radar.

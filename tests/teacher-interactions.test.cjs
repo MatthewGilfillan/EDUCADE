@@ -18,11 +18,45 @@ function dashboard(saved,route='class/reading'){
   // jsdom queues navigation and hashchange on separate event-loop turns.
   return {dom,w,d:w.document,select,click,settle:()=>new Promise(resolve=>w.setTimeout(()=>w.setTimeout(resolve,0),0))};
 }
+test('Default Reading class columns match all eight radar skills, scores and evidence in the same order',async()=>{
+ const {dom,w,d,click,settle}=dashboard();
+ try{
+  const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students);
+  const labels=['Inference','Vocabulary in context','Figurative language','Character analysis','Main idea','Cause and effect','Comparing perspectives','Theme'];
+  assert.equal(d.querySelector('[data-class-reading-group=overview]').getAttribute('aria-pressed'),'true');
+  assert.deepEqual([...d.querySelectorAll('.skill-heading-label')].map(label=>label.textContent),labels);
+  const ids=[...d.querySelectorAll('.skill-heading')].map(button=>button.dataset.expandSkill);
+  const scores=[...d.querySelectorAll('tr[data-student=alex] .hp-value')].map(score=>score.textContent);
+  assert.deepEqual(scores,['45%','85%','60%','70%','80%','65%','65%','50%']);
+  assert.ok(d.querySelector('.comparison-scroll-guide').textContent.includes('8 reading skills'));
+  click('button[aria-label="Show skill evidence for Alex Chen"]');
+  assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence:not([hidden])').length,8);
+  assert.equal(d.querySelectorAll('.compact-evidence .hp-track').length,0);
+  assert.equal(d.querySelectorAll('#skill-headings th').length,10);
+  assert.ok([...d.querySelectorAll('#student-rows>tr')].every(row=>row.children.length===10));
+  click('button[aria-label="Show Theme evidence across the class"]');
+  assert.equal(d.querySelectorAll('.expanded-skill-cell .compact-evidence').length,6);
+  const theme=d.querySelector('tr[data-student=alex] .student-skill-cell:last-child');
+  assert.equal(theme.querySelectorAll('.compact-evidence').length,1);
+  assert.ok(theme.querySelector('.evidence-counts').textContent.includes('10/20'));
+  click('.profile-link[data-student=alex]');await settle();click('#tab-reading');await settle();
+  assert.equal(d.querySelector('[data-reading-group=overview]').getAttribute('aria-pressed'),'true');
+  const radar=[...d.querySelectorAll('.radar-skills button')];
+  assert.deepEqual(radar.map(button=>button.dataset.evidence),ids);
+  assert.deepEqual(radar.map(button=>button.querySelector('strong').textContent),scores);
+  const stats=D.summarize(D.students[0].evidence.filter(record=>ids.includes(record.skillId)));
+  assert.equal(stats.attempts,160);
+  for(const key of ['independent','supported','hints'])assert.equal(d.querySelector(`[data-count="${key}"]`).textContent,String(stats[key]));
+  click('[data-back-class]');await settle();assert.equal(d.querySelectorAll('.skill-heading').length,8);
+  assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence:not([hidden])').length,8);
+  assert.equal(JSON.stringify(D.students),original);
+ }finally{dom.window.close();}
+});
 test('Reading catalogue navigation exposes every skill with aligned evidence, scoped summaries and preserved class controls',async()=>{
  const {dom,w,d,click,select,settle}=dashboard();
  try{
   const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students),seen=new Set();
-  assert.equal(d.querySelectorAll('[data-class-reading-group]').length,5);
+  assert.equal(d.querySelectorAll('[data-class-reading-group]').length,6);
   assert.ok(d.querySelector('[data-class-reading-group=meaning]').textContent.includes('3 of 6 skills assessed'));
   select('#portrait-style','vikings');select('#sort-students','support');
   for(const group of D.readingCatalogue){
@@ -100,13 +134,13 @@ test('Class recommendations open the correct reading group and profile round tri
  try{
   const id=w.EDUCADE_DEMO.reading[2];
   click(`.whole-class-plan [data-review-class-skill="${id}"]`);await settle();
-  assert.equal(w.location.hash,'#class/reading/comprehension/craft');
-  assert.equal(d.querySelector('[data-class-reading-group=craft]').getAttribute('aria-pressed'),'true');
+  assert.equal(w.location.hash,'#class/reading/comprehension/overview');
+  assert.equal(d.querySelector('[data-class-reading-group=overview]').getAttribute('aria-pressed'),'true');
   assert.equal(d.querySelectorAll('.expanded-skill-cell .compact-evidence').length,6);
   assert.equal(d.querySelectorAll('.compact-evidence .hp').length,0);
   click('.profile-link[data-student=alex]');await settle();assert.equal(d.querySelector('#tab-overall').getAttribute('aria-selected'),'true');
-  click('[data-back-class]');await settle();assert.equal(d.querySelector('[data-class-reading-group=craft]').getAttribute('aria-pressed'),'true');
-  w.location.hash='class/reading/comprehension/unknown';await settle();assert.equal(d.querySelector('[data-class-reading-group=meaning]').getAttribute('aria-pressed'),'true');
+  click('[data-back-class]');await settle();assert.equal(d.querySelector('[data-class-reading-group=overview]').getAttribute('aria-pressed'),'true');
+  w.location.hash='class/reading/comprehension/unknown';await settle();assert.equal(d.querySelector('[data-class-reading-group=overview]').getAttribute('aria-pressed'),'true');
  }finally{dom.window.close();}
 });
 test('Class evidence expands on both axes and survives display changes without changing records',async()=>{
@@ -120,19 +154,19 @@ test('Class evidence expands on both axes and survives display changes without c
   assert.equal(d.querySelector(`.skill-heading[data-expand-skill="${id}"]`).getAttribute('aria-expanded'),'true');
   assert.ok(d.querySelector(`.skill-heading[data-expand-skill="${id}"]`).textContent.includes('Hide evidence'));
   assert.equal(d.querySelectorAll('.expanded-skill-cell .student-skill-evidence:not([hidden])').length,6);
-  assert.equal(d.querySelectorAll('#skill-headings th').length,8);
+  assert.equal(d.querySelectorAll('#skill-headings th').length,10);
   assert.ok(d.querySelector('tr[data-student=alex] .compact-evidence').textContent.includes('9/20'));
   click('button[aria-label="Show skill evidence for Alex Chen"]');
   assert.equal(d.querySelector('.learner-name').textContent,'Alex Chen');
   assert.equal(d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-label'),'Hide skill evidence for Alex Chen');
   assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
-  assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence').length,6);
+  assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence').length,8);
   assert.equal(d.querySelectorAll('#student-rows>tr').length,6);
   assert.equal(d.querySelectorAll('.compact-evidence .hp').length,0);
   for(const panel of d.querySelectorAll('tr[data-student=alex] .student-skill-evidence'))assert.ok(panel.id.endsWith(panel.parentElement.dataset.axis));
   click('tr[data-student=alex] .student-skill-evidence .latest-response span');
   assert.equal(d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-expanded'),'true');
-  assert.equal(d.querySelector('tr[data-student=alex]').children.length,8);
+  assert.equal(d.querySelector('tr[data-student=alex]').children.length,10);
   for(const id of d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-controls').split(' '))assert.equal(d.getElementById(id).hidden,false);
   select('#portrait-style','vikings');click('[data-class-mode=heatmap]');
   assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
@@ -142,7 +176,7 @@ test('Class evidence expands on both axes and survives display changes without c
   assert.ok(d.querySelector('tr[data-student=alex] .expanded-skill-cell .student-skill-evidence'));
   assert.ok([...d.querySelectorAll('tr[data-student=maya] .student-skill-evidence')].every(panel=>!panel.hidden));
   click(`[data-expand-skill="${w.EDUCADE_DEMO.profileAxes.reading[4].id}"]`);
-  assert.equal(d.querySelectorAll('#skill-headings th').length,8);
+  assert.equal(d.querySelectorAll('#skill-headings th').length,10);
   click('tr[data-student=maya] .student-skill-evidence [data-evidence]');
   assert.equal(d.querySelector('#evidence-dialog').open,true);
   assert.ok(d.querySelector('#evidence-content').textContent.includes('Maya Patel'));
@@ -256,7 +290,7 @@ test('Full subject radars share scores with progress bars and their central port
  const {dom,w,d,select,click,settle}=dashboard();
  try{
   click('.profile-link[data-student=alex]');await settle();
-  for(const [domain,count] of [['reading',3],['writing',6],['grammar',6],['vocabulary',6]]){
+  for(const [domain,count] of [['reading',8],['writing',6],['grammar',6],['vocabulary',6]]){
    click('#tab-'+domain);await settle();click('[data-mode=radar]');
    assert.equal(d.querySelectorAll('.radar-target').length,count);
    assert.equal(d.querySelectorAll('.radar-skills button').length,count);
@@ -285,10 +319,11 @@ test('Missing skill evidence remains unassessed rather than becoming a zero or a
   D.students[0].evidence=D.students[0].evidence.filter(r=>r.skillId!==missing);
   click('.profile-link[data-student=alex]');await settle();
   click('#tab-reading');await settle();
-  assert.equal(d.querySelectorAll('.radar-target').length,0);
+  assert.equal(d.querySelectorAll('.radar-target').length,8);
   assert.equal(d.querySelector('polygon.radar-area'),null);
-  assert.equal(d.querySelector('[data-mode=radar]').disabled,true);
+  assert.equal(d.querySelector('[data-mode=radar]').disabled,false);
   assert.equal(JSON.parse(w.localStorage.getItem('educade.teacher.presentation.v1'))?.studentView||'radar','radar');
+  assert.ok(d.querySelector(`.radar-target[data-evidence="${missing}"]`).textContent.includes('No evidence yet')||d.querySelector(`.radar-target[data-evidence="${missing}"]`).getAttribute('aria-label').includes('No evidence yet'));
   const unassessed=d.querySelector(`.reading-catalogue [data-evidence="${missing}"]`);
   assert.ok(unassessed.textContent.includes('No evidence yet'));
   assert.equal(unassessed.querySelector('.hp'),null);
@@ -319,7 +354,7 @@ test('Header classes are independent and the hamburger menu provides working set
   assert.equal(d.querySelector('#utility-dialog').open,true);
   select('[data-setting=portrait]','vikings');select('[data-setting=classView]','heatmap');
   assert.equal(d.querySelector('#portrait-style').value,'vikings');
-  assert.equal(d.querySelectorAll('.heat-cell').length,36);click('#close-utility');
+  assert.equal(d.querySelectorAll('.heat-cell').length,48);click('#close-utility');
   select('#class-select','5b');await settle();
   assert.equal(d.querySelectorAll('#student-rows tr[data-student]').length,3);
   assert.equal(d.querySelector('tr[data-student=alex]'),null);
