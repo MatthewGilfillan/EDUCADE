@@ -495,3 +495,23 @@ for those changes above.
   /workspace/educade-validation/eight-reading-scroll. Learner records, challenge
   text, standards mappings, portraits, landing assets, authentication behavior
   and deployment configuration are unchanged.
+
+## Clear scroll controls in every class category — 11 October 2026
+
+- Overall, Reading, Writing, Grammar and Vocabulary use the same floating
+  end/return control whenever their comparison columns overflow. Guide text and
+  accessible labels name the relevant skills or subjects. The arrow remains
+  available in both progress-bar and heatmap views.
+- A reserved space to the right of the table keeps the entire arrow outside
+  score and evidence cells. Desktop controls have a 16px gap from the table
+  edge; smaller-width controls also avoid overlapping the table. When all
+  columns fit, both the arrow and its reserved space disappear.
+- All 27 Node tests pass. The complete teacher browser suite passes at 1440,
+  1024, 768, 640, 390 and 320px. New checks use native clicks in every class tab,
+  verify both scroll directions, confirm pinned names, and measure that arrows
+  sit outside the table and inside the viewport. Evidence alignment, portraits,
+  charts, coverage, preferences and storage-fallback checks also pass.
+- The landing suite passes at all six widths with mocked signup responses.
+  Desktop Writing and smaller-width Reading screenshots were inspected under
+  /workspace/educade-validation/all-category-scroll. Assessment data, profile
+  charts, landing artwork and deployment configuration are unchanged.
