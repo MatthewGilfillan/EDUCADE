@@ -254,3 +254,29 @@ fictional examples have no CCSS mapping until that alignment is reviewed.
 
 `npm test` now includes DOM interaction checks via jsdom. These verify behavior
 and data consistency but do not replace Chromium layout/screenshot checks.
+
+## Class teaching suggestions — 11 October 2026
+
+The number column is fixed at 32 pixels on desktop and 28 pixels on phones.
+An explicit column group prevents older table styles from widening it; student
+names remain sticky beside it when comparison or evidence columns scroll.
+
+Suggested next steps shows a whole-class skill with Model, Practise together
+and Check independently steps, then named small groups and individual check-ins.
+Recommendations use the selected class's four comparison skills and the same
+records as its profiles, rather than the current search results. Class 5A's
+focus is explaining similes and metaphors in context: four of six learners
+are below 70%, with 73 of 120 responses correct (61%). Evidence links open the
+matching learner/skill or expand that skill's class evidence column.
+
+Planning rules are explicit: rank skills by learners below 70%, then accuracy;
+recommend a class lesson only where at least half of assessed learners share
+that need. Up to two other skills with at least two learners below 70% form
+practice groups. A learner's lowest skill below 50% receives an individual
+check-in. Missing evidence is excluded, and no teaching need is invented when
+the records do not support one. These are practice cues, not mastery decisions
+or live AI assessment; the next step is a new independent response.
+
+Dashboard copy uses Search students and removes repeated sample/fictional
+wording at the user's request. The existing prototype and Demo data footer
+remain. The landing page, account behavior and hosting configuration are unchanged.

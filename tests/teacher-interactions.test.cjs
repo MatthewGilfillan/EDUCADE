@@ -128,3 +128,38 @@ test('Header classes are independent and the hamburger menu provides working set
   assert.equal(d.querySelector('#utility-content input'),null);
  }finally{dom.window.close();}
 });
+test('Teaching suggestions remain class-wide during filtering and link to the correct evidence',async()=>{
+ const {dom,w,d,select,click,settle}=dashboard();
+ try{
+  const D=w.EDUCADE_DEMO,figurative=D.reading[2];
+  assert.equal(d.querySelector('#search-students').placeholder,'Search students');
+  assert.ok(!/\bsample\b|\bfictional\b/i.test(d.body.textContent));
+  assert.equal(d.querySelector('.whole-class-plan').dataset.planSkill,figurative);
+  assert.ok(d.querySelector('.plan-basis').textContent.includes('4 of 6'));
+  assert.ok(d.querySelector('.plan-basis').textContent.includes('61% (73/120'));
+  const initial=d.querySelector('.class-next-steps').textContent;
+  const search=d.querySelector('#search-students');search.value='Ella';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  select('#sort-students','support');select('#portrait-style','initials');click('[data-class-mode=heatmap]');
+  assert.equal(d.querySelector('.class-next-steps').textContent,initial);
+  click('.individual-intervention[data-individual=ella] [data-evidence]');
+  assert.equal(d.querySelector('#evidence-dialog').open,true);
+  assert.equal(d.querySelector('.evidence-id').textContent,figurative);
+  assert.ok(d.querySelector('#evidence-content').textContent.includes('Ella Brown'));
+  assert.ok(!/\bsample\b|\bfictional\b/i.test(d.querySelector('#evidence-content').textContent));
+  click('#close-evidence');search.value='';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  click('[data-review-class-skill]');
+  assert.equal(d.querySelector('.skill-heading[aria-expanded=true]').dataset.expandSkill,figurative);
+  assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
+  assert.equal(d.querySelector('tr.current-learner').dataset.student,'ella');
+  assert.equal(d.querySelector('#portrait-style').value,'initials');
+  select('#class-select','5b');await settle();
+  assert.ok(d.querySelector('.plan-basis').textContent.includes('2 of 3'));
+  assert.ok(d.querySelector('.class-next-steps').textContent.includes('Finn'));
+  assert.ok(!d.querySelector('.class-next-steps').textContent.includes('Alex'));
+  click('.profile-link[data-student=finn]');await settle();
+  for(const domain of ['reading','writing','grammar','vocabulary']){
+   click('#tab-'+domain);await settle();
+   assert.ok(!/\bsample\b|\bfictional\b/i.test(d.querySelector('#dashboard').textContent));
+  }
+ }finally{dom.window.close();}
+});

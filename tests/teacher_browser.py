@@ -26,9 +26,28 @@ try:
             assert page.locator('.demo-banner').count()==0
             assert page.locator('.toolbar #portrait-style').count()==1
             assert page.locator('tr[data-student] .row-number').all_text_contents()==['1','2','3','4','5','6']
+            def check_number_column():
+                expected=28 if width<=640 else 32
+                dimensions=page.locator('.row-number-heading').evaluate('(el)=>({header:el.getBoundingClientRect().width,row:document.querySelector(".row-number").getBoundingClientRect().width,numberRight:el.getBoundingClientRect().right,studentLeft:document.querySelector(".student-heading").getBoundingClientRect().left})')
+                assert abs(dimensions['header']-expected)<1,dimensions
+                assert abs(dimensions['row']-expected)<1,dimensions
+                assert abs(dimensions['studentLeft']-dimensions['numberRight'])<1,dimensions
+            check_number_column()
+            assert page.locator('#search-students').get_attribute('placeholder')=='Search students'
+            assert '4 of 6 learners below 70%' in page.locator('.plan-basis').inner_text()
+            assert '61% (73/120 correct responses)' in page.locator('.plan-basis').inner_text()
+            page.locator('.class-next-steps').screenshot(path=str(OUT/f'next-steps-{width}.png'))
+            page.locator('.individual-intervention[data-individual=ella] button').click()
+            assert 'Ella Brown' in page.locator('#evidence-content').inner_text()
+            assert '35%' in page.locator('#evidence-content').inner_text()
+            page.keyboard.press('Escape')
             skill=page.evaluate('EDUCADE_DEMO.reading[0]')
             page.locator(f'[data-expand-skill="{skill}"]').first.click()
             assert page.locator('.skill-evidence-cell').count()==6
+            check_number_column()
+            page.locator('.table-scroll').evaluate('(el)=>el.scrollLeft=200')
+            check_number_column()
+            page.locator('.table-scroll').evaluate('(el)=>el.scrollLeft=0')
             page.locator('.name-button[data-expand-student=alex]').click()
             assert page.locator('#student-evidence-alex').is_visible()
             assert page.locator('#student-evidence-alex article').count()==4
@@ -76,12 +95,12 @@ try:
                 assert page.locator('.radar-portrait .avatar').count()==1
                 page.screenshot(path=str(OUT/f'{domain}-radar-{width}.png'),full_page=True)
                 page.locator('[data-mode=bars]').click();assert page.locator('#skill-chart .hp').count()>0
-                page.locator('.skill-group summary').first.click()
+                page.locator('.skill-group').filter(has=page.locator('.group-score:not(.unassessed)')).first.locator('summary').click()
                 open_group=page.locator('.skill-group[open]').get_attribute('id')
                 page.locator('[data-mode=radar]').click()
                 assert page.locator('#'+open_group).get_attribute('open') is not None
                 page.locator('[data-mode=bars]').click()
-                page.locator('.skill-group[open] .individual-skill').first.click()
+                page.locator('.skill-group[open] .individual-skill').filter(has=page.locator('.hp')).first.click()
                 assert page.locator('#evidence-dialog').is_visible()
                 assert 'EDU.G5.' in page.locator('.evidence-id').inner_text()
                 assert page.locator('.attempt').count()>0

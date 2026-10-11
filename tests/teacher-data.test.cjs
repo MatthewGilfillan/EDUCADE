@@ -47,3 +47,40 @@ test('Standards references are checked separately; prototype alignments remain c
   assert.equal(mapping.sourceType,'published reference mirror');
  }
 });
+test('Teaching priorities use the selected class and the same skill evidence as the dashboard',()=>{
+ const class5a=D.classes[0].studentIds.map(id=>D.students.find(s=>s.id===id));
+ const original=JSON.stringify(class5a),plan=D.readingPlan(class5a);
+ assert.equal(plan.wholeClass.id,D.reading[2]);
+ assert.equal(plan.wholeClass.stats.score,61);
+ assert.equal(plan.wholeClass.stats.correct,73);
+ assert.equal(plan.wholeClass.stats.attempts,120);
+ assert.deepEqual(plan.wholeClass.belowPractice.map(m=>m.student.id),['alex','leo','noah','ella']);
+ assert.deepEqual(plan.smallGroups.map(g=>[g.id,g.belowPractice.map(m=>m.student.id)]),[[D.reading[0],['alex','leo','noah']],[D.reading[1],['leo','noah']]]);
+ assert.deepEqual(plan.individuals.map(m=>[m.student.id,m.skill.id,m.stats.score]),[['noah',D.reading[0],30],['ella',D.reading[2],35],['leo',D.reading[1],40],['alex',D.reading[0],45]]);
+ for(const member of plan.individuals){
+  const records=member.student.evidence.filter(r=>r.skillId===member.skill.id);
+  assert.deepEqual(member.independent,D.summarize(records.filter(r=>!r.supported)));
+  assert.deepEqual(member.supported,D.summarize(records.filter(r=>r.supported)));
+ }
+ assert.equal(JSON.stringify(class5a),original);
+ const class5b=D.classes[1].studentIds.map(id=>D.students.find(s=>s.id===id));
+ const other=D.readingPlan(class5b);
+ assert.equal(other.wholeClass.stats.score,65);
+ assert.equal(other.wholeClass.stats.attempts,60);
+ assert.deepEqual(other.wholeClass.belowPractice.map(m=>m.student.id),['finn','oliver']);
+ assert.equal(other.individuals.length,0);
+});
+test('Planning excludes missing evidence and does not recommend reteaching an all-correct class',()=>{
+ const learners=D.students.slice(0,6).map(s=>({...s,evidence:s.evidence.map(r=>({...r}))}));
+ learners[5].evidence=learners[5].evidence.filter(r=>r.skillId!==D.reading[2]);
+ const plan=D.readingPlan(learners);
+ const figurative=[plan.wholeClass,...plan.smallGroups].find(p=>p?.id===D.reading[2]);
+ assert.equal(figurative.members.length,5);
+ assert.equal(figurative.stats.attempts,100);
+ assert.equal(figurative.belowPractice.some(m=>m.student.id==='ella'),false);
+ assert.equal(plan.individuals.some(m=>m.student.id==='ella'),false);
+ const missing=D.readingPlan(learners.map(s=>({...s,evidence:[]})));
+ assert.equal(missing.wholeClass,null);assert.equal(missing.smallGroups.length,0);assert.equal(missing.individuals.length,0);
+ const strong=D.readingPlan(learners.map(s=>({...s,evidence:s.evidence.map(r=>({...r,correct:true}))})));
+ assert.equal(strong.wholeClass,null);assert.equal(strong.smallGroups.length,0);assert.equal(strong.individuals.length,0);
+});

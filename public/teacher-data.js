@@ -77,7 +77,7 @@
     assess('reading','figurative',0,'RL.5.4','Determine meanings of words and phrases, including figurative language.','The storm’s voice','“The wind howled like a hungry wolf.” What does this simile suggest about the wind?','It is loud and fierce, like a wolf’s howl.','A real wolf is hiding on the ship.','Compare the sound of wind with the sound of a wolf.'),
     assess('reading','character',0,'RL.5.3','Compare and contrast characters using details such as actions and dialogue.','Two ways to help','Eirik says, “Check every knot first.” Liv says, “I will carry the supplies while you check.” Compare their priorities, using their words.','Eirik says “Check every knot first,” showing his focus on safety. Liv offers to “carry the supplies,” showing her focus on preparation. Both want to help the crew.','Both characters want to leave the supplies behind.','Look at what each character offers to do.')
   ];
-  const foundation=assess('reading','syllables',2,'RF.5.3.a','Use letter–sound knowledge, syllabication and morphology to read unfamiliar multisyllabic words.','A longer word','Read transportation by identifying its syllable chunks. This is a fictional teacher-recorded reading check.','trans / por / ta / tion — transportation','trans / port — stops before the end of the word','Try one syllable at a time, then blend the complete word.');
+  const foundation=assess('reading','syllables',2,'RF.5.3.a','Use letter–sound knowledge, syllabication and morphology to read unfamiliar multisyllabic words.','A longer word','Read transportation by identifying its syllable chunks.','trans / por / ta / tion — transportation','trans / port — stops before the end of the word','Try one syllable at a time, then blend the complete word.');
   const writing=[
     assess('writing','organization',0,'W.5.2.c','Link ideas within and across categories of information using words, phrases and clauses.','A useful connection','Link these informational ideas: “The wind is rising. The crew must check the ropes.” Use a transition showing the connection.','The wind is rising; therefore, the crew must check the ropes.','The wind is rising. Also, the apples are red.','Choose a transition that shows a cause and a response.'),
     assess('writing','argument',0,'W.5.1.b','Support an opinion with logically ordered reasons, facts and details.','Choose the safer plan','Support this opinion with a reason from the quest: “The crew should check the ropes before departure.”','They should check first because the rising wind could loosen the ship’s ropes.','They should check because it is my favourite plan.','Use the rising wind as a fact to support the opinion.'),
@@ -156,5 +156,34 @@
   }
   function skillStats(student,id){return summarize(student.evidence.filter(r=>r.skillId===id));}
   function groupStats(student,group){return summarize(student.evidence.filter(r=>group.skills.some(s=>s.id===r.skillId)));}
-  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,profileAxes,summarize,skillStats,groupStats};
+  const readingLessons=[
+    {label:'Inference',model:'Read “The rising tide”. Underline “The water climbed past the lowest step” and explain why Eirik moves the crates.',practice:'Have learners connect a quoted clue to an inference using “I infer … because the text says …”.',check:'Use a new short passage. Ask for an inference and a quoted clue before offering a hint.',intervention:'Underline one useful clue together, then connect it to the inference with “because”.'},
+    {label:'Vocabulary in context',model:'Read “Harbour supplies”. Think aloud about why a rope must be sturdy when the wind is rising.',practice:'Replace sturdy with strong, then check whether the meaning still fits the sentence.',check:'Give an unfamiliar word in a new sentence. Ask learners to explain its meaning and point to the clue.',intervention:'Identify the surrounding clue, try a replacement word and check that the sentence still makes sense.'},
+    {label:'Figurative language',model:'Read “The wind howled like a hungry wolf.” Identify the comparison and model how howled suggests a loud, fierce wind.',practice:'Have pairs explain the comparison in their own words and point to the words that support their interpretation.',check:'Give a new simile. Ask learners to explain its meaning independently before offering a hint.',intervention:'Contrast the literal picture with the intended meaning, then explain what the comparison tells the reader.'},
+    {label:'Character thoughts & motivations',model:'Read “Two ways to help”. Compare Eirik’s “Check every knot first” with Liv’s offer to carry the supplies.',practice:'Use a two-column chart: what each character says or does, and what it reveals about their priorities.',check:'Use new dialogue. Ask learners to compare the characters and cite a detail for each.',intervention:'Connect one action or line of dialogue to each character’s priority before comparing them.'}
+  ];
+  // Transparent planning rules over existing evidence, with no generated assessment.
+  // Missing scores are excluded. Thresholds guide practice; they do not claim mastery.
+  function readingPlan(learners){
+    const practiceThreshold=70,individualThreshold=50;
+    const priorities=reading.map((id,index)=>{
+      const skill=groups.flatMap(g=>g.skills).find(s=>s.id===id);
+      const members=learners.map(student=>{
+        const evidence=student.evidence.filter(r=>r.skillId===id);
+        return {student,stats:summarize(evidence),independent:summarize(evidence.filter(r=>!r.supported)),supported:summarize(evidence.filter(r=>r.supported))};
+      }).filter(member=>member.stats.attempts>0);
+      return {id,name:skill.name,...readingLessons[index],members,belowPractice:members.filter(member=>member.stats.score<practiceThreshold),stats:summarize(members.flatMap(member=>member.student.evidence.filter(r=>r.skillId===id)))};
+    }).filter(priority=>priority.members.length>0).sort((a,b)=>b.belowPractice.length-a.belowPractice.length||a.stats.correct/a.stats.attempts-b.stats.correct/b.stats.attempts);
+    const wholeClass=priorities.find(p=>p.members.length>=2&&p.belowPractice.length>=Math.ceil(p.members.length/2))||null;
+    const smallGroups=priorities.filter(p=>p.id!==wholeClass?.id&&p.belowPractice.length>=2).slice(0,2);
+    const individuals=learners.flatMap(student=>{
+      const weakest=priorities.flatMap(priority=>{
+        const member=priority.members.find(m=>m.student.id===student.id);
+        return member&&member.stats.score<individualThreshold?[{...member,skill:priority}]:[];
+      }).sort((a,b)=>a.stats.score-b.stats.score)[0];
+      return weakest?[weakest]:[];
+    }).sort((a,b)=>a.stats.score-b.stats.score||a.student.name.localeCompare(b.student.name));
+    return {wholeClass,smallGroups,individuals,practiceThreshold,individualThreshold};
+  }
+  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,profileAxes,summarize,skillStats,groupStats,readingPlan};
 })();

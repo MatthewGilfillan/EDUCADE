@@ -205,3 +205,36 @@ for those changes above.
   because Playwright is absent; Chromium is not installed. No browser screenshots
   were produced for this revision. Desktop/mobile visual QA remains outstanding.
 - Landing assets, production configuration and release helper are unchanged.
+
+## Number column and class teaching suggestions — 11 October 2026
+
+- Confirmed and corrected a table-style override that made the number column
+  wider than its intended size. Chromium measures 32 pixels on desktop and
+  28 pixels on mobile, before/after expansion and during horizontal scrolling;
+  the sticky student column begins immediately beside it.
+- The class recommendation uses existing response records: Class 5A's
+  figurative-language result is 73/120 (61%), with four of six learners below
+  70%. It includes a model, paired practice, independent check, two named
+  practice groups and four individual check-ins with support/hint counts.
+- Class 5B has its own recommendations. Filtering, sorting and presentation
+  changes preserve the class-wide plan. Missing evidence is excluded; empty
+  or all-correct records do not create a false teaching priority. Evidence
+  buttons open the correct student/skill or expand the relevant class column.
+- User-facing sample/fictional wording is removed across the class view,
+  profiles and evidence. The search placeholder is Search students. The
+  existing prototype/Demo data footer remains.
+- All 14 Node tests pass. Both Chromium suites pass at 1440, 1024, 768, 640,
+  390 and 320 pixels; portrait assignments, presentation persistence, storage
+  fallbacks and keyboard/evidence interactions also pass. No page overflow,
+  script errors or failed asset responses were reported. Desktop/mobile
+  screenshots were inspected in `/workspace/educade-validation/teaching-plans`.
+- Updated two stale browser expectations from the previous revision: the
+  landing entry checks the current demo footer, and profile evidence checks
+  select an assessed skill rather than assuming every first skill is assessed.
+  Separate No evidence yet checks remain in place.
+- Frozen dependency installation succeeds with an explicit writable npm cache.
+  Preview packaging passes with `XDG_CONFIG_HOME=/workspace/educade-tools/config
+  npm_config_cache=/workspace/educade-npm-cache npm run build`; this avoids
+  unwritable default tool directories without changing integrity verification.
+- Changes are on development only. Landing page files, hosting configuration,
+  production branch and live domain are outside this revision.
