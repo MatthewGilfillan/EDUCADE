@@ -18,6 +18,27 @@ try:
         browser=p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH','/usr/bin/chromium'),args=['--no-sandbox'])
         for width in [1440,1024,768,640,390,320]:
             page=browser.new_page(viewport={'width':width,'height':1000})
+            def check_scroll_arrow(column_label):
+                region=page.locator('.table-scroll')
+                region.evaluate('el=>el.scrollIntoView({block:"start"})')
+                arrow=page.locator('.skill-scroll-jump')
+                if not region.evaluate('el=>el.scrollWidth>el.clientWidth+1'):
+                    assert arrow.is_hidden()
+                    assert not page.locator('.comparison-scroll-wrap').evaluate('el=>el.classList.contains("has-horizontal-scroll")')
+                    return
+                region.evaluate('el=>el.scrollLeft=0')
+                page.wait_for_function('()=>{const arrow=document.querySelector(".skill-scroll-jump"),box=arrow.getBoundingClientRect();return !arrow.hidden&&arrow.textContent==="→"&&box.top>=0&&box.bottom<=innerHeight;}')
+                box=arrow.bounding_box();table_box=region.bounding_box()
+                assert box['x']>=table_box['x']+table_box['width']-1
+                assert box['x']+box['width']<=width
+                assert arrow.get_attribute('aria-label')=='Show remaining '+column_label
+                pinned_x=page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']
+                arrow.click()
+                page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
+                assert arrow.inner_text()=='←' and arrow.get_attribute('aria-label')=='Show first '+column_label
+                assert abs(page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']-pinned_x)<1
+                arrow.click();page.wait_for_function('document.querySelector(".table-scroll").scrollLeft<1')
+                assert arrow.inner_text()=='→'
             errors=[];failed=[]
             page.on('pageerror',lambda error:errors.append(str(error)))
             page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
@@ -29,6 +50,7 @@ try:
             assert 'Reading skills at a glance' not in page.locator('#dashboard').inner_text()
             assert page.locator('.class-tabs [role=tab]').all_text_contents()==['Overall','Reading','Writing','Grammar','Vocabulary']
             assert page.locator('#class-tab-overall').get_attribute('aria-selected')=='true'
+            check_scroll_arrow('subjects')
             assert page.locator('#search-students').bounding_box()['y']<page.locator('.class-tabs').bounding_box()['y']
             expected=page.evaluate("Object.keys(EDUCADE_DEMO.domains).map(domain=>EDUCADE_DEMO.domainStats(EDUCADE_DEMO.students[0],domain).score+'%')")
             assert page.locator('tr[data-student=alex] .score-cell .hp-value').all_text_contents()==expected
@@ -92,6 +114,7 @@ try:
                 expected=page.evaluate('(domain)=>EDUCADE_DEMO.profileAxes[domain].map(axis=>EDUCADE_DEMO.skillStats(EDUCADE_DEMO.students[0],axis.id).score+"%")',domain)
                 assert page.locator('tr[data-student=alex] .score-cell .hp-value').all_text_contents()==expected
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Class {domain} overflow at {width}'
+                check_scroll_arrow(domain+' skills')
                 page.locator('tr[data-student=alex] .score-cell').first.click()
                 assert page.locator('.evidence-id').inner_text()==page.evaluate('(domain)=>EDUCADE_DEMO.profileAxes[domain][0].id',domain)
                 page.keyboard.press('Escape')
@@ -117,6 +140,7 @@ try:
                     page.get_by_role('button',name='Hide Transitions evidence across the class',exact=True).click()
                 page.locator('[data-class-mode=heatmap]').click()
                 assert page.locator('.heat-cell').count()==36
+                check_scroll_arrow(domain+' skills')
                 page.locator('[data-class-mode=bars]').click()
                 page.screenshot(path=str(OUT/f'class-{domain}-{width}.png'),full_page=True)
             page.locator('#class-tab-vocabulary').focus();page.keyboard.press('Home')
@@ -134,6 +158,7 @@ try:
             assert page.locator('.skill-heading-label').all_text_contents()==[axis['label'] for axis in expected_reading]
             assert page.locator('tr[data-student=alex] .hp-value').all_text_contents()==['45%','85%','60%','70%','80%','65%','65%','50%']
             assert '8 reading skills' in page.locator('.comparison-scroll-guide').inner_text()
+            check_scroll_arrow('reading skills')
             page.locator('.table-scroll').evaluate('el=>el.scrollIntoView({block:"start"})')
             jump=page.locator('.skill-scroll-jump')
             page.wait_for_function('!document.querySelector(".skill-scroll-jump").hidden')
