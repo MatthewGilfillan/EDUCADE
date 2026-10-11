@@ -340,3 +340,36 @@ CSS overlays covering their old data labels. The general presentation notice
 is removed; Settings only reports a browser-storage error when saving fails.
 The same records, scores, charts, portraits and five subject tabs are retained.
 No authentication or live assessment has been added.
+
+## Column-aligned evidence and Glows & Grows — 11 October 2026
+
+Show skill evidence expands the learner's existing table row. Each category
+keeps its comparison score, with response counts, support, hints and the latest
+response immediately beneath it in the same column. Expanded evidence has no
+second progress bar, including evidence columns opened from a category heading.
+Evidence links still open the matching questions and responses; subject and
+presentation changes preserve the expanded learner.
+
+The student profile's Glows & Grows panel sits beneath the four-week progress
+chart. It highlights the strongest assessed subject or skill group and the
+lowest-scoring assessed area as a practice target. Grows uses an orange target
+icon and a cue from the existing challenge hint before a fresh independent
+response. Both actions open the matching subject or curriculum group. Areas
+without responses are excluded; an entirely unassessed view shows No evidence
+yet. Scores, support totals, portraits and saved presentation choices are
+unchanged.
+
+## Visible evidence expansion controls — 11 October 2026
+
+Each learner now has a separate outlined blue Show skill evidence button
+beneath their name. Each category heading has an outlined Show evidence button
+with a plus icon, switching to Hide evidence with a minus icon when open.
+Accessible names identify the learner or category being expanded. The full
+profile link stays below the learner action; evidence remains aligned within
+the original table columns without repeated progress bars.
+
+Open the class Vocabulary table directly at
+https://educade-preview.silent-wildflower-6cb0.workers.dev/teacher#class/vocabulary
+to find Context clues and the other vocabulary comparisons. These controls
+belong to the class table. Student profiles use subject tabs and expandable
+curriculum groups to explore individual skills.

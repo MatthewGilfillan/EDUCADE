@@ -25,23 +25,33 @@ test('Class evidence expands on both axes and survives display changes without c
   assert.equal(d.querySelector('.demo-banner'),null);
   assert.ok(!d.body.textContent.includes('RPG HP bars'));
   assert.equal(d.querySelectorAll('#student-rows tr[data-student]').length,6);
-  click(`[data-expand-skill="${id}"]`);
+  click('button[aria-label="Show Inference evidence across the class"]');
+  assert.equal(d.querySelector(`.skill-heading[data-expand-skill="${id}"]`).getAttribute('aria-expanded'),'true');
+  assert.ok(d.querySelector(`.skill-heading[data-expand-skill="${id}"]`).textContent.includes('Hide evidence'));
   assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
   assert.equal(d.querySelectorAll('#skill-headings th').length,7);
   assert.ok(d.querySelector('tr[data-student=alex] .compact-evidence').textContent.includes('9/20'));
-  click('.name-button[data-expand-student=alex]');
-  assert.equal(d.querySelector('#student-evidence-alex').hidden,false);
-  assert.equal(d.querySelectorAll('#student-evidence-alex article').length,4);
-  assert.equal(d.querySelector('#student-evidence-alex td').colSpan,7);
+  click('button[aria-label="Show skill evidence for Alex Chen"]');
+  assert.equal(d.querySelector('.learner-name').textContent,'Alex Chen');
+  assert.equal(d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-label'),'Hide skill evidence for Alex Chen');
+  assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
+  assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence').length,4);
+  assert.equal(d.querySelectorAll('#student-rows>tr').length,6);
+  assert.equal(d.querySelectorAll('.compact-evidence .hp').length,0);
+  for(const panel of d.querySelectorAll('tr[data-student=alex] .student-skill-evidence'))assert.ok(panel.id.endsWith(panel.parentElement.dataset.axis));
+  click('tr[data-student=alex] .student-skill-evidence .latest-response span');
+  assert.equal(d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-expanded'),'true');
+  assert.equal(d.querySelector('tr[data-student=alex]').children.length,7);
+  for(const id of d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-controls').split(' '))assert.equal(d.getElementById(id).hidden,false);
   select('#portrait-style','vikings');click('[data-class-mode=heatmap]');
-  assert.equal(d.querySelector('#student-evidence-alex').hidden,false);
+  assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
   assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
   click('.name-button[data-expand-student=maya]');
-  assert.equal(d.querySelector('#student-evidence-alex').hidden,true);
-  assert.equal(d.querySelector('#student-evidence-maya').hidden,false);
+  assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>panel.hidden));
+  assert.ok([...d.querySelectorAll('tr[data-student=maya] .student-skill-evidence')].every(panel=>!panel.hidden));
   click(`[data-expand-skill="${w.EDUCADE_DEMO.reading[1]}"]`);
   assert.equal(d.querySelectorAll('#skill-headings th').length,7);
-  click('#student-evidence-maya [data-evidence]');
+  click('tr[data-student=maya] .student-skill-evidence [data-evidence]');
   assert.equal(d.querySelector('#evidence-dialog').open,true);
   assert.ok(d.querySelector('#evidence-content').textContent.includes('Maya Patel'));
   click('#close-evidence');
@@ -208,6 +218,37 @@ test('Unassessed Overall subjects show no evidence and do not become zero scores
   click('.radar-target[data-domain=grammar]');await settle();
   assert.equal(d.querySelector('#tab-grammar').getAttribute('aria-selected'),'true');
   assert.ok(d.querySelector('#skill-chart').textContent.includes('No evidence yet'));
+  assert.deepEqual([...d.querySelectorAll('.growth-item h3')].map(h=>h.textContent),['No evidence yet','No evidence yet']);
+  assert.equal(d.querySelectorAll('.growth-result,.growth-item button').length,0);
+ }finally{dom.window.close();}
+});
+
+test('Glows and Grows identify assessed strengths and targets and open the matching evidence',async()=>{
+ const {dom,w,d,click,settle}=dashboard();
+ try{
+  const original=JSON.stringify(w.EDUCADE_DEMO.students);
+  click('.profile-link[data-student=alex]');await settle();
+  assert.equal(d.querySelector('.profile-next-card h2').textContent,'Glows & Grows');
+  assert.equal(d.querySelector('.glow').dataset.focus,'vocabulary');
+  assert.equal(d.querySelector('.glow .growth-result strong').textContent,'68% correct');
+  assert.equal(d.querySelector('.grow').dataset.focus,'writing');
+  assert.equal(d.querySelector('.grow .growth-result strong').textContent,'62% correct');
+  click('.grow button');await settle();
+  assert.equal(d.querySelector('#tab-writing').getAttribute('aria-selected'),'true');
+  click('#tab-overall');await settle();click('.glow button');await settle();
+  assert.equal(d.querySelector('#tab-vocabulary').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelector('.glow h3').textContent,'Idioms and adages');
+  assert.equal(d.querySelector('.glow .growth-result strong').textContent,'90% correct');
+  assert.equal(d.querySelector('.grow h3').textContent,'Prefixes and suffixes');
+  assert.equal(d.querySelector('.grow .growth-result strong').textContent,'40% correct');
+  assert.ok(d.querySelector('.grow').textContent.includes(w.EDUCADE_DEMO.samples['EDU.G5.VOCABULARY.AFFIXES.01'].hint));
+  click('.grow button');
+  assert.equal(d.querySelector('#group-affixes').open,true);
+  assert.equal(d.activeElement.dataset.evidence,'EDU.G5.VOCABULARY.AFFIXES.01');
+  click('#group-affixes .individual-skill');
+  assert.equal(d.querySelector('#evidence-dialog').open,true);click('#close-evidence');
+  click('.glow button');assert.equal(d.querySelector('#group-idioms').open,true);
+  assert.equal(JSON.stringify(w.EDUCADE_DEMO.students),original);
  }finally{dom.window.close();}
 });
 
@@ -226,18 +267,19 @@ test('Class dashboard starts with Overall and subject tabs preserve the learner 
   assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
   assert.ok(d.querySelector('tr[data-student=alex] .compact-evidence').textContent.includes('180'));
   click('.name-button[data-expand-student=alex]');
-  assert.equal(d.querySelector('#student-evidence-alex').hidden,false);
+  assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
   for(const domain of ['writing','grammar','vocabulary']){
    click('#class-tab-'+domain);await settle();
    assert.equal(d.querySelector('[role=tab][aria-selected=true]').dataset.classDomain,domain);
-   assert.equal(d.querySelector('#student-evidence-alex').hidden,false);
-   assert.equal(d.querySelectorAll('#student-evidence-alex article').length,6);
-   assert.equal(d.querySelector('#student-evidence-alex td').colSpan,8);
+   assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
+   assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence').length,6);
+   assert.equal(d.querySelectorAll('tr[data-student=alex] .compact-evidence .hp').length,0);
+   assert.equal(d.querySelector('tr[data-student=alex]').children.length,8);
    const axes=D.profileAxes[domain],cells=[...d.querySelectorAll('tr[data-student=alex] .score-cell')];
    assert.equal(cells.length,6);
    cells.forEach((cell,index)=>assert.equal(cell.querySelector('.hp-value').textContent,D.skillStats(D.students[0],axes[index].id).score+'%'));
    click(`[data-expand-skill="${axes[0].id}"]`);
-   assert.equal(d.querySelector('#student-evidence-alex td').colSpan,9);
+   assert.equal(d.querySelector('tr[data-student=alex]').children.length,9);
    click('tr[data-student=alex] .score-cell');
    assert.equal(d.querySelector('.evidence-id').textContent,axes[0].id);click('#close-evidence');
   }
@@ -248,7 +290,7 @@ test('Class dashboard starts with Overall and subject tabs preserve the learner 
   assert.equal(d.querySelector('#sort-students').value,'support');
   assert.equal(d.querySelector('#portrait-style').value,'vikings');
   assert.equal(d.querySelectorAll('.heat-cell').length,4);
-  assert.equal(d.querySelector('#student-evidence-alex').hidden,false);
+  assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
   click('tr[data-student=alex] .score-cell[data-profile-domain=grammar]');await settle();
   assert.equal(d.querySelector('#tab-grammar').getAttribute('aria-selected'),'true');
   click('[data-back-class]');await settle();
