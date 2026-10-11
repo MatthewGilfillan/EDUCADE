@@ -372,3 +372,27 @@ for those changes above.
   configuration changes. Development only; production remains unchanged.
 - The hosted preview read check returned HTTP 403 from this execution
   environment, so its currently served build could not be verified here.
+
+## One evidence block per original skill cell — 11 October 2026
+
+- Category expansion now shares the learner row's existing evidence container,
+  rather than adding an adjacent column. Both controls use a union: an expanded
+  learner/skill intersection has one block, and closing either preserves the
+  details still requested by the other. Comparison bars remain in their original
+  cells. No repeated bars or separate learner evidence cards are rendered.
+- A regression check exercises Alex's Writing > Transitions: 40% and
+  `8/20 correct · 5 hints`. It verifies both toggle orders, fixed header/row cell
+  counts, stable table width, one bar per cell and unchanged source records.
+- Chromium checks measure the counts directly below their matching bars and
+  check identical horizontal starts, unchanged column offsets/widths and no
+  extra cells. These checks pass across all six existing widths. Existing
+  portrait, saved presentation, storage fallback, profile and evidence checks
+  also pass. All 20 Node tests and the landing browser suite pass.
+- The upload packager uses committed public files, fingerprints the four
+  teacher assets and links Teacher sign in to a revision-specific dashboard
+  entry. It checks ZIP integrity and byte equality with its prepared website,
+  excluding Wrangler and package files. Compatibility filenames remain for
+  existing URLs; the generated entry requests the versioned resources.
+- Screenshots are under /workspace/educade-validation/single-cell-evidence.
+  No assessment records, portraits, landing artwork or hosting configuration
+  changes; development and download branches only.

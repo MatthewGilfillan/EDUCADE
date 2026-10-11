@@ -28,8 +28,8 @@ test('Class evidence expands on both axes and survives display changes without c
   click('button[aria-label="Show Inference evidence across the class"]');
   assert.equal(d.querySelector(`.skill-heading[data-expand-skill="${id}"]`).getAttribute('aria-expanded'),'true');
   assert.ok(d.querySelector(`.skill-heading[data-expand-skill="${id}"]`).textContent.includes('Hide evidence'));
-  assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
-  assert.equal(d.querySelectorAll('#skill-headings th').length,7);
+  assert.equal(d.querySelectorAll('.expanded-skill-cell .student-skill-evidence:not([hidden])').length,6);
+  assert.equal(d.querySelectorAll('#skill-headings th').length,6);
   assert.ok(d.querySelector('tr[data-student=alex] .compact-evidence').textContent.includes('9/20'));
   click('button[aria-label="Show skill evidence for Alex Chen"]');
   assert.equal(d.querySelector('.learner-name').textContent,'Alex Chen');
@@ -41,16 +41,17 @@ test('Class evidence expands on both axes and survives display changes without c
   for(const panel of d.querySelectorAll('tr[data-student=alex] .student-skill-evidence'))assert.ok(panel.id.endsWith(panel.parentElement.dataset.axis));
   click('tr[data-student=alex] .student-skill-evidence .latest-response span');
   assert.equal(d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-expanded'),'true');
-  assert.equal(d.querySelector('tr[data-student=alex]').children.length,7);
+  assert.equal(d.querySelector('tr[data-student=alex]').children.length,6);
   for(const id of d.querySelector('.name-button[data-expand-student=alex]').getAttribute('aria-controls').split(' '))assert.equal(d.getElementById(id).hidden,false);
   select('#portrait-style','vikings');click('[data-class-mode=heatmap]');
   assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
-  assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
+  assert.equal(d.querySelectorAll('.expanded-skill-cell .student-skill-evidence:not([hidden])').length,6);
   click('.name-button[data-expand-student=maya]');
-  assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>panel.hidden));
+  assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence:not([hidden])').length,1);
+  assert.ok(d.querySelector('tr[data-student=alex] .expanded-skill-cell .student-skill-evidence'));
   assert.ok([...d.querySelectorAll('tr[data-student=maya] .student-skill-evidence')].every(panel=>!panel.hidden));
   click(`[data-expand-skill="${w.EDUCADE_DEMO.reading[1]}"]`);
-  assert.equal(d.querySelectorAll('#skill-headings th').length,7);
+  assert.equal(d.querySelectorAll('#skill-headings th').length,6);
   click('tr[data-student=maya] .student-skill-evidence [data-evidence]');
   assert.equal(d.querySelector('#evidence-dialog').open,true);
   assert.ok(d.querySelector('#evidence-content').textContent.includes('Maya Patel'));
@@ -58,6 +59,40 @@ test('Class evidence expands on both axes and survives display changes without c
   click('.profile-link[data-student=maya]');await settle();
   assert.equal(d.querySelector('h1').textContent,'Maya Patel');
   assert.equal(JSON.stringify(w.EDUCADE_DEMO.students),original);
+ }finally{dom.window.close();}
+});
+test('Transitions evidence stays beneath its single score when row and category expansions overlap',()=>{
+ const {dom,w,d,click}=dashboard(undefined,'class/writing');
+ try{
+  const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students),id=D.profileAxes.writing[0].id;
+  const visible=()=>d.querySelectorAll('.student-skill-evidence:not([hidden])').length;
+  const width=d.querySelector('.class-table').style.getPropertyValue('--comparison-width');
+  const structure=()=>{
+   assert.equal(d.querySelectorAll('#skill-headings th').length,8);
+   assert.equal(d.querySelectorAll('#skill-columns col').length,8);
+   assert.ok([...d.querySelectorAll('#student-rows>tr')].every(row=>row.children.length===8));
+   assert.equal(d.querySelectorAll('.class-table .hp-track').length,36);
+   assert.equal(d.querySelectorAll('.compact-evidence .hp-track,.student-evidence-row,.skill-evidence-cell').length,0);
+   assert.equal(d.querySelector('.class-table').style.getPropertyValue('--comparison-width'),width);
+  };
+  structure();assert.equal(visible(),0);
+  click('button[aria-label="Show Transitions evidence across the class"]');
+  structure();assert.equal(visible(),6);
+  const cell=d.querySelector(`tr[data-student=alex] [data-axis="${id}"]`);
+  assert.equal(cell.querySelector('.hp-value').textContent,'40%');
+  assert.equal(cell.querySelector('.evidence-counts').textContent,'8/20 correct · 5 hints');
+  click('button[aria-label="Show skill evidence for Alex Chen"]');
+  structure();assert.equal(visible(),11);
+  assert.equal(d.querySelector(`tr[data-student=alex] [data-axis="${id}"]`).querySelectorAll('.compact-evidence').length,1);
+  click('button[aria-label="Hide Transitions evidence across the class"]');
+  structure();assert.equal(visible(),6);
+  click('button[aria-label="Show Transitions evidence across the class"]');
+  click('button[aria-label="Hide skill evidence for Alex Chen"]');
+  structure();assert.equal(visible(),6);
+  assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence:not([hidden])').length,1);
+  click('button[aria-label="Hide Transitions evidence across the class"]');
+  structure();assert.equal(visible(),0);
+  assert.equal(JSON.stringify(D.students),original);
  }finally{dom.window.close();}
 });
 test('Full subject radars share scores with progress bars and their central portrait follows the selected style',async()=>{
@@ -162,7 +197,7 @@ test('Teaching suggestions remain class-wide during filtering and link to the co
   click('#close-evidence');search.value='';search.dispatchEvent(new w.Event('input',{bubbles:true}));
   click('[data-review-class-skill]');
   assert.equal(d.querySelector('.skill-heading[aria-expanded=true]').dataset.expandSkill,figurative);
-  assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
+  assert.equal(d.querySelectorAll('.expanded-skill-cell .student-skill-evidence:not([hidden])').length,6);
   assert.equal(d.querySelector('tr.current-learner').dataset.student,'ella');
   assert.equal(d.querySelector('#portrait-style').value,'initials');
   select('#class-select','5b');await settle();
@@ -264,7 +299,7 @@ test('Class dashboard starts with Overall and subject tabs preserve the learner 
   assert.equal(d.querySelector('#class-tab-overall').getAttribute('aria-selected'),'true');
   assert.deepEqual([...d.querySelectorAll('tr[data-student=alex] .score-cell .hp-value')].map(value=>value.textContent),Object.keys(D.domains).map(domain=>D.domainStats(D.students[0],domain).score+'%'));
   click('[data-expand-skill=reading]');
-  assert.equal(d.querySelectorAll('.skill-evidence-cell').length,6);
+  assert.equal(d.querySelectorAll('.expanded-skill-cell .student-skill-evidence:not([hidden])').length,6);
   assert.ok(d.querySelector('tr[data-student=alex] .compact-evidence').textContent.includes('180'));
   click('.name-button[data-expand-student=alex]');
   assert.ok([...d.querySelectorAll('tr[data-student=alex] .student-skill-evidence')].every(panel=>!panel.hidden));
@@ -279,7 +314,7 @@ test('Class dashboard starts with Overall and subject tabs preserve the learner 
    assert.equal(cells.length,6);
    cells.forEach((cell,index)=>assert.equal(cell.querySelector('.hp-value').textContent,D.skillStats(D.students[0],axes[index].id).score+'%'));
    click(`[data-expand-skill="${axes[0].id}"]`);
-   assert.equal(d.querySelector('tr[data-student=alex]').children.length,9);
+   assert.equal(d.querySelector('tr[data-student=alex]').children.length,8);
    click('tr[data-student=alex] .score-cell');
    assert.equal(d.querySelector('.evidence-id').textContent,axes[0].id);click('#close-evidence');
   }
