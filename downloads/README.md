@@ -1,50 +1,51 @@
 # EDUCADE website download
 
-EDUCADE-compact-overview-37f625e.zip contains the verified website from
-source revision 37f625ea1d53d1629a50091540ee744047b83d30. It contains only
-static website files: HTML, styles, scripts and artwork. There are no Wrangler
-or package configuration files in this ZIP.
+EDUCADE-reading-catalogue-17b0979.zip contains the verified website from
+source revision 17b0979e3e30b6ceebeb1478ac421789943eeee6. Download this
+individual file using Download raw file or View raw. GitHub’s Code → Download
+ZIP downloads the source repository and is not the static upload archive.
 
-Download this individual file using Download raw file or View raw. Do not use
-GitHub's Code → Download ZIP button, which downloads the source repository.
+Extract the ZIP into a new folder and open index.html, then Teacher sign in.
+You can also open teacher-17b0979.html directly. Both entry points load this
+revision’s fingerprinted teacher scripts/styles to avoid older cached assets.
+The ZIP contains only 33 static website files and artwork, with no Wrangler
+or package configuration files. It is ready for static asset upload.
 
-Extract into a new folder and open teacher-37f625e.html for the dashboard.
-Opening index.html and choosing Teacher sign in opens the same revision-specific
-entry. Upload the website files to replace the previous static website.
+In both the class dashboard and student profiles, choose Reading → Reading
+Comprehension. The complete catalogue is organised into five groups:
 
-The class rows are more compact. The student name opens the profile, with
-(Click to view profile) beside it; the separate Open full profile button is
-removed. Show skill evidence is on one line, and photos stay beside the name.
-The student column is 280px wide on desktop; collapsed rows measure about 94px.
+- Meaning and evidence
+- Characters and events
+- Author’s craft
+- Structure and features
+- Comparing and evaluating
 
-In Overall, Explore reading skills expands the learner's reading evidence inside
-the original Reading cell. Writing, Grammar and Vocabulary use the same inline
-behavior. Reading includes Foundations and Comprehension, with all nine assessed
-skills and all 180 recorded responses for Alex. Each skill expands to its full
-response history, question, example answer, support, hints and outcomes. Open
-skills persist through portrait/view changes, sorting, filtering, subject tabs
-and profile round trips. Student-name and subject-score profile links still work.
+All 39 comprehension skills are accessible, with eight Reading Foundations
+skills kept separate. Literary/informational text contexts remain separate
+from skill scores. Each group shows assessment coverage, its strongest recorded
+individual skill and a teaching priority. Navigation groups have no averaged
+achievement score or stage. Unassessed skills show No evidence yet. New entries
+have no generated responses, scores or claimed standards alignment.
 
-Each subject/skill cell retains one original progress bar. Category and learner
-expansions add no columns or duplicate bars. Transitions still shows Alex's
-8/20 correct · 5 hints directly under its single 40% bar. All five class/profile
-tabs, portraits, saved views, radar, four-week progress, Glows & Grows and learning
-evidence remain functional. Visible demo/fictional/sample wording is removed.
+Class group summaries sit below the table to keep the first glance compact.
+Show skill evidence expands a learner vertically; header Show evidence expands
+one category across the class. Both use the original skill cells, without extra
+columns or repeated bars. Student names open profiles. Reading profile charts,
+four-week progress, support counts and Glows & Grows scope to the selected group.
+The Overall profile still opens on its four-subject radar.
 
-This release retains heatmaps and progress bars. Additional achievement-level
-presentation is a design discussion and is not part of this ZIP.
+Original learner records, scores, skill IDs, challenge text and standards
+mappings are unchanged. All nine assessed reading skills and Alex’s 180
+responses remain in the Overall inline reading collection. Heatmaps, progress
+bars, portraits, evidence controls and saved preferences are preserved.
+Additional achievement-stage presentation remains separate rubric work.
 
-The teacher entry and four teacher assets use version-specific filenames to
-avoid requesting older cached scripts/styles. Compatibility filenames remain.
+All 26 Node tests and both browser suites pass. The extracted ZIP also passed
+a browser check covering all five groups, no-evidence behavior, complete
+response histories, exact Transitions evidence alignment, source-data
+preservation and revision-specific assets. ZIP integrity and source bytes were
+verified; no failed assets or browser errors occurred.
 
-The archive has 33 static files. ZIP integrity and preserved source assets were
-checked. The extracted archive passed a browser check for compact rows, inline
-Overall reading history, keyboard disclosure, preserved views, exact Transitions
-alignment, both evidence controls and profile behavior. Stale canonical teacher
-script/style responses were staged; the dashboard requested its fingerprinted
-replacements. No failed assets or browser errors occurred. All 21 Node tests
-and both existing browser suites pass.
+SHA256: 3d640780db95bfb7426059ad0ee45b9ad2c4124855003b7ef26437767f5a2092
 
-SHA256: ca442dd9e98386546e4233e67cf015af084eadee8b235c7d8e9b00bf90c37616
-
-Production and educade.io have not been updated by this branch.
+This download does not change production or educade.io.
