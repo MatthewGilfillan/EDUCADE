@@ -257,6 +257,26 @@ try:
                 assert page.locator('#skill-headings th').count()==len(group['ids'])+2
                 assert page.locator('tr[data-student=alex] .student-skill-evidence:visible').count()==len(group['ids'])
                 assert page.locator('.compact-evidence .hp-track').count()==0
+                if domain=='grammar':
+                    for mode in ['bars','heatmap','standards']:
+                        page.locator(f'[data-class-mode={mode}]').click()
+                        cells=page.locator('tr[data-student=alex] .student-skill-cell')
+                        assert cells.nth(0).locator('.skills-encountered').inner_text().startswith('Skills encountered')
+                        assert 'Subordinating conjunctions' in cells.nth(0).locator('.skills-encountered').inner_text()
+                        assert cells.nth(0).locator('.skills-successful li').all_text_contents()==['because']
+                        assert cells.nth(1).locator('.skills-successful li').all_text_contents()==['had secured']
+                        assert cells.nth(2).locator('.skills-successful li').all_text_contents()==['carried','checked']
+                        assert cells.nth(2).locator('.latest-response').count()==0
+                        assert 'Week 4' not in cells.nth(2).locator('.compact-evidence').inner_text()
+                        assert 'Try again' not in cells.nth(2).locator('.compact-evidence').inner_text()
+                        assert 'will check the sail' not in cells.nth(2).locator('.compact-evidence').inner_text()
+                        assert cells.nth(1).locator('.skills-successful h4').inner_text()=='Used successfully'
+                        assert page.locator('.compact-evidence .hp-track').count()==0
+                        assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+                        if width in [1440,390]:
+                            page.evaluate('scrollTo(0,0)')
+                            page.screenshot(path=str(OUT/f'grammar-skill-summary-{mode}-{width}.png'))
+                    page.locator('[data-class-mode=bars]').click()
                 if group['key'] in ['structure','comparing']:
                     assert page.locator('.class-table .hp-track').count()==0
                     assert 'No evidence yet' in page.locator('.reading-group-summary').inner_text()
@@ -320,7 +340,7 @@ try:
             assert page.locator('tr[data-student=alex] .student-skill-evidence').first.is_visible()
             assert page.locator('tr[data-student=alex] .student-skill-evidence').count()==6
             assert page.locator('.compact-evidence .hp-track').count()==0
-            page.locator('tr[data-student=alex] .student-skill-evidence .latest-response span').first.click()
+            page.locator('tr[data-student=alex] .student-skill-evidence .skills-encountered li').first.click()
             assert page.locator('.name-button[data-expand-student=alex]').get_attribute('aria-expanded')=='true'
             assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Expanded class overflow at {width}'
             page.screenshot(path=str(OUT/f'expanded-evidence-{width}.png'),full_page=True)
@@ -358,12 +378,12 @@ try:
             assert page.locator('[role=tab]').all_text_contents()==['Overall','Reading Foundations','Literacy','Writing','Grammar','Vocabulary']
             assert page.locator('#tab-overall').get_attribute('aria-selected')=='true'
             assert page.locator('[data-mode=radar]').get_attribute('aria-pressed')=='true'
-            assert page.locator('.radar-target').count()==4
+            assert page.locator('.radar-target').count()==5
             assert page.locator('.profile-next-card h2').inner_text()=='Glows & Grows'
-            assert page.locator('.glow').get_attribute('data-focus')=='vocabulary'
+            assert page.locator('.glow').get_attribute('data-focus')=='foundations'
             assert page.locator('.grow').get_attribute('data-focus')=='writing'
             assert page.locator('.grow .growth-icon svg').is_visible()
-            assert page.locator('.radar-skills button').all_text_contents()==page.evaluate("Object.keys(EDUCADE_DEMO.domains).map(domain=>EDUCADE_DEMO.domains[domain].name+EDUCADE_DEMO.domainStats(EDUCADE_DEMO.students[0],domain).score+'%')")
+            assert page.locator('.radar-skills button').all_text_contents()==page.evaluate("[...[...document.querySelectorAll('.radar-skills button')]].map(b=>{const D=EDUCADE_DEMO,s=D.students[0],section=b.dataset.profileSection,domain=b.dataset.domain;const stats=section?D.summarize(s.evidence.filter(r=>D.groups.some(g=>g.domain===domain&&g.section===section&&g.skills.some(k=>k.id===r.skillId)))):D.domainStats(s,domain);return b.querySelector('span').textContent+stats.score+'%';})")
             totals=page.evaluate('EDUCADE_DEMO.summarize(EDUCADE_DEMO.students[0].evidence)')
             for key in ['independent','supported','hints']:
                 assert page.locator('[data-count='+key+']').inner_text()==str(totals[key])
@@ -374,12 +394,12 @@ try:
             page.screenshot(path=str(OUT/f'overall-header-{width}.png'))
             page.locator('.radar-target[data-domain=writing] .radar-point').click()
             page.wait_for_function('document.querySelector("#tab-writing").getAttribute("aria-selected")==="true"')
-            page.locator('#tab-overall').click();page.wait_for_selector('.radar-target[data-domain=reading]')
-            page.locator('.radar-target[data-domain=reading]').focus();page.keyboard.press('Enter')
+            page.locator('#tab-overall').click();page.wait_for_selector('.radar-target[data-domain=reading][data-profile-section=comprehension]')
+            page.locator('.radar-target[data-domain=reading][data-profile-section=comprehension]').focus();page.keyboard.press('Enter')
             page.wait_for_function('document.querySelector("#tab-literacy").getAttribute("aria-selected")==="true"')
-            page.locator('#tab-overall').click();page.wait_for_selector('.radar-target[data-domain=reading]')
+            page.locator('#tab-overall').click();page.wait_for_selector('.radar-target[data-domain=reading][data-profile-section=comprehension]')
             page.locator('[data-mode=bars]').click()
-            assert page.locator('#skill-chart .skill-row').count()==4
+            assert page.locator('#skill-chart .skill-row').count()==5
             check_profile_order()
             page.reload(wait_until='networkidle')
             assert page.locator('#tab-overall').get_attribute('aria-selected')=='true'

@@ -146,6 +146,38 @@
     grammar:[...grammar,...extraGrammar].map((id,i)=>({id,label:['Conjunctions','Perfect tense','Consistent tense','Commas','Subject–verb agreement','Adjectives and adverbs'][i]})),
     vocabulary:[...vocabulary,...extraVocabulary].map((id,i)=>({id,label:['Context clues','Greek and Latin roots','Synonyms and antonyms','Words in use','Prefixes','Idioms'][i]}))
   };
+  // These describe the assessed activity, not every sub-skill in its catalogue.
+  // Word/form examples marked as used must occur in a correct recorded response.
+  const focus=(id,encountered,successful,options={})=>{
+    samples[id].focus={encountered,successful,...options};
+  };
+  focus(reading[0],['Drawing inferences','Supporting ideas with text evidence'],['Inference supported with a text quotation']);
+  focus(reading[1],['Context clues','Word meaning in a passage'],['sturdy — strong'],{label:'Recognised successfully'});
+  focus(reading[2],['Similes','Interpreting comparisons'],['Explaining the effect of a simile']);
+  focus(reading[3],['Character motivation','Comparing characters'],['Explaining different character motives']);
+  focus(extraReading[0],['Key details','Identifying a main idea'],['Connecting details to one main idea']);
+  focus(extraReading[1],['Identifying causes','Cause-and-effect links'],['Connecting a cause with its effect']);
+  focus(extraReading[2],['Comparing perspectives','Different attitudes to events'],['Distinguishing two points of view']);
+  focus(extraReading[3],['Identifying themes','Connecting events to a message'],['Inferring a theme from story events']);
+  focus(foundation,['Syllable division','Blending multisyllabic words'],['Dividing and blending word parts'],{terms:['transportation']});
+  focus(writing[0],['Cause-and-effect transitions','Connecting ideas'],['Linking ideas with a relevant transition'],{terms:['therefore']});
+  focus(writing[1],['Supporting an opinion','Relevant reasons and evidence'],['Linking a reason to an opinion']);
+  focus(writing[2],['Sensory details','Precise descriptive language'],['Adding concrete sensory detail'],{terms:['salt-sprayed','cold waves']});
+  focus(writing[3],['Choosing precise verbs','Revising for effect'],['Strengthening a verb choice'],{terms:['hurried']});
+  focus(extraWriting[0],['Topic sentences','Introducing a main idea'],['Connecting a topic sentence to its details']);
+  focus(extraWriting[1],['Combining sentences','Introductory phrases'],['Varying sentence structure'],{terms:['After checking']});
+  focus(grammar[0],['Subordinating conjunctions','Connecting an action to a reason'],['because'],{label:'Recognised successfully'});
+  focus(grammar[1],['Past perfect tense','Sequencing past events'],['Forming the past perfect'],{terms:['had secured']});
+  focus(grammar[2],['Simple past tense','Regular past-tense verbs','Consistent tense across clauses'],['Keeping past-tense verbs consistent'],{terms:['carried','checked']});
+  focus(grammar[3],['Introductory phrases','Commas after introductions'],['Placing a comma after an introductory phrase']);
+  focus(extraGrammar[0],['Plural subjects','Subject–verb agreement'],['Choosing an agreeing verb'],{terms:['are']});
+  focus(extraGrammar[1],['Adverbs','Describing how an action happens'],['carefully'],{label:'Recognised successfully'});
+  focus(vocabulary[0],['Context clues','Inferring word meaning'],['narrow — not wide'],{label:'Recognised successfully'});
+  focus(vocabulary[1],['Latin roots','Inferring meaning from word parts'],['port — carry','transport'],{label:'Recognised successfully'});
+  focus(vocabulary[2],['Synonyms','Antonyms'],['strong / sturdy','fragile'],{label:'Recognised successfully'});
+  focus(vocabulary[3],['Domain-specific vocabulary','Using words in context'],['Using a word accurately in a sentence'],{terms:['cargo']});
+  focus(extraVocabulary[0],['Prefixes','Explaining meaning from an affix'],['re- — again','rebuild'],{label:'Recognised successfully'});
+  focus(extraVocabulary[1],['Idioms','Interpreting nonliteral meaning'],['lend a hand — help'],{label:'Recognised successfully'});
   const names=[['alex','Alex Chen',[45,85,60,70]],['maya','Maya Patel',[80,70,90,65]],['leo','Leo Martin',[60,40,60,80]],['sofia','Sofia Kim',[90,75,70,55]],['noah','Noah Wilson',[30,60,50,70]],['ella','Ella Brown',[70,90,35,80]],['finn','Finn Larsen',[65,75,55,80]],['amara','Amara Okafor',[85,60,75,70]],['oliver','Oliver Reed',[50,80,65,60]]];
   const classes=[{id:'5a',name:'Class 5A',studentIds:['alex','maya','leo','sofia','noah','ella']},{id:'5b',name:'Class 5B',studentIds:['finn','amara','oliver']}];
   function records(skillId,score,studentIndex,skillIndex){
@@ -174,6 +206,16 @@
     return {attempts,correct,score:attempts?Math.round(correct/attempts*100):null,independent:evidence.filter(r=>!r.supported).length,supported:evidence.filter(r=>r.supported).length,hints:evidence.filter(r=>r.hint).length};
   }
   function skillStats(student,id){return summarize(student.evidence.filter(r=>r.skillId===id));}
+  function skillSummary(student,id){
+    const records=student.evidence.filter(record=>record.skillId===id);
+    if(!records.length)return {encountered:[],successful:[],label:'Successful work'};
+    const metadata=samples[id]?.focus,skill=groups.flatMap(group=>group.skills).find(entry=>entry.id===id);
+    const encountered=metadata?.encountered||[skill?.name||'Recorded skill'];
+    const correct=records.filter(record=>record.correct);
+    const normalize=text=>' '+String(text).toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim()+' ';
+    const used=(metadata?.terms||[]).filter(term=>correct.some(record=>normalize(record.response).includes(normalize(term))));
+    return {encountered,successful:correct.length?(used.length?used:metadata?.successful||[skill.name]):[],label:used.length?'Used successfully':metadata?.label||'Successful work'};
+  }
   function domainStats(student,domain){
     const ids=new Set(groups.filter(group=>group.domain===domain).flatMap(group=>group.skills.map(skill=>skill.id)));
     return summarize(student.evidence.filter(record=>ids.has(record.skillId)));
@@ -210,5 +252,5 @@
     }).sort((a,b)=>a.stats.score-b.stats.score||a.student.name.localeCompare(b.student.name));
     return {wholeClass,smallGroups,individuals,practiceThreshold,individualThreshold};
   }
-  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,readingCatalogue,readingContexts,readingSkills,profileAxes,summarize,skillStats,domainStats,groupStats,readingPlan};
+  window.EDUCADE_DEMO={domains,groups,students,classes,samples,mappings,reading,readingCatalogue,readingContexts,readingSkills,profileAxes,summarize,skillStats,skillSummary,domainStats,groupStats,readingPlan};
 })();

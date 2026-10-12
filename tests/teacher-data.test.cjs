@@ -18,6 +18,36 @@ test('Every curriculum skill has a unique EDUCADE ID and no invented score',()=>
  }
  assert.ok(skills.some(s=>D.students.every(student=>D.skillStats(student,s.id).score===null)));
 });
+test('Activity summaries show encountered sub-skills and distinguish successful recognition from words actually used',()=>{
+ const student=D.students[0],before=JSON.stringify(D.students),axes=D.profileAxes;
+ for(const domain of Object.keys(axes))for(const axis of axes[domain]){
+  assert.ok(D.samples[axis.id].focus.encountered.length);
+  assert.ok(D.skillSummary(student,axis.id).encountered.length);
+ }
+ const conjunctions=D.skillSummary(student,axes.grammar[0].id);
+ assert.ok(conjunctions.encountered.includes('Subordinating conjunctions'));
+ assert.equal(conjunctions.label,'Recognised successfully');assert.deepEqual(conjunctions.successful,['because']);
+ const perfect=D.skillSummary(student,axes.grammar[1].id);
+ assert.deepEqual(perfect.encountered,['Past perfect tense','Sequencing past events']);
+ assert.equal(perfect.label,'Used successfully');assert.deepEqual(perfect.successful,['had secured']);
+ const consistent=D.skillSummary(student,axes.grammar[2].id);
+ assert.ok(consistent.encountered.includes('Simple past tense'));
+ assert.deepEqual(consistent.successful,['carried','checked']);
+ assert.ok(!consistent.successful.includes('will check'));
+ assert.equal(JSON.stringify(D.students),before);
+});
+test('Unassessed skills and incorrect answers cannot create successful examples',()=>{
+ const student=D.students[0],id=D.profileAxes.grammar[1].id;
+ const allIncorrect={...student,evidence:student.evidence.filter(record=>record.skillId===id).map(record=>({...record,correct:false,response:'had secured'}))};
+ assert.deepEqual(D.skillSummary(allIncorrect,id).successful,[]);
+ assert.ok(D.skillSummary(allIncorrect,id).encountered.includes('Past perfect tense'));
+ const unknown=D.readingCatalogue.find(group=>group.key==='structure').skills[0].id;
+ assert.deepEqual(D.skillSummary(student,unknown).encountered,[]);
+ assert.deepEqual(D.skillSummary(student,unknown).successful,[]);
+ const agreement=D.profileAxes.grammar[4].id;
+ const embedded={...student,evidence:[{skillId:agreement,correct:true,response:'carefully'}]};
+ assert.ok(!D.skillSummary(embedded,agreement).successful.includes('are'));
+});
 test('The five reading navigation groups cover each comprehension skill once and keep foundations and text contexts separate',()=>{
  assert.deepEqual(D.readingCatalogue.map(group=>group.name),['Meaning and evidence','Characters and events','Author’s craft','Structure and features','Comparing and evaluating']);
  const catalogue=D.readingCatalogue.flatMap(group=>group.skills),ids=catalogue.map(skill=>skill.id);

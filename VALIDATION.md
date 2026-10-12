@@ -633,3 +633,29 @@ for those changes above.
   responses, restored choices and unchanged practice scores. Desktop and smaller
   screenshots were inspected under /workspace/educade-validation/layout-refinements.
   Both expanded class menus and the home link remain reachable on a short desktop.
+
+## Student profile actions and evidence summaries — 12 October 2026
+
+- Overall Radar, Progress Bars and Standards Progress separate Reading Foundations
+  and Literacy alongside Writing, Grammar and Vocabulary. Reading axes and level
+  distributions use section-specific evidence; the overall total is unchanged.
+- Profile columns flow independently. Reports sit below the learning chart,
+  latest evidence below reports, and the partner planner below Glows & Grows.
+- Report comments and learning targets are generated from recorded practice and
+  local activity templates, editable by teachers, and retained in browser storage.
+  Printable reports can include the radar and Glows & Grows. No model service,
+  authentication service or production backend was added.
+- Skill grouping handles complementary partners, similar needs, mixed strengths,
+  group sizes, participants, teacher moves, local persistence and printable output.
+- Expanded class evidence keeps counts and support totals, replaces the latest
+  response snippet with encountered sub-skills and successful work, and keeps all
+  original response history behind the evidence link. Used words/forms must occur
+  in a correct response; recognition examples are identified separately.
+- `npm test`: 37 checks pass, including section scores, keyboard navigation,
+  immutable evidence, grouping exclusions/moves and escaped teacher report text.
+- `tests/browser_smoke.py`: six viewport widths and mocked signup scenarios pass.
+- `tests/standards_browser.py`: 1440, 1024, 390 and 320 pixel checks pass.
+- `tests/profile_widgets_browser.py`: desktop/mobile report windows, actual PDF
+  rendering, optional sections, saved teacher drafts and group recovery pass.
+  Reviewed screenshots and PDF artifacts are in
+  `/workspace/educade-validation/profile-widgets`.

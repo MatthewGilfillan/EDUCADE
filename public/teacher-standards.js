@@ -63,8 +63,8 @@
     catch{storageAvailable=false;}
     return true;
   }
-  function summary(student,domain){
-    const assessed=D.groups.filter(group=>group.domain===domain).flatMap(group=>group.skills).filter(skill=>D.skillStats(student,skill.id).attempts);
+  function summary(student,domain,skillIds){
+    const assessed=D.groups.filter(group=>group.domain===domain).flatMap(group=>group.skills).filter(skill=>(!skillIds||skillIds.includes(skill.id))&&D.skillStats(student,skill.id).attempts);
     const counts=Object.fromEntries(Object.keys(levels).map(level=>[level,0]));
     for(const skill of assessed){const judgment=display(student.id,skill.id);if(judgment)counts[judgment.level]++;}
     return {assessed:assessed.length,reviewed:assessed.filter(skill=>get(student.id,skill.id)).length,counts};

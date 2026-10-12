@@ -40,7 +40,7 @@
 .class-table .learner{align-items:center;gap:9px}.class-table .avatar{width:36px;height:36px}.name-button{font-size:13px}.name-button small{font-size:10px}
 .profile-link{display:block;text-align:left;padding:5px 0;border:0;background:none;font-size:10px;color:#076ac6;min-height:28px}
 .expanded-learner>th,.expanded-learner>td{background:#f4f9ff}
-.compact-evidence{font-size:11px;line-height:1.6}.evidence-counts{margin-top:8px}.evidence-support{font-size:10px;color:var(--muted)}.latest-response{margin-top:10px;padding-top:9px;border-top:1px solid var(--line)}.latest-response strong{font-size:10px;color:var(--muted);display:block;margin-bottom:3px}.latest-response span{display:block}.compact-evidence .text-button{font-size:10px;margin-top:4px;line-height:1.5}
+.compact-evidence{font-size:11px;line-height:1.6}.evidence-counts{margin-top:8px}.evidence-support{font-size:10px;color:var(--muted)}.compact-evidence .text-button{font-size:10px;margin-top:4px;line-height:1.5}
 .radar-stage{position:relative;max-width:620px;margin:auto}.radar{display:block;width:100%;max-width:none;margin:0}
 .radar-label{font-size:12px;font-weight:650;fill:#445c78}.radar-scale{font-size:10px}.radar-hit{fill:transparent;stroke:none}.radar-target{cursor:pointer}.radar-target:hover .radar-point,.radar-target:focus-visible .radar-point{fill:var(--orange);r:7}.radar-target:focus-visible{outline:none}.radar-target:focus-visible .radar-hit{stroke:var(--navy);stroke-width:2}.radar-point.unassessed-point{fill:white;stroke:#8599ad;stroke-dasharray:2 2}
 .radar-portrait{position:absolute;left:50%;top:48.8372%;transform:translate(-50%,-50%);width:12%;aspect-ratio:1;border-radius:50%;background:white;box-shadow:0 0 0 4px white,0 3px 10px #10284420;pointer-events:none}
@@ -217,3 +217,14 @@
 .sidebar-scene:before,.sidebar-scene:after{content:none}
 .sidebar-scene img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
 @media(max-width:1150px){.sidebar-scene{margin-left:-12px;margin-right:-12px}}
+
+.skill-focus-summary{margin-top:12px;padding-top:11px;border-top:1px solid var(--line);display:grid;gap:12px}
+.skill-focus-summary h4{margin:0 0 6px;font-size:10px;line-height:1.5;font-weight:750;color:var(--muted)}
+.skill-focus-summary ul{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:11px;line-height:1.5;color:var(--ink)}
+.skills-encountered li{position:relative;padding-left:11px}.skills-encountered li:before{content:'•';position:absolute;left:0;color:#69819b}
+.skills-successful ul{display:flex;flex-wrap:wrap;gap:5px}.skills-successful li{padding:4px 7px;border:1px solid #cbdff3;border-radius:5px;background:#edf6ff;color:#145487;font-size:10px}
+.skill-summary-empty{font-size:10px;color:var(--muted);line-height:1.5}
+/* Keep each profile column flowing independently, with useful teacher tools below. */
+.profile-column{display:grid;gap:20px;min-width:0;align-content:start}.teacher-actions .field,.partner-widget .field{display:flex;flex-direction:column;gap:6px;margin:14px 0}.teacher-actions textarea{width:100%;resize:vertical;min-height:150px;border:1px solid var(--line);border-radius:9px;padding:12px;font-family:inherit;font-size:12px;line-height:1.6;color:var(--ink);background:#fbfdff}.widget-buttons{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.widget-buttons .button{background:#eef6ff;border-color:#add1fa;color:#086ac6;text-align:center}.group-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,.6fr);gap:12px}.group-controls select,.partner-widget select{width:100%;min-width:0}.group-roster{display:grid;gap:9px;padding:14px 0;font-size:12px}.suggested-group{border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px;background:#f6faff}.suggested-group h3{font-size:14px;margin:0 0 10px}.group-member{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;margin:8px 0}.group-member select{width:110px;padding:6px;border:1px solid var(--line);border-radius:6px;background:white}.partner-widget summary{font-size:12px;cursor:pointer}.teacher-actions textarea:focus{outline:2px solid var(--blue);outline-offset:2px}@media(max-width:640px){.profile-column{gap:16px}.group-controls{grid-template-columns:1fr}.group-controls .field{margin:5px 0}}
+
+.report-options{display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:var(--muted)}.report-options label{display:flex;align-items:center;gap:6px}

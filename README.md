@@ -454,3 +454,25 @@ unassessed skills are excluded from the evidence collection. No extra progress
 bars or columns are added. Subject collections and open skills survive view,
 portrait, sort and search changes, as well as returning from a profile. The name
 button and original subject score controls retain their profile navigation.
+
+## Student profile teacher tools
+
+The Overall chart has five learning areas: Reading Foundations, Literacy,
+Writing, Grammar and Vocabulary. Each reading area uses its own response
+records; the overall practice score still counts each response once.
+
+Reports & learning targets creates editable, evidence-based text using local
+activity templates. It does not call an AI service or issue attainment grades.
+Report drafts and saved skill groups stay in the current browser. Export opens
+a printable report window; use **Print / Save as PDF** to download it. Reports
+include practice totals, teacher text, and optional radar and Glows & Grows.
+
+Groups & partners supports a focus reading skill, similar current needs, mixed
+strengths and complementary Impact partners. Teachers choose participants and
+group size, move learners between groups, save and print. Matching uses only
+recorded results for the chosen skill; learners without that evidence are
+listed separately. Grouping is a starting suggestion for teacher review.
+
+Expanded class evidence now lists encountered sub-skills and successful work,
+with the full response history still available behind the evidence link.
+Run `tests/profile_widgets_browser.py` for PDF, report and grouping checks.
