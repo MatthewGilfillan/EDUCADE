@@ -1,20 +1,25 @@
 # EDUCADE website download
 
-Download **EDUCADE-latest-standards-progress.zip** as an individual file using
+Download **EDUCADE-latest-layout-refinements.zip** as an individual file using
 Download raw file or View raw. GitHub's Code > Download ZIP is the source
 repository archive, rather than this prepared static website.
 
-This build uses source revision e94a800cf6638966c32c52c392fa2be7cd0b135e.
+This build uses source revision 249424427d5e00689513c0a80af68c5e239626db.
 Extract it into a new folder and open index.html, then Sign In. The dashboard
-entry is teacher-e94a800.html. Upload the extracted contents, with index.html at
+entry is teacher-2494244.html. Upload the extracted contents, with index.html at
 the root, when using a static-site uploader.
 
-The ZIP has 38 static website files. It contains no Wrangler configuration,
+The ZIP has 39 static website files. It contains no Wrangler configuration,
 package manifests or build tools. Dashboard scripts and styles, and the shared
 landing/signup stylesheet, have content-based filenames to avoid older cached
 assets.
 
 Included changes:
+
+- Restored orange Sign Up beside blue Sign In in the landing header.
+- View toggles keep the same position across all three class display modes.
+- The sidebar message now has the orange joystick above it and a Viking
+  longship below it, replacing the sunset and mountains.
 
 - Overall, Reading Foundations, Literacy, Writing, Grammar and Vocabulary tabs
   in both class comparisons and student profiles. Literacy has eight matching
@@ -43,6 +48,6 @@ extracted archive was verified with native navigation, all collected skill
 responses, teacher review, saved class/profile levels, original charts and
 records, versioned assets, and no stale requests or browser/asset errors.
 
-SHA256: 8e380c76e026b573d92d0891e8d7dc533ed205bbd167a52bdc10b1913fa66a3a
+SHA256: 92f9a9cb4e43153b8b6dd7bb0ba38c3bb825f8fdfc5b5bc15c19b8b8c7548ebb
 
 This download does not deploy to production or change educade.io.
