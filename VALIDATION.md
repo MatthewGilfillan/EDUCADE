@@ -531,3 +531,24 @@ for those changes above.
   inspected under /workspace/educade-validation/double-chevron.
 - Scroll destinations, control position, assessment data, profile charts, landing
   assets and deployment configuration remain unchanged.
+
+## Raised sidebar buttons and class navigation — 12 October 2026
+
+- The existing EDUCADE wordmark and Back to EDUCADE link now use raised surfaces,
+  bevels, hover and pressed feedback, and visible keyboard focus. Native browser
+  clicks on both links reach index.html. The approved wordmark artwork is intact.
+- Classes is a disclosure button with 5A and 5B visible by default on desktop.
+  Each class name opens its overview; a separate arrow reveals Student profiles
+  and Settings. Profile choosers list only the selected class's learners and open
+  their Overall profile. Settings identify the class and explain that display
+  preferences apply across the dashboard. Closing panels and using Escape return
+  focus to the relevant navigation button.
+- Import class and Create new class are visible entry points. Their panels state
+  that roster imports and class creation need connected teacher accounts; no
+  backend import, class creation or persistence is implied.
+- All 29 Node tests pass. Teacher navigation checks use native clicks at six
+  widths and verify class-specific rosters, profiles, disclosure state and focus
+  restoration. The landing suite passes at all six widths with mocked signup.
+  Desktop and smaller-width screenshots were inspected under
+  /workspace/educade-validation/class-navigation. Both menus and the home button
+  remain reachable in a 680px-high desktop sidebar.

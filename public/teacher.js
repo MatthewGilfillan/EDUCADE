@@ -18,6 +18,7 @@
   const state={classId:'5a',classDomain:'overall',classSection:'comprehension',classReadingGroup:'overview',readingGroup:'overview',pendingClassReview:null,student:'alex',domain:'overall',section:'comprehension',search:'',sort:'name',selectedSkill:null,expandedSkill:null,expandedStudent:null,expandedSubjects:new Set(),expandedSubjectSkills:new Set()};
   let evidenceOpener=null;
   let nextFocus=null;
+  let utilityOpener=null;
   const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const currentClass=()=>D.classes.find(c=>c.id===state.classId)||D.classes[0];
   const classStudents=()=>currentClass().studentIds.map(id=>D.students.find(s=>s.id===id));
@@ -77,7 +78,6 @@
   }
   function renderClass(){
     rememberSubjectSkills();
-    document.querySelector('#nav-class').classList.add('active');document.querySelector('#nav-profile').classList.remove('active');
     const overall=state.classDomain==='overall',axes=classAxes(),scope=state.classDomain==='reading'?(state.classSection==='foundations'?'Reading Foundations':readingGroup(state.classReadingGroup).name):profileDomains[state.classDomain].name;
     root.innerHTML=`<header class="page-heading class-dashboard-heading"><div><h1>Teacher Dashboard</h1><h2 class="class-title">${escape(currentClass().name)}</h2><p class="subtitle">Grade 5 <span aria-hidden="true">·</span> Viking Quest</p></div><div class="header-controls-slot"></div></header>
       <section class="card class-comparison">
@@ -287,7 +287,6 @@
     rememberSubjectSkills();
     const student=studentById(state.student),groups=currentGroups(),records=scopedRecords(student),stats=D.summarize(records);
     const assessedGroups=groups.filter(g=>D.groupStats(student,g).attempts>0),canRadar=canShowRadar(student,groups);
-    document.querySelector('#nav-profile').classList.add('active');document.querySelector('#nav-class').classList.remove('active');
     const overall=state.domain==='overall',catalogue=state.domain==='reading'&&state.section==='comprehension',view=preferences[chartPreference()];
     const label=state.domain==='reading'?(state.section==='foundations'?'Reading Foundations':readingGroup(state.readingGroup).name):profileDomains[state.domain].name;
     root.innerHTML=`<header class="page-heading profile-heading"><div class="profile-id">${avatar(student,true)}<div><div class="eyebrow">${escape(currentClass().name.toUpperCase())} / STUDENT PROFILE</div><h1>${escape(student.name)}</h1><p class="subtitle">Grade 5 · Viking Quest</p></div></div><div class="profile-actions"><div class="header-controls-slot"></div><div class="profile-navigation"><label class="field">Switch learner<select id="switch-student">${classStudents().map(s=>`<option value="${s.id}" ${s.id===student.id?'selected':''}>${s.name}</option>`).join('')}</select></label><button class="button" type="button" data-back-class>← Back to class</button></div></div></header>
@@ -349,6 +348,7 @@
     if(root.querySelector('.portrait-controls-slot'))root.querySelector('.portrait-controls-slot').append(portraitPicker);
     else controls.insertBefore(portraitPicker,controls.querySelector('.dashboard-menu'));
     document.querySelector('#class-select').value=state.classId;
+    syncSidebar();
     markSelectedSkill();
     document.title=`${view==='student'?studentById(state.student).name+' · '+profileDomains[state.domain].name:'Teacher Dashboard · '+currentClass().name} · EDUCADE`;
     syncScrollControls();
@@ -387,8 +387,55 @@
     nextFocus=`#${isClass?'class-tab-':'tab-'}${keys[next]}`;
     if(isClass)goClass(keys[next]);else goStudent(state.student,keys[next],state.section);
   });
-  document.querySelector('#nav-class').addEventListener('click',()=>goClass());
-  document.querySelector('#nav-profile').addEventListener('click',()=>goStudent(state.student,root.querySelector('#domain-panel')?state.domain:'overall',state.section));
+  const sidebarNav=document.querySelector('.sidebar-nav'),classesToggle=document.querySelector('#nav-class'),sidebarClasses=document.querySelector('#sidebar-classes');
+  const chevron='<svg class="nav-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>';
+  document.querySelector('#sidebar-class-list').innerHTML=D.classes.map(c=>`<div class="sidebar-class" data-sidebar-class="${c.id}"><div class="sidebar-class-row"><button type="button" class="class-overview" data-class-overview="${c.id}" aria-label="Open ${escape(c.name)} overview"><span class="class-indicator" aria-hidden="true"></span>${escape(c.name)}</button><button type="button" class="class-menu-toggle" data-class-menu="${c.id}" aria-expanded="false" aria-controls="class-menu-${c.id}" aria-label="Show ${escape(c.name)} menu">${chevron}</button></div><div id="class-menu-${c.id}" class="class-submenu" hidden><button type="button" data-class-profiles="${c.id}">Student profiles</button><button type="button" data-class-settings="${c.id}">Settings</button></div></div>`).join('');
+  function closeClasses(){sidebarClasses.hidden=true;classesToggle.setAttribute('aria-expanded','false');}
+  if(matchMedia('(max-width:900px)').matches)closeClasses();
+  function syncSidebar(){
+    const profile=Boolean(root.querySelector('#domain-panel'));
+    sidebarNav.querySelectorAll('[data-sidebar-class]').forEach(item=>{
+      const selected=item.dataset.sidebarClass===state.classId;
+      item.classList.toggle('is-current',selected);
+      item.querySelector('[data-class-overview]').setAttribute('aria-current',selected&&!profile?'page':'false');
+      item.querySelector('[data-class-profiles]').setAttribute('aria-current',selected&&profile?'page':'false');
+    });
+  }
+  function changeClass(id){
+    if(!D.classes.some(c=>c.id===id)||id===state.classId)return;
+    state.classId=id;state.student=classStudents()[0].id;
+    state.expandedStudent=null;state.expandedSkill=null;state.selectedSkill=null;state.search='';state.expandedSubjects.clear();state.expandedSubjectSkills.clear();
+  }
+  function showClass(id){
+    changeClass(id);
+    if(root.querySelector('.class-table'))parseRoute();else goClass();
+  }
+  classesToggle.addEventListener('click',()=>{
+    sidebarClasses.hidden=!sidebarClasses.hidden;
+    classesToggle.setAttribute('aria-expanded',String(!sidebarClasses.hidden));
+  });
+  sidebarNav.addEventListener('click',event=>{
+    const button=event.target.closest('button');if(!button||button===classesToggle)return;
+    if(button.dataset.classMenu){
+      const submenu=document.querySelector(`#class-menu-${button.dataset.classMenu}`);
+      submenu.hidden=!submenu.hidden;button.setAttribute('aria-expanded',String(!submenu.hidden));
+      button.setAttribute('aria-label',`${submenu.hidden?'Show':'Hide'} ${D.classes.find(c=>c.id===button.dataset.classMenu).name} menu`);
+      return;
+    }
+    if(button.dataset.classOverview){showClass(button.dataset.classOverview);if(matchMedia('(max-width:900px)').matches){closeClasses();classesToggle.focus();}return;}
+    if(button.dataset.classProfiles){showClass(button.dataset.classProfiles);openUtility('profiles',button);return;}
+    if(button.dataset.classSettings){showClass(button.dataset.classSettings);openUtility('settings',button,true);return;}
+    if(button.dataset.classAction)openUtility(button.dataset.classAction,button);
+  });
+  sidebarNav.addEventListener('keydown',event=>{
+    if(event.key!=='Escape')return;
+    const submenu=event.target.closest('.class-submenu');
+    if(submenu){
+      const toggle=sidebarNav.querySelector(`[aria-controls="${submenu.id}"]`);
+      submenu.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label',`Show ${D.classes.find(c=>c.id===toggle.dataset.classMenu).name} menu`);toggle.focus();
+    }else if(!sidebarClasses.hidden){closeClasses();classesToggle.focus();}
+  });
+  document.addEventListener('click',event=>{if(matchMedia('(max-width:900px)').matches&&!event.target.closest('.sidebar-nav,#utility-dialog'))closeClasses();});
   document.querySelector('#close-evidence').addEventListener('click',closeEvidence);
   dialog.addEventListener('cancel',event=>{event.preventDefault();closeEvidence();});
   dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closeEvidence();}});
@@ -396,9 +443,7 @@
   classSelect.innerHTML=D.classes.map(c=>`<option value="${c.id}">${escape(c.name)}</option>`).join('');
   classSelect.addEventListener('change',()=>{
     if(!D.classes.some(c=>c.id===classSelect.value))return;
-    state.classId=classSelect.value;state.student=classStudents()[0].id;
-    state.expandedStudent=null;state.expandedSkill=null;state.selectedSkill=null;state.search='';state.expandedSubjects.clear();state.expandedSubjectSkills.clear();
-    if(root.querySelector('.class-table'))parseRoute();else goClass();
+    showClass(classSelect.value);
     document.querySelector('#class-select').focus();
   });
   const menuButton=document.querySelector('#dashboard-menu-button'),menu=document.querySelector('#dashboard-menu-options');
@@ -418,14 +463,19 @@
     buttons[next].focus();
   });
   const utilityDialog=document.querySelector('#utility-dialog');
-  function closeUtility(){utilityDialog.close();menuButton.focus({preventScroll:true});}
-  function openUtility(panel){
+  function closeUtility(){utilityDialog.close();(utilityOpener?.isConnected?utilityOpener:menuButton).focus({preventScroll:true});}
+  function openUtility(panel,opener=menuButton,classSettings=false){
+    utilityOpener=opener;
     closeMenu();
-    document.querySelector('#utility-title').textContent={settings:'Settings',help:'Dashboard help',account:'My Account'}[panel];
+    document.querySelector('#utility-title').textContent=panel==='profiles'?`${currentClass().name} · Student profiles`:classSettings?`${currentClass().name} · Settings`:{settings:'Settings',help:'Dashboard help',account:'My Account',import:'Import class',create:'Create new class'}[panel];
     const content=document.querySelector('#utility-content');
     if(panel==='settings'){
-      content.innerHTML=`<p class="small-copy">Choose how you see the learning. These preferences are saved in this browser.</p><div class="settings-fields"><label class="field">Portrait style<select data-setting="portrait"><option value="photos">Photos</option><option value="vikings">Viking avatars</option><option value="initials">Initials</option></select></label><label class="field">Class chart<select data-setting="classView"><option value="bars">Progress Bars</option><option value="heatmap">Class heatmap</option></select></label><label class="field">Overall chart<select data-setting="overallView"><option value="radar">Radar chart</option><option value="bars">Progress Bars</option></select></label><label class="field">Subject charts<select data-setting="studentView"><option value="radar">Radar chart</option><option value="bars">Progress Bars</option></select></label></div>`;
+      content.innerHTML=`${classSettings?`<p class="class-settings-summary">Grade 5 · ${classStudents().length} learners</p>`:''}<p class="small-copy">Choose how you see the learning. These display preferences apply across your dashboard and are saved in this browser.</p><div class="settings-fields"><label class="field">Portrait style<select data-setting="portrait"><option value="photos">Photos</option><option value="vikings">Viking avatars</option><option value="initials">Initials</option></select></label><label class="field">Class chart<select data-setting="classView"><option value="bars">Progress Bars</option><option value="heatmap">Class heatmap</option></select></label><label class="field">Overall chart<select data-setting="overallView"><option value="radar">Radar chart</option><option value="bars">Progress Bars</option></select></label><label class="field">Subject charts<select data-setting="studentView"><option value="radar">Radar chart</option><option value="bars">Progress Bars</option></select></label></div>`;
       content.querySelectorAll('[data-setting]').forEach(select=>select.value=preferences[select.dataset.setting]);
+    }else if(panel==='profiles'){
+      content.innerHTML=`<p class="small-copy">Choose a learner to view their profile and learning evidence.</p><div class="class-profile-list">${classStudents().slice().sort((a,b)=>a.name.localeCompare(b.name)).map(student=>`<button type="button" class="class-profile-choice" data-open-profile="${student.id}">${avatar(student)}<strong>${escape(student.name)}</strong><span aria-hidden="true">→</span></button>`).join('')}</div>`;
+    }else if(panel==='import'||panel==='create'){
+      content.innerHTML=`<div class="help-copy"><h3>${panel==='import'?'Bring in your class roster':'Set up your next class'}</h3><p>${panel==='import'?'Import students from a roster rather than adding each learner individually.':'Create a class, then add learners and choose the year level and learning focus.'}</p><p class="class-setup-notice">${panel==='import'?'Roster imports':'Class creation'} will be available when teacher accounts are connected.</p></div>`;
     }else if(panel==='help'){
       content.innerHTML='<div class="help-copy"><h3>Explore the reading catalogue</h3><p>Choose Reading to compare the eight focus skills shown in student radars. Reading Foundations remains separate. The five catalogue groups provide every comprehension skill, with coverage, strengths and teaching priorities shown separately.</p><h3>Navigate class comparisons</h3><p>In any category, use the large arrow beside the visible rows to jump to the last columns; it then points left to return. The arrow sits outside the scores and responses, and appears only when the columns need horizontal scrolling.</p><h3>Explore a skill across the class</h3><p>Select + Show evidence in a skill heading. Responses appear directly beneath each learner’s score in that skill’s column.</p><h3>Explore one learner</h3><p>Select + Show skill evidence to expand the learner’s row. Select the learner’s name to open their profile.</p><h3>Look behind a percentage</h3><p>Select a progress bar, heatmap cell or radar point to read the question, response and support used.</p><h3>Switch your view</h3><p>Use the class and portrait menus above. Photos, game avatars and initials change presentation without changing results.</p></div>';
     }else content.innerHTML='<div class="help-copy"><h3>Teacher account</h3><p>There is no connected teacher account. School sign-in, class imports and account management will be available when secure account access is implemented.</p><p>Class imports and saved learning records are not connected yet.</p></div>';
@@ -435,6 +485,10 @@
   menu.addEventListener('click',event=>{const action=event.target.closest('[data-utility]');if(action)openUtility(action.dataset.utility);});
   document.querySelector('#close-utility').addEventListener('click',closeUtility);
   utilityDialog.addEventListener('cancel',event=>{event.preventDefault();closeUtility();});
+  utilityDialog.addEventListener('click',event=>{
+    const choice=event.target.closest('[data-open-profile]');if(!choice)return;
+    closeUtility();if(matchMedia('(max-width:900px)').matches)closeClasses();nextFocus='#tab-overall';goStudent(choice.dataset.openProfile);
+  });
   utilityDialog.addEventListener('change',event=>{
     const setting=event.target.dataset.setting,value=event.target.value;
     if(setting==='portrait'){setPortrait(value);document.querySelector('#portrait-style').value=value;}

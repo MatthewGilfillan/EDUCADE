@@ -372,6 +372,58 @@ test('Header classes are independent and the hamburger menu provides working set
   assert.equal(d.querySelector('#utility-content input'),null);
  }finally{dom.window.close();}
 });
+test('Sidebar class menus keep rosters, profiles, settings and focus in the selected class',async()=>{
+ const {dom,w,d,click,select,settle}=dashboard(undefined,'class/overall');
+ try{
+  const original=JSON.stringify(w.EDUCADE_DEMO.students);
+  click('#nav-class');
+  assert.equal(d.querySelector('#sidebar-classes').hidden,false);
+  assert.deepEqual([...d.querySelectorAll('[data-class-overview]')].map(button=>button.textContent),['Class 5A','Class 5B']);
+  assert.equal(d.querySelector('#class-menu-5b').hidden,true);
+  click('[data-class-menu="5b"]');
+  assert.equal(d.querySelector('[data-class-menu="5b"]').getAttribute('aria-expanded'),'true');
+  click('[data-class-profiles="5b"]');await settle();
+  assert.equal(d.querySelector('#class-select').value,'5b');
+  assert.equal(d.querySelector('#utility-title').textContent,'Class 5B · Student profiles');
+  assert.deepEqual([...d.querySelectorAll('[data-open-profile] strong')].map(label=>label.textContent),['Amara Okafor','Finn Larsen','Oliver Reed']);
+  assert.equal(d.querySelectorAll('#student-rows tr[data-student]').length,3);
+  click('[data-open-profile="amara"]');await settle();
+  assert.equal(d.querySelector('#utility-dialog').open,false);
+  assert.equal(d.querySelector('h1').textContent,'Amara Okafor');
+  assert.equal(d.querySelectorAll('#switch-student option').length,3);
+  assert.equal(d.querySelector('[data-class-profiles="5b"]').getAttribute('aria-current'),'page');
+  click('#nav-class');
+  click('[data-class-settings="5b"]');await settle();
+  assert.equal(d.querySelector('#utility-title').textContent,'Class 5B · Settings');
+  assert.ok(d.querySelector('.class-settings-summary').textContent.includes('3 learners'));
+  select('[data-setting=classView]','heatmap');
+  assert.equal(d.querySelectorAll('#student-rows tr[data-student]').length,3);
+  click('#close-utility');
+  assert.equal(d.activeElement.dataset.classSettings,'5b');
+  d.activeElement.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  assert.equal(d.querySelector('#class-menu-5b').hidden,true);
+  assert.equal(d.activeElement.dataset.classMenu,'5b');
+  click('[data-class-overview="5a"]');await settle();
+  assert.equal(d.querySelector('#class-select').value,'5a');
+  assert.equal(d.querySelectorAll('#student-rows tr[data-student]').length,6);
+  assert.equal(d.querySelector('[data-class-overview="5a"]').getAttribute('aria-current'),'page');
+  assert.equal(JSON.stringify(w.EDUCADE_DEMO.students),original);
+ }finally{dom.window.close();}
+});
+test('Sidebar class management entries describe their account requirement without pretending to save a roster',()=>{
+ const {dom,d,click}=dashboard();
+ try{
+  click('#nav-class');
+  for(const action of ['import','create']){
+   click(`[data-class-action="${action}"]`);
+   assert.equal(d.querySelector('#utility-dialog').open,true);
+   assert.ok(d.querySelector('.class-setup-notice').textContent.includes('when teacher accounts are connected'));
+   assert.equal(d.querySelector('#utility-content input'),null);
+   click('#close-utility');
+   assert.equal(d.activeElement.dataset.classAction,action);
+  }
+ }finally{dom.window.close();}
+});
 test('Teaching suggestions remain class-wide during filtering and link to the correct evidence',async()=>{
  const {dom,w,d,select,click,settle}=dashboard(undefined,'class/reading/comprehension/craft');
  try{

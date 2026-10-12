@@ -12,12 +12,21 @@
 <body>
   <a class="skip-link" href="#workspace">Skip to dashboard</a>
   <aside class="sidebar" aria-label="Dashboard navigation">
-    <a class="brand" href="index.html" aria-label="EDUCADE home"><img src="assets/logo.png" alt="EDUCADE" width="1633" height="358"></a>
+    <a class="brand" href="index.html" aria-label="EDUCADE home" title="Go to EDUCADE"><img src="assets/logo.png" alt="EDUCADE" width="1633" height="358"></a>
     <div class="sidebar-label">THE TEACHER’S VIEW</div>
-    <nav><button id="nav-class" class="nav-item" type="button"><span aria-hidden="true">▦</span> Classes</button><button id="nav-profile" class="nav-item" type="button"><span aria-hidden="true">◇</span> Student profiles</button></nav>
+    <nav class="sidebar-nav" aria-label="Your classes">
+      <button id="nav-class" class="nav-item classes-toggle" type="button" aria-expanded="true" aria-controls="sidebar-classes"><span aria-hidden="true">▦</span> Classes <svg class="nav-chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button>
+      <div id="sidebar-classes" class="sidebar-classes">
+        <div id="sidebar-class-list" class="sidebar-class-list"></div>
+        <div class="class-management">
+          <button type="button" data-class-action="import"><span aria-hidden="true">↓</span> Import class</button>
+          <button type="button" data-class-action="create"><span aria-hidden="true">＋</span> Create new class</button>
+        </div>
+      </div>
+    </nav>
     <div class="sidebar-note"><span class="tiny-star" aria-hidden="true">✦</span><strong>A quest for them.<br>A clearer picture for you.</strong><p>Explore the learning behind each adventure.</p></div>
     <div class="sidebar-scene" aria-hidden="true"><span></span></div>
-    <a class="home-link" href="index.html">← Back to EDUCADE</a>
+    <a class="home-link" href="index.html" title="Go to EDUCADE">← Back to EDUCADE</a>
   </aside>
   <main id="workspace" tabindex="-1">
     <div class="presentation-controls" aria-label="Dashboard controls">

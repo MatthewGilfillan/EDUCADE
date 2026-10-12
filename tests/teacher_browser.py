@@ -46,6 +46,39 @@ try:
             page.on('pageerror',lambda error:errors.append(str(error)))
             page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
             page.goto(base+'/teacher.html',wait_until='networkidle')
+            classes=page.locator('#nav-class')
+            assert classes.get_attribute('aria-expanded')==('true' if width>900 else 'false')
+            if width<=900: classes.click()
+            assert page.locator('[data-class-overview]').all_text_contents()==['Class 5A','Class 5B']
+            page.get_by_role('button',name='Show Class 5B menu',exact=True).click()
+            assert page.locator('#class-menu-5b').is_visible()
+            if width in [1440,390]: page.screenshot(path=str(OUT/f'class-navigation-{width}.png'))
+            page.locator('[data-class-profiles="5b"]').click()
+            assert page.locator('#utility-title').inner_text()=='Class 5B · Student profiles'
+            assert page.locator('[data-open-profile]').count()==3
+            assert page.locator('[data-open-profile="alex"]').count()==0
+            page.locator('[data-open-profile="amara"]').click()
+            page.wait_for_function('document.querySelector("h1").textContent==="Amara Okafor"')
+            assert page.locator('#switch-student option').count()==3
+            assert page.locator('[data-class-profiles="5b"]').get_attribute('aria-current')=='page'
+            if width<=900: classes.click()
+            page.locator('[data-class-settings="5b"]').click()
+            assert page.locator('#utility-title').inner_text()=='Class 5B · Settings'
+            assert '3 learners' in page.locator('.class-settings-summary').inner_text()
+            page.locator('#close-utility').click()
+            assert page.locator('[data-class-settings="5b"]').evaluate('el=>el===document.activeElement')
+            page.locator('[data-class-settings="5b"]').press('Escape')
+            assert page.locator('#class-menu-5b').is_hidden()
+            assert page.locator('[data-class-menu="5b"]').evaluate('el=>el===document.activeElement')
+            for action in ['import','create']:
+                page.locator(f'[data-class-action="{action}"]').click()
+                assert 'when teacher accounts are connected' in page.locator('.class-setup-notice').inner_text()
+                page.locator('#close-utility').click()
+                assert page.locator(f'[data-class-action="{action}"]').evaluate('el=>el===document.activeElement')
+            page.get_by_role('button',name='Open Class 5A overview',exact=True).click()
+            page.wait_for_function('document.querySelector(".class-title").textContent==="Class 5A"')
+            assert page.locator('#student-rows tr[data-student]').count()==6
+            page.goto(base+'/teacher.html',wait_until='networkidle')
             assert page.locator('#student-rows tr[data-student]').count()==6
             assert page.locator('h1').inner_text()=='Teacher Dashboard'
             assert page.locator('.class-title').inner_text()=='Class 5A'
