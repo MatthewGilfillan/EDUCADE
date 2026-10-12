@@ -552,3 +552,24 @@ for those changes above.
   Desktop and smaller-width screenshots were inspected under
   /workspace/educade-validation/class-navigation. Both menus and the home button
   remain reachable in a 680px-high desktop sidebar.
+
+## Separate Reading Foundations and Literacy tabs — 12 October 2026
+
+- Class comparisons and student profiles now share six top-level tabs: Overall,
+  Reading Foundations, Literacy, Writing, Grammar and Vocabulary. Removed the
+  Reading Foundations/Reading Comprehension sub-tab row. Literacy retains the
+  eight-skill overview and all five comprehension catalogue groups; Foundations
+  opens its eight existing skills directly.
+- Navigation labels, panel associations, keyboard traversal, chart titles and
+  evidence headings follow the selected reading section. Existing reading URL
+  fragments still select the corresponding new tab. Catalogue selections,
+  class searches, portraits and saved chart preferences survive tab changes.
+- Reading evidence IDs, standards mappings and recorded responses are unchanged.
+  Overall still combines reading evidence in its existing four-subject summary;
+  only navigation is split. Missing results remain unassessed.
+- All 30 Node tests pass, including separate evidence scopes, legacy links and
+  keyboard traversal between the two reading tabs. Both browser suites pass at
+  all six widths, including chart/evidence interactions, class navigation,
+  portraits and browser-storage fallback. Desktop and smaller-width previews of
+  both reading sections were inspected under
+  /workspace/educade-validation/reading-tabs/review.

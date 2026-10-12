@@ -18,7 +18,46 @@ function dashboard(saved,route='class/reading'){
   // jsdom queues navigation and hashchange on separate event-loop turns.
   return {dom,w,d:w.document,select,click,settle:()=>new Promise(resolve=>w.setTimeout(()=>w.setTimeout(resolve,0),0))};
 }
-test('Default Reading class columns match all eight radar skills, scores and evidence in the same order',async()=>{
+test('Reading Foundations and Literacy are direct tabs with separate evidence scopes and compatible reading links',async()=>{
+ const {dom,w,d,click,select,settle}=dashboard(undefined,'class/reading/foundations');
+ try{
+  const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students),labels=['Overall','Reading Foundations','Literacy','Writing','Grammar','Vocabulary'];
+  assert.deepEqual([...d.querySelectorAll('[role=tab]')].map(tab=>tab.textContent),labels);
+  assert.equal(d.querySelector('#class-tab-foundations').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelector('#class-panel').getAttribute('aria-labelledby'),'class-tab-foundations');
+  assert.equal(d.querySelectorAll('.reading-sections,[data-class-section],[data-section]').length,0);
+  assert.ok([...d.querySelectorAll('.skill-heading')].every(button=>button.dataset.expandSkill.includes('.FOUNDATIONS.')));
+  const search=d.querySelector('#search-students');search.value='Alex';search.dispatchEvent(new w.Event('input',{bubbles:true}));
+  select('#portrait-style','vikings');click('[data-class-mode=heatmap]');
+  click('#class-tab-literacy');await settle();
+  assert.equal(d.querySelector('#search-students').value,'Alex');
+  assert.equal(d.querySelector('#portrait-style').value,'vikings');
+  assert.equal(d.querySelectorAll('.heat-cell').length,8);
+  assert.ok([...d.querySelectorAll('.skill-heading')].every(button=>button.dataset.expandSkill.includes('.COMPREHENSION.')));
+  click('[data-class-reading-group=craft]');await settle();
+  click('#class-tab-foundations');await settle();
+  d.querySelector('#class-tab-foundations').dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await settle();
+  assert.equal(d.activeElement.id,'class-tab-literacy');
+  assert.equal(d.querySelector('[data-class-reading-group=craft]').getAttribute('aria-pressed'),'true');
+  click('.profile-link[data-student=alex]');await settle();
+  click('#tab-foundations');await settle();
+  assert.equal(d.querySelector('#domain-panel').getAttribute('aria-labelledby'),'tab-foundations');
+  assert.equal(d.querySelectorAll('#skill-chart .skill-row').length,8);
+  assert.equal(d.querySelector('.profile-summary strong').textContent,'85%');
+  assert.equal(d.querySelectorAll('.reading-sections,[data-reading-group]').length,0);
+  click('#tab-literacy');await settle();
+  assert.equal(d.querySelector('.radar-target')!==null,true);
+  assert.equal(d.querySelectorAll('.radar-target').length,8);
+  w.location.hash='student/alex/reading/comprehension/meaning';await settle();
+  assert.equal(d.querySelector('#tab-literacy').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelector('[data-reading-group=meaning]').getAttribute('aria-pressed'),'true');
+  w.location.hash='student/alex/reading/foundations';await settle();
+  assert.equal(d.querySelector('#tab-foundations').getAttribute('aria-selected'),'true');
+  assert.deepEqual([...d.querySelectorAll('[role=tab]')].map(tab=>tab.textContent),labels);
+  assert.equal(JSON.stringify(D.students),original);
+ }finally{dom.window.close();}
+});
+test('Default Literacy class columns match all eight radar skills, scores and evidence in the same order',async()=>{
  const {dom,w,d,click,settle}=dashboard();
  try{
   const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students);
@@ -28,7 +67,7 @@ test('Default Reading class columns match all eight radar skills, scores and evi
   const ids=[...d.querySelectorAll('.skill-heading')].map(button=>button.dataset.expandSkill);
   const scores=[...d.querySelectorAll('tr[data-student=alex] .hp-value')].map(score=>score.textContent);
   assert.deepEqual(scores,['45%','85%','60%','70%','80%','65%','65%','50%']);
-  assert.ok(d.querySelector('.comparison-scroll-guide').textContent.includes('8 reading skills'));
+  assert.ok(d.querySelector('.comparison-scroll-guide').textContent.includes('8 literacy skills'));
   click('button[aria-label="Show skill evidence for Alex Chen"]');
   assert.equal(d.querySelectorAll('tr[data-student=alex] .student-skill-evidence:not([hidden])').length,8);
   assert.equal(d.querySelectorAll('.compact-evidence .hp-track').length,0);
@@ -39,7 +78,7 @@ test('Default Reading class columns match all eight radar skills, scores and evi
   const theme=d.querySelector('tr[data-student=alex] .student-skill-cell:last-child');
   assert.equal(theme.querySelectorAll('.compact-evidence').length,1);
   assert.ok(theme.querySelector('.evidence-counts').textContent.includes('10/20'));
-  click('.profile-link[data-student=alex]');await settle();click('#tab-reading');await settle();
+  click('.profile-link[data-student=alex]');await settle();click('#tab-literacy');await settle();
   assert.equal(d.querySelector('[data-reading-group=overview]').getAttribute('aria-pressed'),'true');
   const radar=[...d.querySelectorAll('.radar-skills button')];
   assert.deepEqual(radar.map(button=>button.dataset.evidence),ids);
@@ -85,11 +124,11 @@ test('Reading catalogue navigation exposes every skill with aligned evidence, sc
    assert.equal(d.querySelector('#portrait-style').value,'vikings');assert.equal(d.querySelector('#sort-students').value,'support');
   }
   assert.equal(seen.size,39);
-  click('[data-class-section=foundations]');await settle();
+  click('#class-tab-foundations');await settle();
   assert.equal(d.querySelectorAll('[data-class-reading-group]').length,0);
   assert.equal(d.querySelectorAll('.skill-heading').length,8);
   assert.ok([...d.querySelectorAll('.skill-heading')].every(button=>button.dataset.expandSkill.includes('.FOUNDATIONS.')));
-  click('[data-class-section=comprehension]');await settle();
+  click('#class-tab-literacy');await settle();
   assert.equal(d.querySelector('[data-class-reading-group=comparing]').getAttribute('aria-pressed'),'true');
   assert.equal(JSON.stringify(D.students),original);
  }finally{dom.window.close();}
@@ -123,9 +162,9 @@ test('Student catalogue shares the same groups, keeps leaf evidence and avoids c
   assert.equal(seen.size,39);
   select('#switch-student','maya');await settle();
   assert.equal(d.querySelector('[data-reading-group=comparing]').getAttribute('aria-pressed'),'true');
-  click('[data-section=foundations]');await settle();assert.equal(d.querySelectorAll('[data-reading-group]').length,0);
+  click('#tab-foundations');await settle();assert.equal(d.querySelectorAll('[data-reading-group]').length,0);
   assert.equal(d.querySelectorAll('.individual-skill').length,8);
-  click('[data-section=comprehension]');await settle();assert.equal(d.querySelector('[data-reading-group=comparing]').getAttribute('aria-pressed'),'true');
+  click('#tab-literacy');await settle();assert.equal(d.querySelector('[data-reading-group=comparing]').getAttribute('aria-pressed'),'true');
   assert.equal(JSON.stringify(D.students),original);
  }finally{dom.window.close();}
 });
@@ -252,7 +291,7 @@ test('Overall Explore skills expands every subject response inline for the selec
    assert.equal(d.querySelectorAll('#skill-headings th').length,6);
    assert.equal(d.querySelector('tr[data-student=alex]').children.length,6);
   }
-  assert.deepEqual([...d.querySelectorAll('#subject-evidence-alex-reading .subject-evidence-section>h3')].map(h=>h.textContent),['Reading Foundations','Reading Comprehension']);
+  assert.deepEqual([...d.querySelectorAll('#subject-evidence-alex-reading .subject-evidence-section>h3')].map(h=>h.textContent),['Reading Foundations','Literacy']);
   const skill=d.querySelector('#subject-evidence-alex-reading .subject-evidence-skill');skill.open=true;
   const key=skill.dataset.subjectSkill;
   select('#portrait-style','vikings');click('[data-class-mode=heatmap]');
@@ -263,7 +302,7 @@ test('Overall Explore skills expands every subject response inline for the selec
   search.value='Alex';search.dispatchEvent(new w.Event('input',{bubbles:true}));
   assert.equal(d.querySelector(`[data-subject-skill="${key}"]`).open,true);
   click('[data-class-mode=bars]');
-  click('#class-tab-reading');await settle();click('#class-tab-overall');await settle();
+  click('#class-tab-literacy');await settle();click('#class-tab-overall');await settle();
   assert.equal(d.querySelector(`[data-subject-skill="${key}"]`).open,true);
   click('[data-expand-subject=reading][data-learner=alex]');
   assert.equal(d.getElementById('subject-evidence-alex-reading').hidden,true);
@@ -291,7 +330,7 @@ test('Full subject radars share scores with progress bars and their central port
  try{
   click('.profile-link[data-student=alex]');await settle();
   for(const [domain,count] of [['reading',8],['writing',6],['grammar',6],['vocabulary',6]]){
-   click('#tab-'+domain);await settle();click('[data-mode=radar]');
+   click('#tab-'+(domain==='reading'?'literacy':domain));await settle();click('[data-mode=radar]');
    assert.equal(d.querySelectorAll('.radar-target').length,count);
    assert.equal(d.querySelectorAll('.radar-skills button').length,count);
    assert.equal(d.querySelector('.radar-portrait [data-avatar-student]').dataset.avatarStudent,'alex');
@@ -307,7 +346,7 @@ test('Full subject radars share scores with progress bars and their central port
   click('[data-mode=radar]');select('#portrait-style','vikings');
   assert.equal(d.querySelector('.radar-portrait image').getAttribute('href'),'assets/portraits/viking-adventurers.png');
   select('#portrait-style','initials');assert.equal(d.querySelector('.radar-portrait .avatar').textContent,'AC');
-  click('#tab-reading');await settle();click('[data-section=foundations]');await settle();
+  click('#tab-literacy');await settle();click('#tab-foundations');await settle();
   assert.equal(d.querySelector('[data-mode=radar]').disabled,true);
   assert.ok(d.querySelector('#skill-chart').textContent.includes('No evidence yet'));
  }finally{dom.window.close();}
@@ -318,7 +357,7 @@ test('Missing skill evidence remains unassessed rather than becoming a zero or a
   const D=w.EDUCADE_DEMO,missing=D.profileAxes.reading[4].id;
   D.students[0].evidence=D.students[0].evidence.filter(r=>r.skillId!==missing);
   click('.profile-link[data-student=alex]');await settle();
-  click('#tab-reading');await settle();
+  click('#tab-literacy');await settle();
   assert.equal(d.querySelectorAll('.radar-target').length,8);
   assert.equal(d.querySelector('polygon.radar-area'),null);
   assert.equal(d.querySelector('[data-mode=radar]').disabled,false);
@@ -454,7 +493,7 @@ test('Teaching suggestions remain class-wide during filtering and link to the co
   assert.ok(!d.querySelector('.class-next-steps').textContent.includes('Alex'));
   click('.profile-link[data-student=finn]');await settle();
   for(const domain of ['reading','writing','grammar','vocabulary']){
-   click('#tab-'+domain);await settle();
+   click('#tab-'+(domain==='reading'?'literacy':domain));await settle();
    assert.ok(!/\bsample\b|\bfictional\b|\bdemo\b/i.test(d.querySelector('#dashboard').textContent));
   }
  }finally{dom.window.close();}
@@ -465,7 +504,7 @@ test('Profiles open on Overall radar, use the original subject evidence and keep
  try{
   const D=w.EDUCADE_DEMO,original=JSON.stringify(D.students);
   click('.profile-link[data-student=alex]');await settle();
-  assert.deepEqual([...d.querySelectorAll('[role=tab]')].map(tab=>tab.textContent),['Overall','Reading','Writing','Grammar','Vocabulary']);
+  assert.deepEqual([...d.querySelectorAll('[role=tab]')].map(tab=>tab.textContent),['Overall','Reading Foundations','Literacy','Writing','Grammar','Vocabulary']);
   assert.equal(d.querySelector('[role=tab][aria-selected=true]').id,'tab-overall');
   assert.equal(d.querySelector('[data-mode=radar]').getAttribute('aria-pressed'),'true');
   const scores=[...d.querySelectorAll('.radar-skills button')].map(button=>[button.dataset.domain,button.querySelector('strong').textContent]);
@@ -473,7 +512,7 @@ test('Profiles open on Overall radar, use the original subject evidence and keep
   for(const [domain,score] of scores)assert.equal(score,D.domainStats(D.students[0],domain).score+'%');
   for(const key of ['independent','supported','hints'])assert.equal(d.querySelector(`[data-count=${key}]`).textContent,String(D.summarize(D.students[0].evidence)[key]));
   d.querySelector('.radar-target[data-domain=reading]').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true}));await settle();
-  assert.equal(d.querySelector('[role=tab][aria-selected=true]').id,'tab-reading');
+  assert.equal(d.querySelector('[role=tab][aria-selected=true]').id,'tab-literacy');
   assert.equal(d.querySelector('[data-mode=bars]').getAttribute('aria-pressed'),'true');
   click('#tab-overall');await settle();
   assert.equal(d.querySelector('[data-mode=radar]').getAttribute('aria-pressed'),'true');
@@ -550,7 +589,7 @@ test('Class dashboard starts with Overall and subject tabs preserve the learner 
   assert.equal(d.querySelector('.class-title').textContent,'Class 5A');
   assert.equal(d.querySelector('.stats'),null);
   assert.ok(!d.querySelector('#dashboard').textContent.includes('Reading skills at a glance'));
-  assert.deepEqual([...d.querySelectorAll('[role=tab]')].map(tab=>tab.textContent),['Overall','Reading','Writing','Grammar','Vocabulary']);
+  assert.deepEqual([...d.querySelectorAll('[role=tab]')].map(tab=>tab.textContent),['Overall','Reading Foundations','Literacy','Writing','Grammar','Vocabulary']);
   assert.equal(d.querySelector('#class-tab-overall').getAttribute('aria-selected'),'true');
   assert.deepEqual([...d.querySelectorAll('tr[data-student=alex] .score-cell .hp-value')].map(value=>value.textContent),Object.keys(D.domains).map(domain=>D.domainStats(D.students[0],domain).score+'%'));
   click('[data-expand-skill=reading]');
@@ -586,7 +625,7 @@ test('Class dashboard starts with Overall and subject tabs preserve the learner 
   click('[data-back-class]');await settle();
   assert.equal(d.querySelector('#class-tab-overall').getAttribute('aria-selected'),'true');
   click('[data-review-class-skill]');await settle();
-  assert.equal(d.querySelector('#class-tab-reading').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelector('#class-tab-literacy').getAttribute('aria-selected'),'true');
   assert.equal(d.querySelector('.skill-heading[aria-expanded=true]').dataset.expandSkill,D.reading[2]);
   assert.equal(JSON.stringify(D.students),original);
  }finally{dom.window.close();}

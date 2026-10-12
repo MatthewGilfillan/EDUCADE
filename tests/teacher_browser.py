@@ -84,7 +84,7 @@ try:
             assert page.locator('.class-title').inner_text()=='Class 5A'
             assert page.locator('.stats').count()==0
             assert 'Reading skills at a glance' not in page.locator('#dashboard').inner_text()
-            assert page.locator('.class-tabs [role=tab]').all_text_contents()==['Overall','Reading','Writing','Grammar','Vocabulary']
+            assert page.locator('.class-tabs [role=tab]').all_text_contents()==['Overall','Reading Foundations','Literacy','Writing','Grammar','Vocabulary']
             assert page.locator('#class-tab-overall').get_attribute('aria-selected')=='true'
             check_scroll_arrow('subjects')
             assert page.locator('#search-students').bounding_box()['y']<page.locator('.class-tabs').bounding_box()['y']
@@ -103,7 +103,7 @@ try:
             assert '#student/' not in page.url
             subject=page.locator('#subject-evidence-alex-reading')
             assert subject.is_visible()
-            assert subject.locator('.subject-evidence-section>h3').all_text_contents()==['Reading Foundations','Reading Comprehension']
+            assert subject.locator('.subject-evidence-section>h3').all_text_contents()==['Reading Foundations','Literacy']
             assert subject.locator('.subject-evidence-skill').count()==9
             response_ids=subject.locator('.subject-response').evaluate_all('els=>els.map(el=>el.dataset.responseId).sort()')
             expected_ids=page.evaluate('EDUCADE_DEMO.students[0].evidence.filter(record=>EDUCADE_DEMO.groups.some(group=>group.domain==="reading"&&group.skills.some(skill=>skill.id===record.skillId))).map(record=>record.id).sort()')
@@ -183,22 +183,22 @@ try:
             page.wait_for_function('document.querySelector("#class-tab-overall").getAttribute("aria-selected")==="true"')
             assert page.locator('#class-tab-overall').evaluate('el=>el===document.activeElement')
             page.locator('tr[data-student=alex] .score-cell[data-profile-domain=reading]').click()
-            page.wait_for_selector('#tab-reading[aria-selected="true"]')
+            page.wait_for_selector('#tab-literacy[aria-selected="true"]')
             page.locator('[data-back-class]').click();page.wait_for_selector('#class-tab-overall')
             assert page.locator('#class-tab-overall').get_attribute('aria-selected')=='true'
-            page.locator('#class-tab-reading').click()
-            page.wait_for_function('document.querySelector("#class-tab-reading").getAttribute("aria-selected")==="true"')
+            page.locator('#class-tab-literacy').click()
+            page.wait_for_function('document.querySelector("#class-tab-literacy").getAttribute("aria-selected")==="true"')
             assert page.locator('[data-class-reading-group=overview]').get_attribute('aria-pressed')=='true'
             expected_reading=page.evaluate('EDUCADE_DEMO.profileAxes.reading')
             assert page.locator('.skill-heading').evaluate_all('els=>els.map(el=>el.dataset.expandSkill)')==[axis['id'] for axis in expected_reading]
             assert page.locator('.skill-heading-label').all_text_contents()==[axis['label'] for axis in expected_reading]
             assert page.locator('tr[data-student=alex] .hp-value').all_text_contents()==['45%','85%','60%','70%','80%','65%','65%','50%']
-            assert '8 reading skills' in page.locator('.comparison-scroll-guide').inner_text()
-            check_scroll_arrow('reading skills')
+            assert '8 literacy skills' in page.locator('.comparison-scroll-guide').inner_text()
+            check_scroll_arrow('literacy skills')
             page.locator('.table-scroll').evaluate('el=>el.scrollIntoView({block:"start"})')
             jump=page.locator('.skill-scroll-jump')
             page.wait_for_function('!document.querySelector(".skill-scroll-jump").hidden')
-            assert jump.get_attribute('data-scroll-skills')=='end' and jump.get_attribute('aria-label')=='Show remaining reading skills'
+            assert jump.get_attribute('data-scroll-skills')=='end' and jump.get_attribute('aria-label')=='Show remaining literacy skills'
             assert jump.bounding_box()['width']>=56
             assert page.locator('.table-scroll').evaluate('el=>el.scrollWidth>el.clientWidth')
             # Capture the semitransparent initial state, before hover makes it opaque.
@@ -207,7 +207,7 @@ try:
             pinned_x=page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']
             jump.click()
             page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
-            assert jump.get_attribute('data-scroll-skills')=='start' and jump.get_attribute('aria-label')=='Show first reading skills'
+            assert jump.get_attribute('data-scroll-skills')=='start' and jump.get_attribute('aria-label')=='Show first literacy skills'
             assert abs(page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']-pinned_x)<1
             assert page.locator('#skill-headings th').count()==10
             theme_id=expected_reading[-1]['id']
@@ -255,11 +255,11 @@ try:
                     assert page.locator('.class-table .hp-track').count()==0
                     assert 'No evidence yet' in page.locator('.reading-group-summary').inner_text()
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Catalogue {group["key"]} overflow at {width}'
-            page.locator('[data-class-section=foundations]').click()
-            page.wait_for_selector('[data-class-section=foundations][aria-pressed=true]')
+            page.locator('#class-tab-foundations').click()
+            page.wait_for_selector('#class-tab-foundations[aria-selected=true]')
             assert page.locator('[data-class-reading-group]').count()==0
             assert page.locator('.skill-heading').count()==8
-            page.locator('[data-class-section=comprehension]').click()
+            page.locator('#class-tab-literacy').click()
             page.wait_for_selector('[data-class-reading-group=comparing][aria-pressed=true]')
             page.locator('[data-class-reading-group=meaning]').click()
             page.wait_for_selector('[data-class-reading-group=meaning][aria-pressed=true]')
@@ -349,7 +349,7 @@ try:
                 next_steps=page.locator('.profile-next-card').bounding_box()
                 assert progress['y']+progress['height']<=next_steps['y'],f'Progress must be above next steps: {domain}, {width}px'
                 assert abs(progress['x']-next_steps['x'])<1,f'Profile widgets must share a column: {domain}, {width}px'
-            assert page.locator('[role=tab]').all_text_contents()==['Overall','Reading','Writing','Grammar','Vocabulary']
+            assert page.locator('[role=tab]').all_text_contents()==['Overall','Reading Foundations','Literacy','Writing','Grammar','Vocabulary']
             assert page.locator('#tab-overall').get_attribute('aria-selected')=='true'
             assert page.locator('[data-mode=radar]').get_attribute('aria-pressed')=='true'
             assert page.locator('.radar-target').count()==4
@@ -370,7 +370,7 @@ try:
             page.wait_for_function('document.querySelector("#tab-writing").getAttribute("aria-selected")==="true"')
             page.locator('#tab-overall').click();page.wait_for_selector('.radar-target[data-domain=reading]')
             page.locator('.radar-target[data-domain=reading]').focus();page.keyboard.press('Enter')
-            page.wait_for_function('document.querySelector("#tab-reading").getAttribute("aria-selected")==="true"')
+            page.wait_for_function('document.querySelector("#tab-literacy").getAttribute("aria-selected")==="true"')
             page.locator('#tab-overall').click();page.wait_for_selector('.radar-target[data-domain=reading]')
             page.locator('[data-mode=bars]').click()
             assert page.locator('#skill-chart .skill-row').count()==4
@@ -380,11 +380,12 @@ try:
             assert page.locator('[data-mode=bars]').get_attribute('aria-pressed')=='true'
             page.locator('[data-mode=radar]').click()
             for domain in ['reading','writing','grammar','vocabulary']:
-                page.locator('#tab-'+domain).click()
-                page.wait_for_function('(domain)=>document.querySelector("#tab-"+domain).getAttribute("aria-selected")==="true"',arg=domain)
+                tab_key='literacy' if domain=='reading' else domain
+                page.locator('#tab-'+tab_key).click()
+                page.wait_for_function('(key)=>document.querySelector("#tab-"+key).getAttribute("aria-selected")==="true"',arg=tab_key)
                 assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{domain} overflow at {width}'
                 counts=page.evaluate('''() => {
-                    const D=EDUCADE_DEMO, domain=document.querySelector('[role=tab][aria-selected=true]').dataset.domain;
+                    const D=EDUCADE_DEMO, tab=document.querySelector('[role=tab][aria-selected=true]').dataset.domain, domain=tab==='literacy'?'reading':tab;
                     const groups=domain==='reading'?[{skills:D.profileAxes.reading}]:D.groups.filter(g=>g.domain===domain);
                     const records=D.students[0].evidence.filter(r=>groups.some(g=>g.skills.some(s=>s.id===r.skillId)));
                     return D.summarize(records);
@@ -426,7 +427,7 @@ try:
                 assert page.evaluate('document.querySelector("#evidence-dialog").scrollWidth<=document.querySelector("#evidence-dialog").clientWidth')
                 if domain=='reading':page.locator('#evidence-dialog').screenshot(path=str(OUT/f'evidence-{width}.png'))
                 page.keyboard.press('Escape');assert not page.locator('#evidence-dialog').is_visible()
-            page.locator('#tab-reading').click()
+            page.locator('#tab-literacy').click()
             page.wait_for_selector('[data-reading-group=overview][aria-pressed=true]')
             for group in catalogue:
                 page.locator('[data-reading-group='+group['key']+']').click()
@@ -450,8 +451,8 @@ try:
             page.locator('[data-reading-group=meaning]').click()
             page.wait_for_selector('[data-reading-group=meaning][aria-pressed=true]')
             page.locator('[data-mode=radar]').click()
-            page.locator('[data-section=foundations]').click()
-            page.wait_for_function('document.querySelector("[data-section=foundations]").getAttribute("aria-pressed")==="true"')
+            page.locator('#tab-foundations').click()
+            page.wait_for_function('document.querySelector("#tab-foundations").getAttribute("aria-selected")==="true"')
             assert page.locator('[data-mode=radar]').is_disabled()
             assert page.locator('.skill-group').count()==3
             page.locator('#group-affixed summary').click()
@@ -459,10 +460,10 @@ try:
             assert 'No evidence yet' in page.locator('#evidence-content').inner_text()
             assert page.locator('.attempt').count()==0
             page.keyboard.press('Escape')
-            page.locator('[data-section=comprehension]').click()
+            page.locator('#tab-literacy').click()
             page.wait_for_selector('.radar-area')
             page.reload(wait_until='networkidle');assert page.locator('.radar-area').is_visible()
-            page.locator('#tab-reading').focus();page.keyboard.press('ArrowRight')
+            page.locator('#tab-literacy').focus();page.keyboard.press('ArrowRight')
             page.wait_for_function('document.querySelector("#tab-writing").getAttribute("aria-selected")==="true"')
             for learner in ['maya','leo','sofia','noah','ella','alex']:
                 page.locator('#switch-student').select_option(learner)
