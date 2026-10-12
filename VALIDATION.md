@@ -573,3 +573,21 @@ for those changes above.
   portraits and browser-storage fallback. Desktop and smaller-width previews of
   both reading sections were inspected under
   /workspace/educade-validation/reading-tabs/review.
+
+## Landing page and downloadable website — 12 October 2026
+
+- The selected warm-orange joystick appears to the left of the preserved wordmark.
+  The header has one blue-gradient Sign In button; the hero pairs Start your
+  adventure with a smaller Sign In button. Sign In opens the teacher dashboard;
+  authentication and account-role routing are not connected yet.
+- The compact hero identifies EDUCADE as an English language arts role-playing
+  game and shows the protagonist on an isometric harbour map with four learning
+  callouts. Reading, writing, grammar and vocabulary each have a learning card.
+  The next section is visible in the checked desktop first-screen layouts.
+- The landing suite passes at all six widths, including mocked signup, header
+  controls, both hero actions, the joystick position and four learning callouts.
+  Desktop and smaller-width layouts were inspected under
+  /workspace/educade-validation/rpg-hero/review.
+- Static packaging now versions the shared landing/signup stylesheet as well as
+  the teacher assets. The archive contains public website files only, with no
+  Wrangler configuration, package manifests or build tools.

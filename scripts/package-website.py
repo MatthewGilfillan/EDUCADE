@@ -1,4 +1,4 @@
-"""Package a committed static website with versioned teacher assets for uploads."""
+"""Package a committed static website with versioned styles and teacher assets."""
 import argparse
 import hashlib
 from pathlib import Path
@@ -19,6 +19,16 @@ if subprocess.check_output(['git', 'status', '--porcelain', '--', 'public'], cwd
 with tempfile.TemporaryDirectory(prefix='educade-website-') as temporary:
     website = Path(temporary) / 'website'
     shutil.copytree(PUBLIC, website)
+    stylesheet = website / 'style.css'
+    digest = hashlib.sha256(stylesheet.read_bytes()).hexdigest()[:12]
+    versioned_style = f'style.{digest}.css'
+    shutil.copyfile(stylesheet, website / versioned_style)
+    for page_name in ['index.html', 'signup.html']:
+        page = website / page_name
+        markup = page.read_text()
+        if markup.count('href="style.css"') != 1:
+            parser.error(f'Expected one shared stylesheet reference in {page_name}.')
+        page.write_text(markup.replace('href="style.css"', f'href="{versioned_style}"'))
     html = (website / 'teacher.html').read_text()
     for filename, attribute in [('teacher.css', 'href'), ('teacher-data.js', 'src'),
                                 ('teacher-portraits.js', 'src'), ('teacher.js', 'src')]:
@@ -37,7 +47,7 @@ with tempfile.TemporaryDirectory(prefix='educade-website-') as temporary:
     index = website / 'index.html'
     landing = index.read_text()
     if 'href="teacher.html#class"' not in landing:
-        parser.error('Expected a Teacher sign in link to the dashboard.')
+        parser.error('Expected a Sign In link to the dashboard.')
     index.write_text(landing.replace('href="teacher.html#class"', f'href="{entry}#class"'))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     files = sorted(file for file in website.rglob('*') if file.is_file())

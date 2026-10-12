@@ -117,7 +117,7 @@ Cloudflare's GitHub Builds supplies its own build token when using the dashboard
 route above; a separate token in this workspace is unnecessary for that route.
 
 Before deploying, run `npm test`, both browser suites and
-`npm run build:production`. After deployment, verify the Teacher sign in link,
+`npm run build:production`. After deployment, verify the Sign In link,
 `/teacher.html`, demo labels, charts and mobile menu on https://educade.io/.
 If the release fails after deployment, use the live Worker's Deployments tab to
 roll back to the previously active version. Future production updates still
@@ -129,7 +129,7 @@ challenge work locally. Signup submission is unavailable in this static preview.
 
 ## Interactive teacher dashboard prototype
 
-Choose **Teacher sign in** in the landing-page header (or the mobile Menu). For
+Choose **Sign In** in the landing-page header (or the mobile Menu). For
 now, this opens the dashboard prototype directly.
 It does not request credentials or implement authentication. The link's
 `data-teacher-entry` attribute provides an entry point for a future sign-in flow.
@@ -411,8 +411,9 @@ through expansion, filtering, subject changes and presentation changes.
 To prepare an upload ZIP from committed website files, run
 `python scripts/package-website.py --output /tmp/EDUCADE-website.zip`.
 The archive contains only static website files, with no Wrangler configuration
-or package files. Its teacher scripts and stylesheet use content-based filenames;
-Teacher sign in opens a revision-specific HTML file. These fresh URLs avoid
+or package files. Its landing/signup stylesheet and teacher assets use
+content-based filenames;
+Sign In opens a revision-specific HTML file. These fresh URLs avoid
 reusing older dashboard assets cached under the original filenames. Extract
 into a new folder and open the generated `teacher-<revision>.html` entry.
 

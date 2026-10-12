@@ -40,6 +40,19 @@ try:
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"Home overflow at {width}"
             assert page.evaluate("[...document.images].every(image => image.complete && image.naturalWidth > 0)"), "Broken image"
             assert "linear-gradient" in page.locator("#hero-title").evaluate("el => getComputedStyle(el).backgroundImage")
+            joystick=page.locator('.header .brand-joystick').bounding_box()
+            wordmark=page.locator('.header .logo').bounding_box()
+            assert joystick['x']+joystick['width']<wordmark['x']
+            assert abs((joystick['y']+joystick['height']/2)-(wordmark['y']+wordmark['height']/2))<1
+            assert page.locator('.hero-rpg .actions a').all_text_contents()==['Start your adventure','Sign In']
+            assert page.locator('.hero-rpg .play-preview,.hero-rpg a[href="#teachers"]').count()==0
+            assert 'role-playing game' in page.locator('.hero-tag').inner_text().lower()
+            assert page.locator('.hero-skill-callouts li').count()==4
+            assert page.locator('#learning .skills-grid h3').all_text_contents()==['Reading comprehension','Vocabulary in context','Grammar','Writing']
+            if width>=1024:
+                assert page.locator('.hero-rpg+.ribbon').bounding_box()['y']<900
+                assert page.locator('#adventure .section-heading').bounding_box()['y']<900
+
             page.screenshot(path=str(OUTPUT / f"home-{width}.png"), full_page=True)
             page.screenshot(path=str(OUTPUT / f"hero-{width}.png"))
             page.locator(".challenge-card").screenshot(path=str(OUTPUT / f"challenge-{width}.png"))
@@ -143,9 +156,12 @@ try:
                 page.locator('#navigation a[href="#teachers"]').click()
                 assert not page.locator("#navigation").is_visible()
             if width<=760:page.locator('.menu').click()
-            assert page.locator('[data-teacher-entry]').is_visible()
-            assert page.locator('[data-teacher-entry]').inner_text() == 'Teacher sign in'
-            page.locator('[data-teacher-entry]').click()
+            assert page.locator('#navigation [data-sign-in-entry]').is_visible()
+            assert page.locator('#navigation .button').count()==1
+            assert page.locator('#navigation a[href="signup.html"]').count()==0
+            assert 'linear-gradient' in page.locator('#navigation .sign-in').evaluate('el=>getComputedStyle(el).backgroundImage')
+            assert page.locator('#navigation [data-sign-in-entry]').inner_text() == 'Sign In'
+            page.locator('#navigation [data-sign-in-entry]').click()
             page.wait_for_selector('#student-rows')
             assert ' '.join(page.locator('.dashboard-footer').inner_text().split()) == 'EDUCADE teacher dashboard Grade 5 · Viking Quest'
             assert page.locator('input[type=password],input[type=email]').count()==0
