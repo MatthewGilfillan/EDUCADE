@@ -207,3 +207,13 @@
 .class-comparison .chart-toggle,.profile-grid .chart-toggle{flex-wrap:wrap;max-width:100%}
 @media(max-width:1150px){.standards-levels{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.class-comparison .chart-toggle{justify-content:flex-start}.standards-descriptor{padding:10px}.standards-profile-grid{grid-template-columns:1fr}.standards-editor{padding:15px}}
+
+/* Preserve the legend's space so changing view never moves the toggle. */
+.class-comparison .data-view-row>.chart-toggle{margin-left:auto}
+.class-comparison .mode-legend[aria-hidden=true]{visibility:hidden}
+.sidebar-note{padding-top:26px;padding-bottom:22px}
+.sidebar-joystick{display:block;width:64px;height:64px;object-fit:contain;margin:0 0 16px}
+.sidebar-scene{height:150px;flex-shrink:0;background:linear-gradient(180deg,#102e4b,#0b233d);border-top:1px solid #7ca6cc22;border-bottom:1px solid #7ca6cc22}
+.sidebar-scene:before,.sidebar-scene:after{content:none}
+.sidebar-scene img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+@media(max-width:1150px){.sidebar-scene{margin-left:-12px;margin-right:-12px}}

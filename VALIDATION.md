@@ -615,3 +615,21 @@ for those changes above.
   required rubric confirmations, note validation, shared class/profile levels,
   restored choices, the conservative initial display, original percentages and data integrity. Desktop and smaller
   screenshots were inspected under /workspace/educade-validation/standards-progress.
+
+## Account buttons, stable view toggle and sidebar artwork — 12 October 2026
+
+- Restored an orange Sign Up button beside the blue Sign In button in the landing
+  header. Both remain visible in the mobile menu; native Sign Up navigation reaches
+  the existing registration form. Compact desktop spacing prevents header overflow.
+- The class-view toggle stays anchored on the right in Progress Bars, Class heatmap
+  and Standards Progress. Hiding the practice legend preserves its layout space;
+  the legend is hidden visually and from accessibility APIs in Standards Progress.
+  Dedicated browser checks measure unchanged toggle coordinates in all three modes.
+- Replaced the sidebar's star with the selected warm-orange joystick, above its
+  existing message. A new transparent Viking longship illustration replaces the
+  sunset and mountain scene. The raised home buttons and original wordmark remain.
+- All 33 Node tests and the full teacher and landing browser suites pass. Standards
+  checks pass at four widths, including toggle position, rubric review, all recorded
+  responses, restored choices and unchanged practice scores. Desktop and smaller
+  screenshots were inspected under /workspace/educade-validation/layout-refinements.
+  Both expanded class menus and the home link remain reachable on a short desktop.

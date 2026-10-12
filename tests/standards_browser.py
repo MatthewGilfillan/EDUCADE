@@ -24,6 +24,14 @@ try:
             page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
             page.goto(base+'/teacher.html#class/reading/comprehension/overview',wait_until='networkidle')
             original=page.evaluate('JSON.stringify(EDUCADE_DEMO.students)')
+            toggle=page.locator('.class-comparison .data-view-row>.chart-toggle')
+            original_toggle=toggle.bounding_box()
+            original_toggle['y']+=page.evaluate('scrollY')
+            for mode in ['heatmap','standards','bars']:
+                page.locator(f'[data-class-mode={mode}]').click()
+                position=toggle.bounding_box()
+                position['y']+=page.evaluate('scrollY')
+                assert abs(position['x']-original_toggle['x'])<1 and abs(position['y']-original_toggle['y'])<1,f'View toggle moved at {width}px: {mode}'
             page.locator('[data-class-mode=standards]').click()
             assert page.locator('.standards-descriptor strong').all_text_contents()==['Beginning','Approaching','Meeting','Exceeding']
             assert page.locator('.class-table .hp-track,.class-table .heat-cell').count()==0

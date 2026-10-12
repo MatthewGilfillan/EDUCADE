@@ -115,7 +115,7 @@
       ${learningNavigation(true)}
       <section id="class-panel" role="tabpanel" aria-labelledby="class-tab-${activeTab(true)}">
       ${state.classDomain==='reading'?readingNavigation(classStudents(),true):''}
-      <div class="data-view-row"><div class="legend" ${preferences.classView==='standards'?'hidden':''}><span><i class="orange"></i> More practice</span><span><i></i> Building strength</span></div><div class="chart-toggle" role="group" aria-label="Class data view"><button type="button" data-class-mode="bars" aria-pressed="${preferences.classView==='bars'}">Progress Bars</button><button type="button" data-class-mode="heatmap" aria-pressed="${preferences.classView==='heatmap'}">Class heatmap</button><button type="button" data-class-mode="standards" aria-pressed="${preferences.classView==='standards'}">Standards Progress</button></div></div>
+      <div class="data-view-row"><div class="legend mode-legend" aria-hidden="${preferences.classView==='standards'}"><span><i class="orange"></i> More practice</span><span><i></i> Building strength</span></div><div class="chart-toggle" role="group" aria-label="Class data view"><button type="button" data-class-mode="bars" aria-pressed="${preferences.classView==='bars'}">Progress Bars</button><button type="button" data-class-mode="heatmap" aria-pressed="${preferences.classView==='heatmap'}">Class heatmap</button><button type="button" data-class-mode="standards" aria-pressed="${preferences.classView==='standards'}">Standards Progress</button></div></div>
       <p id="heatmap-key" class="heatmap-key" ${preferences.classView==='heatmap'?'':'hidden'}><span><i class="heat-low"></i>0–49%</span><span><i class="heat-mid"></i>50–69%</span><span><i class="heat-high"></i>70–100%</span> ${overall?'Select a subject to explore its skills.':'Select a cell for its skill evidence.'}</p>
       <div id="class-standards-key" ${preferences.classView==='standards'?'':'hidden'}>${standardsKey()}</div>
       <p class="comparison-scroll-guide">${axes.length} ${overall?'subjects':escape(activeDomainName(true).toLowerCase())+' skills'}</p>
@@ -412,7 +412,7 @@
     document.querySelector('.class-table').classList.toggle('standards-table',mode==='standards');
     document.querySelector('#heatmap-key').hidden=mode!=='heatmap';
     document.querySelector('#class-standards-key').hidden=mode!=='standards';
-    document.querySelector('.class-comparison .data-view-row>.legend').hidden=mode==='standards';
+    document.querySelector('.class-comparison .data-view-row>.legend').setAttribute('aria-hidden',String(mode==='standards'));
     document.querySelector('.class-comparison .table-note').textContent=comparisonNote();
     root.querySelectorAll('[data-class-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.classMode===mode)));
     renderRows();markSelectedSkill();

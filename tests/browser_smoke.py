@@ -157,8 +157,12 @@ try:
                 assert not page.locator("#navigation").is_visible()
             if width<=760:page.locator('.menu').click()
             assert page.locator('#navigation [data-sign-in-entry]').is_visible()
-            assert page.locator('#navigation .button').count()==1
-            assert page.locator('#navigation a[href="signup.html"]').count()==0
+            assert page.locator('#navigation .button').count()==2
+            signup=page.locator('#navigation [data-sign-up-entry]')
+            assert signup.is_visible() and signup.inner_text()=='Sign Up'
+            signup.click();page.wait_for_selector('#signup-form')
+            page.go_back(wait_until='networkidle')
+            if width<=760 and not page.locator('#navigation').is_visible():page.locator('.menu').click()
             assert 'linear-gradient' in page.locator('#navigation .sign-in').evaluate('el=>getComputedStyle(el).backgroundImage')
             assert page.locator('#navigation [data-sign-in-entry]').inner_text() == 'Sign In'
             page.locator('#navigation [data-sign-in-entry]').click()

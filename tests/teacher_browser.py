@@ -46,6 +46,12 @@ try:
             page.on('pageerror',lambda error:errors.append(str(error)))
             page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
             page.goto(base+'/teacher.html',wait_until='networkidle')
+            assert page.locator('.sidebar-joystick').get_attribute('src')=='assets/joystick.png'
+            ship=page.locator('.sidebar-scene img')
+            assert ship.get_attribute('src')=='assets/sidebar-viking-ship.png'
+            assert ship.evaluate('el=>el.complete&&el.naturalWidth>0')
+            assert page.locator('.sidebar-scene').evaluate('el=>getComputedStyle(el,"::before").content')=='none'
+            assert page.locator('.sidebar-scene').evaluate('el=>getComputedStyle(el,"::after").content')=='none'
             classes=page.locator('#nav-class')
             assert classes.get_attribute('aria-expanded')==('true' if width>900 else 'false')
             if width<=900: classes.click()
