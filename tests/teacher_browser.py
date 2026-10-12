@@ -27,18 +27,21 @@ try:
                     assert not page.locator('.comparison-scroll-wrap').evaluate('el=>el.classList.contains("has-horizontal-scroll")')
                     return
                 region.evaluate('el=>el.scrollLeft=0')
-                page.wait_for_function('()=>{const arrow=document.querySelector(".skill-scroll-jump"),box=arrow.getBoundingClientRect();return !arrow.hidden&&arrow.textContent==="→"&&box.top>=0&&box.bottom<=innerHeight;}')
+                page.wait_for_function('()=>{const arrow=document.querySelector(".skill-scroll-jump"),box=arrow.getBoundingClientRect();return !arrow.hidden&&arrow.dataset.scrollSkills==="end"&&box.top>=0&&box.bottom<=innerHeight;}')
                 box=arrow.bounding_box();table_box=region.bounding_box()
                 assert box['x']>=table_box['x']+table_box['width']-1
                 assert box['x']+box['width']<=width
                 assert arrow.get_attribute('aria-label')=='Show remaining '+column_label
+                assert arrow.locator('svg path').count()==2
+                assert arrow.locator('svg').evaluate('el=>getComputedStyle(el).transform')=='none'
                 pinned_x=page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']
                 arrow.click()
                 page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
-                assert arrow.inner_text()=='←' and arrow.get_attribute('aria-label')=='Show first '+column_label
+                assert arrow.get_attribute('data-scroll-skills')=='start' and arrow.get_attribute('aria-label')=='Show first '+column_label
+                assert arrow.locator('svg').evaluate('el=>getComputedStyle(el).transform')=='matrix(-1, 0, 0, 1, 0, 0)'
                 assert abs(page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']-pinned_x)<1
                 arrow.click();page.wait_for_function('document.querySelector(".table-scroll").scrollLeft<1')
-                assert arrow.inner_text()=='→'
+                assert arrow.get_attribute('data-scroll-skills')=='end'
             errors=[];failed=[]
             page.on('pageerror',lambda error:errors.append(str(error)))
             page.on('response',lambda response:failed.append(response.url) if response.status>=400 else None)
@@ -162,7 +165,7 @@ try:
             page.locator('.table-scroll').evaluate('el=>el.scrollIntoView({block:"start"})')
             jump=page.locator('.skill-scroll-jump')
             page.wait_for_function('!document.querySelector(".skill-scroll-jump").hidden')
-            assert jump.inner_text()=='→' and jump.get_attribute('aria-label')=='Show remaining reading skills'
+            assert jump.get_attribute('data-scroll-skills')=='end' and jump.get_attribute('aria-label')=='Show remaining reading skills'
             assert jump.bounding_box()['width']>=56
             assert page.locator('.table-scroll').evaluate('el=>el.scrollWidth>el.clientWidth')
             # Capture the semitransparent initial state, before hover makes it opaque.
@@ -171,7 +174,7 @@ try:
             pinned_x=page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']
             jump.click()
             page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
-            assert jump.inner_text()=='←' and jump.get_attribute('aria-label')=='Show first reading skills'
+            assert jump.get_attribute('data-scroll-skills')=='start' and jump.get_attribute('aria-label')=='Show first reading skills'
             assert abs(page.locator('tr[data-student=alex] .student-name-cell').bounding_box()['x']-pinned_x)<1
             assert page.locator('#skill-headings th').count()==10
             theme_id=expected_reading[-1]['id']
@@ -187,12 +190,12 @@ try:
                 page.screenshot(path=str(OUT/f'eight-reading-scroll-end-{width}.png'))
             # Native focus can pan a wide header on narrow viewports; finish
             # that pan before testing the arrow's return from the last columns.
-            if jump.inner_text()=='→':
+            if jump.get_attribute('data-scroll-skills')=='end':
                 jump.click()
                 page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
-            assert jump.inner_text()=='←'
+            assert jump.get_attribute('data-scroll-skills')=='start'
             jump.click();page.wait_for_function('document.querySelector(".table-scroll").scrollLeft<1')
-            assert jump.inner_text()=='→'
+            assert jump.get_attribute('data-scroll-skills')=='end'
             page.locator('tr[data-student=ella]').evaluate('el=>el.scrollIntoView({block:"start"})')
             page.wait_for_function('()=>{const arrow=document.querySelector(".skill-scroll-jump"),box=arrow.getBoundingClientRect();return !arrow.hidden&&box.top>=0&&box.bottom<=innerHeight;}')
             arrow_box=jump.bounding_box()
@@ -200,7 +203,7 @@ try:
             assert page.locator('.table-scroll').bounding_box()['y']<0
             jump.click()
             page.wait_for_function('Math.abs(document.querySelector(".table-scroll").scrollLeft-(document.querySelector(".table-scroll").scrollWidth-document.querySelector(".table-scroll").clientWidth))<1')
-            assert jump.inner_text()=='←'
+            assert jump.get_attribute('data-scroll-skills')=='start'
             jump.click();page.wait_for_function('document.querySelector(".table-scroll").scrollLeft<1')
             page.get_by_role('button',name='Hide Theme evidence across the class',exact=True).click()
             page.locator('[data-class-mode=heatmap]').click()

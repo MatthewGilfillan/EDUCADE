@@ -515,3 +515,19 @@ for those changes above.
   Desktop Writing and smaller-width Reading screenshots were inspected under
   /workspace/educade-validation/all-category-scroll. Assessment data, profile
   charts, landing artwork and deployment configuration are unchanged.
+
+## Rounded double-chevron navigation — 12 October 2026
+
+- Replaced the scroll arrow glyph with two rounded SVG chevrons matching the
+  supplied reference. The icon uses the existing blue colour and semitransparent
+  button, stays in the clear space outside the table, and mirrors left after
+  reaching the last columns. Accessible button labels still describe the action;
+  the decorative SVG is hidden from screen readers.
+- All 27 Node tests and both complete browser suites pass. Updated existing
+  browser checks verify two chevron strokes and the rendered left/right transform
+  during native end/return clicks in every class tab and both data views.
+  Six screen widths, evidence alignment, pinned names, portraits and saved
+  preferences pass. Desktop Writing and smaller-width Reading screenshots were
+  inspected under /workspace/educade-validation/double-chevron.
+- Scroll destinations, control position, assessment data, profile charts, landing
+  assets and deployment configuration remain unchanged.

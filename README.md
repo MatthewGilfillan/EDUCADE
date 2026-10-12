@@ -153,8 +153,8 @@ Hosted preview: https://educade-preview.silent-wildflower-6cb0.workers.dev/teach
   Class and profile Reading Comprehension views start on **Reading overview**,
   with the same eight focus skills, labels, order and scores as the student radar.
   Class tables keep readable column widths and scroll horizontally. Every tab
-  has a large semitransparent arrow when its columns overflow. It sits in a clear
-  space to the right of the table, follows the visible rows, jumps to the last
+  has a large semitransparent double chevron when its columns overflow. It sits
+  in a clear space to the right of the table, follows the visible rows, jumps to the last
   columns, then points left to return. When every column fits, the arrow and its
   reserved space disappear. Student names and row numbers stay pinned.
   Class and profile views also share five comprehension navigation groups:
