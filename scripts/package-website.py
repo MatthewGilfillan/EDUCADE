@@ -31,7 +31,7 @@ with tempfile.TemporaryDirectory(prefix='educade-website-') as temporary:
         page.write_text(markup.replace('href="style.css"', f'href="{versioned_style}"'))
     html = (website / 'teacher.html').read_text()
     for filename, attribute in [('teacher.css', 'href'), ('teacher-data.js', 'src'),
-                                ('teacher-portraits.js', 'src'), ('teacher.js', 'src')]:
+                                ('teacher-portraits.js', 'src'), ('teacher-standards.js', 'src'), ('teacher.js', 'src')]:
         asset = website / filename
         digest = hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
         versioned = f'{asset.stem}.{digest}{asset.suffix}'

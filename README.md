@@ -417,6 +417,27 @@ Sign In opens a revision-specific HTML file. These fresh URLs avoid
 reusing older dashboard assets cached under the original filenames. Extract
 into a new folder and open the generated `teacher-<revision>.html` entry.
 
+## Standards Progress — 12 October 2026
+
+Class tables offer Progress Bars, Class heatmap and Standards Progress. Student
+profiles offer Progress Bars, Radar chart and Standards Progress. Levels use
+Beginning, Approaching, Meeting and Exceeding against the current Grade 5
+learning goal. They are teacher judgments, not percentage conversions.
+
+Select a skill in Standards Progress to review all recorded responses and save
+a level. Meeting requires confirmation of consistent, independent performance;
+Exceeding also requires confirmation of agreed extension criteria and a note.
+Permitted access accommodations do not automatically lower achievement. Skills
+with responses use initial layout levels, predominantly Beginning and Approaching,
+with a few Meeting and no default Exceeding assignments. These layout assignments
+are a quick mockup, independent of practice percentages or validated assessments.
+Teachers can change or clear them. Unassessed skills remain No evidence yet.
+Subject summaries show level counts without averaging a stage across skills.
+
+Levels and display choices are saved separately in browser storage. No account
+sync or school record persistence is implemented. EDUCADE skill IDs, candidate
+CCSS mappings and practice records remain separate from these judgments.
+
 ## Compact class rows and Overall subject evidence — 11 October 2026
 
 The student name is now the profile button, with `(Click to view profile)` beside

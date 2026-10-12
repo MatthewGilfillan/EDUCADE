@@ -591,3 +591,27 @@ for those changes above.
 - Static packaging now versions the shared landing/signup stylesheet as well as
   the teacher assets. The archive contains public website files only, with no
   Wrangler configuration, package manifests or build tools.
+
+## Standards Progress in the downloadable build — 12 October 2026
+
+- Added Standards Progress alongside the existing class views and profile charts.
+  It uses text labels, distinct colours and four position markers for Beginning,
+  Approaching, Meeting and Exceeding. Subject summaries show counts of individual
+  levels rather than an averaged achievement stage.
+- Initial layout levels provide the requested quick mockup: over 95% Beginning or
+  Approaching, three Meeting assignments and no default Exceeding levels. They
+  are separate from practice percentages and are not validated attainment claims.
+  Teacher changes replace or clear those display levels. Saving Meeting requires
+  explicit consistency and independence
+  confirmations; Exceeding also requires extension confirmation and an evidence
+  note. Unreviewed evidence and unassessed skills remain separate from Beginning.
+  Existing candidate standards references are not represented as validated mastery.
+- The review panel provides all recorded skill responses in a bounded, keyboard
+  accessible history. It saves judgments separately from practice records and
+  display preferences, in browser storage, with a visit-only fallback when blocked.
+  Both axes of table evidence expansion stay aligned without repeated bars.
+- All 33 Node tests pass. The full teacher and landing suites pass at six widths.
+  Dedicated native browser checks pass at 1440, 1024, 390 and 320px, covering
+  required rubric confirmations, note validation, shared class/profile levels,
+  restored choices, the conservative initial display, original percentages and data integrity. Desktop and smaller
+  screenshots were inspected under /workspace/educade-validation/standards-progress.

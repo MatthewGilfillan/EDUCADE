@@ -4,20 +4,99 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {JSDOM}=require('jsdom');
 const publicDir=path.join(__dirname,'../public');
-function dashboard(saved,route='class/reading'){
+function dashboard(saved,route='class/reading',standardsSaved){
   const dom=new JSDOM(fs.readFileSync(path.join(publicDir,'teacher.html'),'utf8'),{url:'https://preview.example/teacher.html'+(route?'#'+route:''),runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window;
   if(saved)w.localStorage.setItem('educade.teacher.presentation.v1',JSON.stringify({version:1,...saved}));
+  if(standardsSaved)w.localStorage.setItem('educade.teacher.standards.v1',JSON.stringify(standardsSaved));
   w.scrollTo=()=>{};w.matchMedia=()=>({matches:true});
   w.HTMLElement.prototype.scrollIntoView=()=>{};
   w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
   w.HTMLDialogElement.prototype.close=function(){this.open=false;};
-  for(const file of ['teacher-data.js','teacher-portraits.js','teacher.js'])w.eval(fs.readFileSync(path.join(publicDir,file),'utf8'));
+  for(const file of ['teacher-data.js','teacher-portraits.js','teacher-standards.js','teacher.js'])w.eval(fs.readFileSync(path.join(publicDir,file),'utf8'));
   const select=(selector,value)=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.value=value;el.dispatchEvent(new w.Event('change',{bubbles:true}));};
   const click=selector=>{const el=w.document.querySelector(selector);assert.ok(el,selector);el.dispatchEvent(new w.MouseEvent('click',{bubbles:true}));};
   // jsdom queues navigation and hashchange on separate event-loop turns.
   return {dom,w,d:w.document,select,click,settle:()=>new Promise(resolve=>w.setTimeout(()=>w.setTimeout(resolve,0),0))};
 }
+test('Standards judgments require evidence and explicit consistency, independence and extension rather than score cutoffs',()=>{
+ const {dom,w}=dashboard();
+ try{
+  const S=w.EDUCADE_STANDARDS,D=w.EDUCADE_DEMO,id=D.reading[0],original=JSON.stringify(D.students);
+  const displayed=D.students.flatMap(student=>D.groups.flatMap(group=>group.skills.map(skill=>S.display(student.id,skill.id)?.level))).filter(Boolean);
+  assert.ok(displayed.filter(level=>level==='beginning'||level==='approaching').length/displayed.length>.95);
+  assert.equal(displayed.filter(level=>level==='exceeding').length,0);
+  assert.equal(S.display('maya',id).level,'approaching');
+  assert.equal(S.display('sofia',id).level,'approaching');
+  for(const student of D.students)assert.equal(S.get(student.id,id),null);
+  assert.equal(S.record('alex',id,{level:'meeting'}),false);
+  assert.equal(S.record('alex',id,{level:'constructor'}),false);
+  assert.equal(S.record('alex',id,{level:'meeting',consistent:'true',independent:'true'}),false);
+  assert.equal(S.record('alex',id,{level:'meeting',consistent:true,independent:true}),true);
+  assert.equal(S.record('alex',id,{level:'exceeding',consistent:true,independent:true,extension:true}),false);
+  assert.equal(S.record('alex',id,{level:'exceeding',consistent:true,independent:true,extension:true,note:'Integrates several pieces of evidence on a more demanding text.'}),true);
+  const missing=D.readingCatalogue.find(group=>group.key==='structure').skills[0].id;
+  assert.equal(S.record('alex',missing,{level:'beginning'}),false);
+  assert.equal(S.summary(D.students[0],'reading').counts.exceeding,1);
+  assert.equal(S.summary(D.students[0],'reading').reviewed,1);
+  assert.equal(S.summary(D.students[0],'reading').assessed,9);
+  assert.equal(JSON.stringify(D.students),original);
+  assert.equal(S.record('alex',id,{level:''}),true);assert.equal(S.get('alex',id),null);
+ }finally{dom.window.close();}
+});
+test('Standards Progress keeps stages and full evidence in their original cells and survives view changes and reload',async()=>{
+ const {dom,w,d,click,select,settle}=dashboard();let saved;
+ try{
+  const D=w.EDUCADE_DEMO,id=D.reading[0],original=JSON.stringify(D.students);
+  click('[data-class-mode=standards]');
+  assert.equal(d.querySelector('#class-standards-key').hidden,false);
+  assert.equal(d.querySelectorAll('.class-table .hp-track,.class-table .heat-cell').length,0);
+  assert.equal(d.querySelector('tr[data-student=alex] .standards-badge strong').textContent,'Beginning');
+  click('button[aria-label="Show skill evidence for Alex Chen"]');click(`[data-expand-skill="${id}"]`);
+  assert.equal(d.querySelectorAll(`tr[data-student=alex] [data-axis="${id}"] .compact-evidence`).length,1);
+  click(`tr[data-student=alex] .score-cell[data-evidence="${id}"]`);
+  assert.equal(d.querySelectorAll('.standards-attempts .attempt').length,20);
+  select('[data-standards-review] [name=level]','beginning');
+  d.querySelector('[data-standards-review]').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  assert.equal(d.querySelector('.standards-save-status').textContent,'Level saved.');click('#close-evidence');
+  assert.equal(d.querySelector('tr[data-student=alex] .standards-badge strong').textContent,'Beginning');
+  assert.equal(d.querySelector('tr[data-student=alex] .standards-dots .active')!==null,true);
+  click('[data-class-mode=heatmap]');assert.equal(d.querySelector('tr[data-student=alex] .heat-cell strong').textContent,'45%');
+  click('[data-class-mode=bars]');assert.equal(d.querySelector('tr[data-student=alex] .hp-value').textContent,'45%');
+  click('[data-class-mode=standards]');
+  click('#class-tab-overall');await settle();
+  assert.equal(d.querySelector('tr[data-student=alex] .standards-domain-summary strong').textContent,'9 skill levels');
+  assert.equal(d.querySelector('tr[data-student=alex] .standards-distribution .beginning').textContent,'4');
+  assert.equal(d.querySelector('tr[data-student=alex] .standards-distribution .meeting').textContent,'0');
+  click('tr[data-student=alex] [data-standards-domain=reading]');await settle();
+  assert.equal(d.querySelector('#class-tab-literacy').getAttribute('aria-selected'),'true');
+  assert.equal(d.querySelector('h1').textContent,'Teacher Dashboard');
+  click('.profile-link[data-student=alex]');await settle();click('#tab-literacy');await settle();click('[data-mode=standards]');
+  assert.equal(d.querySelectorAll('.standards-profile-skill').length,8);
+  assert.equal(d.querySelector('.standards-badge strong').textContent,'Beginning');
+  assert.equal(d.querySelectorAll('#skill-chart .hp-track,.radar-target').length,0);
+  click('#tab-foundations');await settle();
+  assert.equal(d.querySelectorAll('.standards-profile-skill').length,8);
+  assert.ok(d.querySelector('#skill-chart').textContent.includes('No evidence yet'));
+  assert.equal(d.querySelector('[data-mode=standards]').getAttribute('aria-pressed'),'true');
+  saved=JSON.parse(w.localStorage.getItem('educade.teacher.standards.v1'));
+  assert.equal(JSON.stringify(D.students),original);
+ }finally{dom.window.close();}
+ const next=dashboard({classView:'standards'},'class/reading/comprehension/overview',saved);
+ try{assert.equal(next.d.querySelector('tr[data-student=alex] .standards-badge strong').textContent,'Beginning');}
+ finally{next.dom.window.close();}
+});
+test('Invalid saved standards judgments are ignored and unavailable storage keeps a reviewed level for this visit',()=>{
+ const malformed={version:1,judgments:{'alex:EDU.G5.READING.COMPREHENSION.INFERENCE.01':{level:'meeting',consistent:false,independent:true}}};
+ const {dom,w}=dashboard(undefined,'class/reading',malformed);
+ try{
+  const S=w.EDUCADE_STANDARDS,id=w.EDUCADE_DEMO.reading[0];
+  assert.equal(S.get('alex',id),null);
+  w.Storage.prototype.setItem=()=>{throw new Error('blocked');};
+  assert.equal(S.record('alex',id,{level:'approaching'}),true);
+  assert.equal(S.storageAvailable,false);assert.equal(S.get('alex',id).level,'approaching');
+ }finally{dom.window.close();}
+});
 test('Reading Foundations and Literacy are direct tabs with separate evidence scopes and compatible reading links',async()=>{
  const {dom,w,d,click,select,settle}=dashboard(undefined,'class/reading/foundations');
  try{
