@@ -1,53 +1,30 @@
-# EDUCADE website download
+# Latest EDUCADE website download
 
-Download **EDUCADE-latest-layout-refinements.zip** as an individual file using
-Download raw file or View raw. GitHub's Code > Download ZIP is the source
-repository archive, rather than this prepared static website.
+Download **EDUCADE-student-profile-tools.zip** and extract it. Open `index.html`
+for the website or `teacher-1a49552.html` for the teacher dashboard.
 
-This build uses source revision 249424427d5e00689513c0a80af68c5e239626db.
-Extract it into a new folder and open index.html, then Sign In. The dashboard
-entry is teacher-2494244.html. Upload the extracted contents, with index.html at
-the root, when using a static-site uploader.
+Source revision: `1a49552d1d76d4d3d9f973369454331b0fe7ba7c` (development).
+Archive: 39 static files; no development or deployment configuration.
+SHA256: `be16c35d7201cf8b1bd9af8972c8b6a7d4d5e00b8ba876cee7e391c877952743`.
 
-The ZIP has 39 static website files. It contains no Wrangler configuration,
-package manifests or build tools. Dashboard scripts and styles, and the shared
-landing/signup stylesheet, have content-based filenames to avoid older cached
-assets.
+This build includes:
 
-Included changes:
+- Five-area student radar: Reading Foundations, Literacy, Writing, Grammar,
+  Vocabulary. Separate reading evidence, unchanged overall response totals.
+- Editable report comments and learning targets, retained in browser storage.
+- Learner reports with practice totals, optional radar and Glows & Grows.
+  Export opens a report window; choose Print / Save as PDF.
+- Skill-based groups and partners: similar needs, mixed strengths, Impact
+  partners, group sizes, participant selection, teacher moves, saving and printing.
+- Expanded skill evidence lists encountered sub-skills and successful work,
+  retaining support counts and access to the complete response history.
+- Sign Up and Sign In, stable view toggles, approved orange joystick, Viking ship,
+  six learning tabs and all earlier dashboard features.
 
-- Restored orange Sign Up beside blue Sign In in the landing header.
-- View toggles keep the same position across all three class display modes.
-- The sidebar message now has the orange joystick above it and a Viking
-  longship below it, replacing the sunset and mountains.
+Verified: 37 Node checks; full teacher and landing browser suites at six widths;
+Standards Progress checks at four widths; report PDF/group tests on desktop and
+mobile; exact extracted archive, fingerprints and retained evidence checks.
 
-- Overall, Reading Foundations, Literacy, Writing, Grammar and Vocabulary tabs
-  in both class comparisons and student profiles. Literacy has eight matching
-  class/radar skills and all five comprehension catalogue groups.
-- Standards Progress beside the existing views. Initial layout levels are a
-  quick mockup: over 95% Beginning or Approaching, three Meeting assignments and
-  no default Exceeding assignments. They are independent of practice percentages
-  and are not validated assessments. Unassessed skills stay No evidence yet.
-- Optional teacher review of all collected responses. Saving Meeting requires
-  consistency and independence confirmations; Exceeding also requires extension
-  confirmation and an evidence note. Changes are stored in this browser.
-- Raised EDUCADE return buttons and expandable 5A/5B class menus, with class-specific
-  profile choosers, Settings, Import class and Create new class entries.
-- Rounded double-chevron scroll controls outside the scores in every class
-  category, original-column evidence expansion and compact learner rows.
-- The warm-orange joystick, blue Sign In buttons, compact role-playing-game hero
-  with the protagonist on an isometric map, and all four learning callouts.
-
-Original practice records, percentages, skill IDs and candidate CCSS mappings
-are preserved. Standards levels are separate display/review values. Overall
-profiles still start on their existing four-subject radar.
-
-All 33 Node tests pass. The complete teacher and landing browser suites pass at
-six widths; dedicated Standards Progress checks pass at four widths. The exact
-extracted archive was verified with native navigation, all collected skill
-responses, teacher review, saved class/profile levels, original charts and
-records, versioned assets, and no stale requests or browser/asset errors.
-
-SHA256: 92f9a9cb4e43153b8b6dd7bb0ba38c3bb825f8fdfc5b5bc15c19b8b8c7548ebb
-
-This download does not deploy to production or change educade.io.
+Older archives remain available through their original links. This download does
+not deploy or change the production website. Reports and groups use the current
+local records; report comments use activity templates, not an AI service.
